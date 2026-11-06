@@ -201,6 +201,28 @@ button,a,label,summary{touch-action:manipulation;-webkit-tap-highlight-color:tra
   .rules-box{max-height:88vh;border-radius:14px 14px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}
 }
 
+
+/* simulatore */
+.simform{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.simform label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted)}
+.simsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:6px}
+.simsum div{background:var(--stone);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.simsum strong{font-size:1.3rem;font-variant-numeric:tabular-nums}
+.simwarn{border:1px dashed var(--torch);border-radius:8px;padding:10px 14px;color:var(--parch)}
+.simwarn strong{color:var(--torch)}
+.simwarn ul{margin:6px 0 0;padding-left:1.2em;display:flex;flex-direction:column;gap:3px;font-size:.92rem}
+.simh{font-size:1.1rem;margin-top:8px}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.simt{width:100%;border-collapse:collapse;font-size:.9rem;font-variant-numeric:tabular-nums}
+.simt th{text-align:left;font-weight:500;color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.simt td{padding:6px 8px;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent);vertical-align:middle}
+.simt .num{text-align:right;white-space:nowrap}
+.simt tr.bad td{color:#f08a73}
+.simt tr.warnrow td{color:var(--torch)}
+details.simlv{border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--stone)}
+details.simlv summary{cursor:pointer;font-weight:500}
+details.simlv .tablewrap{margin-top:8px}
+#sim-out{display:flex;flex-direction:column;gap:10px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 <style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
@@ -894,28 +916,33 @@ const stepLabel = (step, nodeKey) => { const n=mod().nodes[nodeKey]; return n &&
    "meno-mostrate": prima le stanze mostrate meno volte nella sessione (a chiunque),
    a parità quelle che questa persona non ha ancora visto, poi a caso.
    "casuale": estrazione semplice. Le stanze contano come mostrate appena compaiono tra le proposte. */
-function pickRooms(pool, n, player){
-  const m = mod();
+/* Estrazione: stessa funzione per la partita e per il simulatore.
+   shown = conteggi della sessione, seen = stanze già viste da chi muove (può mancare). */
+function pickRooms(m, pool, n, shown, seen){
   if(m.estrazione!=='meno-mostrate') return sample(pool, n);
-  const shown = S.shown || {}, seen = (player && player.seen) || {};
+  shown = shown || {}; seen = seen || {};
   return pool
     .map(r=>({ r, k1: shown[r.id]||0, k2: seen[r.id]?1:0, k3: Math.random() }))
     .sort((a,b)=> a.k1-b.k1 || a.k2-b.k2 || a.k3-b.k3)
     .slice(0, n).map(x=>x.r);
 }
-function genOffer(nodeKey, prevPath, player){
-  const node = mod().nodes[nodeKey];
+function drawOffer(m, nodeKey, prevPath, shown, seen){
+  const node = m.nodes[nodeKey];
   if(node.kind==='all') return node.rooms.map(r=>r.id);
   const rule = node.offer[prevPath] || {};
   let out=[];
-  for(const [p,n] of Object.entries(rule)) out = out.concat(pickRooms(node.rooms.filter(r=>r.path===p), n, player).map(r=>r.id));
+  for(const [p,n] of Object.entries(rule)) out = out.concat(pickRooms(m, node.rooms.filter(r=>r.path===p), n, shown, seen).map(r=>r.id));
   // contano come «mostrate» solo le stanze estratte (non quelle fisse dell'ingresso)
-  S.shown = S.shown || {};
-  if(player) player.seen = player.seen || {};
-  for(const id of out){ S.shown[id]=(S.shown[id]||0)+1; if(player) player.seen[id]=1; }
+  for(const id of out){ shown[id]=(shown[id]||0)+1; if(seen) seen[id]=1; }
   return shuffle(out);
 }
-function nextNode(nodeKey, path){ const nx = mod().nodes[nodeKey].next; return typeof nx==='string' ? nx : nx[path]; }
+function genOffer(nodeKey, prevPath, player){
+  S.shown = S.shown || {};
+  if(player) player.seen = player.seen || {};
+  return drawOffer(mod(), nodeKey, prevPath, S.shown, player ? player.seen : null);
+}
+const nextOfNode = (m, nodeKey, path) => { const nx = m.nodes[nodeKey].next; return typeof nx==='string' ? nx : nx[path]; };
+function nextNode(nodeKey, path){ return nextOfNode(mod(), nodeKey, path); }
 function newPlayer(name){ return { name, run:1, trail:[], node:'ingresso', step:1, offer:genOffer('ingresso',null,null), moves:0, seen:{} }; }
 
 function startGame(names){
@@ -1033,6 +1060,69 @@ function importFile(file){
   fr.readAsText(file);
 }
 
+
+/* ---------- simulatore (area admin) ----------
+   Gioca molte partite con scelte casuali, usando le stesse regole di estrazione dell'app. */
+let simResult = null;
+function simulate(m, games, nPlayers, movesEach){
+  const room = {}; for(const [id,info] of Object.entries(m.roomMap)) room[id] = { shown:0, chosen:0, node:info.node };
+  const viaChosen = {}, routes = {}, lapMoves = [];
+  let laps = 0, moves = 0;
+  for(let g=0; g<games; g++){
+    const shown = {};
+    const players = Array.from({length:nPlayers}, ()=>{ const seen={}; return { node:'ingresso', seen, route:['ingresso'], lapStart:0, made:0, offer:drawOffer(m,'ingresso',null,shown,seen) }; });
+    // ordine libero: a ogni mossa tocca a una persona a caso che ha ancora mosse
+    const left = players.map(()=>movesEach);
+    for(let t=0; t<nPlayers*movesEach; t++){
+      const cand = left.map((l,i)=>l>0?i:-1).filter(i=>i>=0);
+      const i = cand[Math.floor(Math.random()*cand.length)]; left[i]--;
+      const p = players[i];
+      const id = p.offer[Math.floor(Math.random()*p.offer.length)];
+      const r = m.roomMap[id].room;
+      room[id].chosen++; viaChosen[r.path] = (viaChosen[r.path]||0)+1; moves++; p.made++;
+      const from = p.node, to = nextOfNode(m, from, r.path);
+      if(from==='finale'){
+        laps++; lapMoves.push(p.made - p.lapStart); p.lapStart = p.made;
+        const key = p.route.join('>'); routes[key] = (routes[key]||0)+1; p.route = ['ingresso'];
+      } else p.route.push(to);
+      p.node = to;
+      p.offer = drawOffer(m, to, r.path, shown, p.seen);
+      for(const x of p.offer) room[x].shown++;   // per l'ingresso non conta: non compare nelle tabelle
+    }
+  }
+  return { m, games, nPlayers, movesEach, room, viaChosen, routes, laps, moves, lapMoves };
+}
+function simHtml(R){
+  const m = R.m, pct = (a,b) => b ? (100*a/b).toFixed(1).replace('.',',')+'%' : '—';
+  const nodeName = k => k==='ingresso' ? (m.nodes.ingresso.name||'Ingresso') : k==='finale' ? (m.nodes.finale.name||'Finale') : (m.nodes[k].name ? `${m.nodes[k].name} (${k})` : k);
+  const avgLap = R.lapMoves.length ? (R.lapMoves.reduce((a,b)=>a+b,0)/R.lapMoves.length).toFixed(1).replace('.',',') : '—';
+  const totalChosen = Object.values(R.viaChosen).reduce((a,b)=>a+b,0);
+  const vieRows = Object.keys(m.paths).map(v=>`<tr><td>${badge(v)}</td><td class="num">${R.viaChosen[v]||0}</td><td class="num">${pct(R.viaChosen[v]||0,totalChosen)}</td></tr>`).join('');
+  const routeRows = Object.entries(R.routes).sort((a,b)=>b[1]-a[1]).map(([k,n])=>`<tr><td>${k.split('>').map(x=>esc(nodeName(x))).join(' → ')}</td><td class="num">${pct(n,R.laps)}</td></tr>`).join('') || '<tr><td colspan="2" class="hint">Nessun giro completato: prova ad aumentare le mosse a testa.</td></tr>';
+  const warn = [];
+  const nodeBlocks = Object.values(m.nodes).filter(n=>n.kind!=='all').map(n=>{
+    const rows = n.rooms.map(r=>({ r, ...R.room[r.id] }));
+    const avg = rows.reduce((a,x)=>a+x.shown,0)/rows.length;
+    rows.forEach(x=>{ if(x.shown===0) warn.push(`«${x.r.title}» (${nodeName(n.key)}) non è mai stata proposta.`); else if(avg && x.shown < avg*0.5) warn.push(`«${x.r.title}» (${nodeName(n.key)}) è stata proposta meno della metà della media del livello.`); });
+    const body = rows.sort((a,b)=>b.shown-a.shown).map(x=>`<tr class="${x.shown===0?'bad':(avg && x.shown<avg*0.5?'warnrow':'')}"><td>${esc(x.r.title)}</td><td>${badge(x.r.path)}</td><td class="num">${x.shown}</td><td class="num">${x.chosen}</td><td class="num">${pct(x.chosen,x.shown)}</td></tr>`).join('');
+    return `<details class="simlv"><summary>${esc(nodeName(n.key))} · ${n.rooms.length} stanze</summary><div class="tablewrap"><table class="simt"><thead><tr><th>Stanza</th><th>Via</th><th class="num">Proposta</th><th class="num">Scelta</th><th class="num">Scelta se proposta</th></tr></thead><tbody>${body}</tbody></table></div></details>`;
+  }).join('');
+  return `
+    <div class="simsum">
+      <div><span class="eyebrow">Partite</span><strong>${R.games.toLocaleString('it-IT')}</strong></div>
+      <div><span class="eyebrow">Mosse</span><strong>${R.moves.toLocaleString('it-IT')}</strong></div>
+      <div><span class="eyebrow">Giri completati</span><strong>${R.laps.toLocaleString('it-IT')}</strong></div>
+      <div><span class="eyebrow">Mosse per un giro</span><strong>${avgLap}</strong></div>
+    </div>
+    ${warn.length ? `<div class="simwarn"><strong>Da controllare</strong><ul>${warn.slice(0,12).map(w=>`<li>${esc(w)}</li>`).join('')}${warn.length>12?`<li>…e altre ${warn.length-12}.</li>`:''}</ul></div>` : `<p class="okmsg">Tutte le stanze sono state proposte in modo equilibrato.</p>`}
+    <h3 class="simh">Vie scelte</h3>
+    <div class="tablewrap"><table class="simt"><thead><tr><th>Via</th><th class="num">Scelte</th><th class="num">Quota</th></tr></thead><tbody>${vieRows}</tbody></table></div>
+    <h3 class="simh">Percorsi dei giri completati</h3>
+    <div class="tablewrap"><table class="simt"><thead><tr><th>Percorso</th><th class="num">Quota</th></tr></thead><tbody>${routeRows}</tbody></table></div>
+    <h3 class="simh">Stanze per livello</h3>
+    ${nodeBlocks}
+    <p class="hint">Le scelte del simulatore sono casuali: non sa quali stanze preferirebbero le persone al tavolo. Serve a scoprire stanze che escono poco, percorsi rari e pool sbilanciati.</p>`;
+}
 /* ---------- render ---------- */
 const app = document.getElementById('app');
 function render(){
@@ -1119,6 +1209,17 @@ function renderAdmin(){
     <p class="hint" id="copy-msg" aria-live="polite"></p>
   </section>
   <section class="panel">
+    <div><h2>Simulatore</h2><p class="hint">Gioca tante partite con scelte casuali e le stesse regole dell’app, per controllare il bilanciamento di un’esplorazione prima di portarla al tavolo.</p></div>
+    <div class="simform">
+      <label>Esplorazione<select id="sim-mod" class="field">${allModules().map(m=>`<option value="${esc(m.id)}" ${simResult&&simResult.m.id===m.id?'selected':''}>${esc(m.name)}</option>`).join('')}</select></label>
+      <label>Partite<select id="sim-games" class="field">${[100,1000,5000].map(n=>`<option ${n===(simResult?simResult.games:1000)?'selected':''}>${n}</option>`).join('')}</select></label>
+      <label>Esplorator*<select id="sim-players" class="field">${[2,3,4].map(n=>`<option ${n===(simResult?simResult.nPlayers:4)?'selected':''}>${n}</option>`).join('')}</select></label>
+      <label>Mosse a testa<input id="sim-moves" class="field" type="number" min="1" max="60" value="${simResult?simResult.movesEach:10}"></label>
+    </div>
+    <div><button class="btn primary" id="sim-run">Simula</button></div>
+    <div id="sim-out" aria-live="polite">${simResult?simHtml(simResult):''}</div>
+  </section>
+  <section class="panel">
     <div><h2>Carica una nuova esplorazione</h2><p class="hint">File JSON nel formato 2, con vie, livelli e stanze. «Copia JSON» su un’esplorazione esistente ti dà un modello da cui partire. Il file viene controllato al caricamento: se qualcosa non torna, ti dice cosa correggere.</p></div>
     <div class="row"><button class="btn primary" id="imp">Scegli file…</button><input type="file" id="file" accept=".json,application/json" hidden></div>
     ${UI.err?`<p class="err">${esc(UI.err)}</p>`:''}
@@ -1150,6 +1251,14 @@ function renderAdmin(){
     navigator.clipboard.writeText(txt).then(()=>{ msg.textContent=`JSON di «${m.name}» copiato negli appunti.`; })
       .catch(()=>{ msg.innerHTML=`Copia non riuscita: seleziona il testo qui sotto.<textarea class="field mono" rows="8" readonly>${esc(txt)}</textarea>`; msg.querySelector('textarea').select(); });
   });
+  document.getElementById('sim-run').onclick=()=>{
+    const out=document.getElementById('sim-out'), btn=document.getElementById('sim-run');
+    const m=allModules().find(x=>x.id===document.getElementById('sim-mod').value);
+    const games=+document.getElementById('sim-games').value, np=+document.getElementById('sim-players').value;
+    const mv=Math.max(1,Math.min(60,parseInt(document.getElementById('sim-moves').value,10)||10));
+    btn.disabled=true; out.innerHTML='<p class="hint">Simulazione in corso…</p>';
+    setTimeout(()=>{ simResult=simulate(m,games,np,mv); out.innerHTML=simHtml(simResult); btn.disabled=false; },30);
+  };
   document.getElementById('imp').onclick=()=>document.getElementById('file').click();
   document.getElementById('file').onchange=e=>{ if(e.target.files[0]) importFile(e.target.files[0]); };
   document.getElementById('pwform').onsubmit = async e => {

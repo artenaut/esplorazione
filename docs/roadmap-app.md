@@ -79,7 +79,9 @@ Guida completa: `formato-esplorazione.md`. Lowrenzia convertita. Decisioni final
 ### Criteri di estrazione futuri (idee da usare se serviranno)
 - La via scelta all'ingresso, la via più frequentata finora, una stanza specifica già visitata, il numero del giro.
 
-## 3. Simulatore nell'area admin [deciso]
+## 3. Simulatore nell'area admin ✅ fatto il 6/11/2026
+
+Parametri: esplorazione, numero di partite (100, 1.000, 5.000), esplorator\* (2–4), mosse a testa. Usa la stessa funzione di estrazione della partita (`drawOffer`), con ordine dei turni libero e scelte casuali. Mostra: riepilogo (mosse, giri, mosse medie per un giro), avvisi su stanze mai proposte o proposte meno della metà della media del livello, quota di scelta per via, percorsi dei giri completati, e per ogni livello quante volte ogni stanza è stata proposta e scelta.
 
 - Un pulsante «Simula 1.000 partite» per un'esplorazione.
 - Mostra quante volte compare e viene scelta ogni stanza, a che livello si arriva e se qualche pool resta vuoto.
