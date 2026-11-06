@@ -14,7 +14,7 @@ Legenda: **[deciso]** concordato, da sviluppare · **[da decidere]** idea discus
   - Dove si può, meglio ancora una **forma neutra** che non richiede l'asterisco: «chi gioca», «chi amministra», «il tuo turno», «persone», «staff».
   - App attuale adeguata il 6/11/2026: «Esplorator\*» nella schermata iniziale, «Aggiungi esplorator\*», «Nuovo gruppo» e «Stesso gruppo» in Ricomincia, «Area admin», messaggi di errore e conferme in forma neutra.
   - **Esclusi:** i testi delle stanze scritti da Francesco, che usano la terminologia ufficiale di Magic (avversario, controllore, proprietario, giocatore). Si decide caso per caso se adeguarli.
-  - **I termini di Magic restano così come sono** anche nelle regole (es. «avversario»): sono terminologia di gioco, non riferimenti alle persone. (Deciso il 6/11/2026.)
+  - **Regole del gioco:** si preferiscono le forme neutre, che sono più eleganti; dove risultano artificiose si usa l'asterisco, più funzionale. Esempio: «a un\* avversari\*» al posto di «a una persona avversaria». (Deciso il 6/11/2026.)
   - I nomi dei guest non usano aggettivi di genere: vedi `roadmap-classifica.md`, punto 10.
   - L'informativa è già stata adeguata (6/11/2026).
 
