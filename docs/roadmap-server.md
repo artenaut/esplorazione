@@ -159,6 +159,12 @@ Nessuna falla critica (verificati: token di Access, CSRF, query parametrizzate, 
 
 Non cambiato, per scelta: codice della partita a 3 cifre.
 
+**Seconda revisione (6/11/2026): rischi noti, lasciati così per scelta di Francesco.**
+- La classifica si può alterare da remoto con partite finte chiuse con «Chiudi partita»: rimedio dall'area admin (partite salvate modificabili ed eliminabili). Possibili protezioni future: durata minima della partita, limite di partite salvate per rete, codice del club.
+- `GET /api/classifica` e l'elenco dei nickname leggono D1 a ogni richiesta (possibile consumo delle letture gratuite). Rimedio futuro: cache in memoria di un minuto.
+- Manca `X-Content-Type-Options: nosniff` sulle risposte dell'API pubblica.
+- Raccomandato a Francesco: autenticazione a due fattori su GitHub (obbligatoria per l'organizzazione), Cloudflare e Gmail del club.
+
 ## 4. Classifica del club [deciso il 6/11/2026]
 
 **Regole di calcolo e visualizzazione: vedi `roadmap-classifica.md`.** Qui restano solo gli aspetti lato server.
