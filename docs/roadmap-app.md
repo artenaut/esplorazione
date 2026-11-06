@@ -11,6 +11,9 @@ Legenda: **[deciso]** concordato, da sviluppare · **[da decidere]** idea discus
 
 - [ ] **Inserire le regole del gioco di Lowrenzia** nel pulsante «Regole». Sono le regole del gioco vero e proprio, non le istruzioni dell'app. Oggi il campo `rules` contiene solo «Placeholder - ricordati di inserire istruzioni». Serve il testo da Francesco, oppure un link a un regolamento completo (`rulesUrl`).
 
+- [ ] **Caratteri ospitati nel sito, senza Google Fonts** (deciso il 6/11/2026). Scaricare i file dei due caratteri (IM Fell English SC e Alegreya Sans, in formato `woff2`) e metterli nel repository, caricandoli con `@font-face` al posto del link a Google. Così nessun IP dei visitatori viene inviato a Google, e l'informativa non deve citarlo. Va fatto prima di pubblicare la classifica. I file stanno su GitHub Pages insieme all'app: non servono al server Cloudflare.
+- [ ] **Informativa privacy:** completare il modello in `informativa-privacy.md` con i dati dell'associazione, farlo verificare e collegarlo all'inserimento del nickname.
+
 ## 1. Estrazione «meno mostrate» [deciso] · priorità alta
 
 Si può fare già nella versione attuale con un solo dispositivo. I contatori vivono nella partita salvata nel browser.
@@ -75,7 +78,6 @@ Si può fare già nella versione attuale con un solo dispositivo. I contatori vi
 
 ## 6. Valutati e messi da parte
 
-- **[scartato]** Font di Google in locale, per il GDPR: ritenuto non importante per ora.
 - **[scartato]** Password admin con protezione vera: va bene quella lato client, che serve solo a non far fare pasticci ai giocatori.
 - **[scartato]** Pulsante «Passa al giocatore successivo», tolto: i turni non hanno un ordine fisso e lo stesso giocatore può muovere più volte di fila.
 

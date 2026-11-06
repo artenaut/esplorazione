@@ -114,7 +114,8 @@ Poche righe, in linguaggio semplice, comprensibile anche ai ragazzi:
 
 ### Altro
 - **Niente banner cookie:** l'app salva nel browser solo dati tecnici strettamente necessari (partita e posto del giocatore). Va mantenuto così, quindi niente strumenti di analisi delle visite.
-- **Google Fonts** [da valutare]: con la classifica pubblica, il trasferimento dell'IP dei visitatori a Google diventa un po' più rilevante. Il rischio è basso; si risolve salvando i caratteri nel sito.
+- **Niente Google Fonts** [deciso]: i caratteri vengono ospitati nel sito stesso, così l'IP dei visitatori non arriva a Google. Vedi `roadmap-app.md`, punto 0.
+- **Modello di informativa:** `informativa-privacy.md`, da completare con i dati dell'associazione.
 
 ## 10. Guest [deciso il 6/11/2026]
 
