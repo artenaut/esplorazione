@@ -12,7 +12,7 @@ Legenda: **[deciso]** concordato, da sviluppare · **[da decidere]** idea discus
 - [ ] **PRIORITÀ: linguaggio inclusivo in tutto il progetto** (deciso il 6/11/2026). Vale per app, area admin, classifica, informativa, messaggi di errore e nomi dei guest. Si applica a **ogni versione in produzione**: le roadmap possono usare «giocatore», ma tutto ciò che vedono le persone no.
   - Le persone che giocano si chiamano sempre **esplorator\*** (singolare e plurale), con l'asterisco come in Artenaut\*. Gli aggettivi e i participi riferiti a loro usano lo stesso asterisco (es. «Esplorator\* rimoss\*»).
   - Dove si può, meglio ancora una **forma neutra** che non richiede l'asterisco: «chi gioca», «chi amministra», «il tuo turno», «persone», «staff».
-  - Da correggere nell'app attuale: «Giocatori», «Aggiungi giocatore», «Rimuovi giocatore», «Nome del giocatore N», «Ognuno si muove», «avventurieri», «Percorso di …» (già neutro), «Nuovi giocatori», «Stessi giocatori», «Tutti i progressi», «amministratore» nell'area admin, e i messaggi di errore che parlano di «giocatori».
+  - Da correggere nell'app attuale: «Giocatori», «Aggiungi giocatore», «Rimuovi giocatore», «Nome del giocatore N», «Ognuno si muove», «avventurieri», «Nuovi giocatori», «Stessi giocatori», «Tutti i progressi», «amministratore» nell'area admin, e i messaggi di errore che parlano di «giocatori».
   - I nomi dei guest non usano aggettivi di genere: vedi `roadmap-classifica.md`, punto 10.
   - L'informativa è già stata adeguata (6/11/2026).
 
