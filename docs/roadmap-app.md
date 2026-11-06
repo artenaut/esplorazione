@@ -83,3 +83,4 @@ Si può fare già nella versione attuale con un solo dispositivo. I contatori vi
 - Le esplorazioni definitive sono incorporate nell'app. Il caricamento da file nell'area admin è per prove.
 - Interfaccia ottimizzata per il telefono e schermo tenuto acceso durante la partita.
 - I commit non devono contenere l'email personale.
+- Il testo di una stanza non si vede mai prima di entrarci, nemmeno se è già stata visitata nella sessione: tra le proposte solo titolo e via. Va mantenuto in ogni versione futura.

@@ -62,7 +62,9 @@ I limiti dei piani sono quelli rilevati a novembre 2026: vanno ricontrollati al 
 ### Visibilità: si sceglie la soluzione più economica
 Al tavolo i giocatori leggono comunque ad alta voce le stanze proposte, quindi la privacy è indifferente. Il criterio è quello di scrivere meno codice e fare meno chiamate:
 - **Stato della partita uguale per tutti:** dopo ogni mossa il server invia lo stesso aggiornamento a tutti i dispositivi collegati, senza filtri per dispositivo né richieste separate. Tutti vedono le proposte, le stanze in cui si entra e la cronologia.
-- Restano private solo le stanze **non ancora proposte**: il loro testo sta sul server e viene inviato solo quando qualcuno entra nella stanza. Questo non costa chiamate in più, perché il testo viaggia nello stesso aggiornamento della mossa.
+- **Il testo di una stanza non viene mai mostrato prima di entrarci**, nemmeno se nella sessione quella stanza è già stata visitata, da quel giocatore o da altri. Tra le proposte compaiono solo titolo e via: chi l'ha già vista deve ricordarsela. (Deciso il 6/11/2026.)
+  - Il server invia il testo solo nell'aggiornamento della mossa con cui un giocatore entra nella stanza. Non costa chiamate in più.
+  - Le stanze proposte nello stato della partita non portano mai il testo, neanche se il dispositivo lo ha già ricevuto in precedenza.
 - Le selezioni prima di confermare restano solo sul dispositivo e non vengono inviate al server.
 
 ### Logica lato server
