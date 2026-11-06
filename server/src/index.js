@@ -43,7 +43,7 @@ export default {
         const ip = request.headers.get("CF-Connecting-IP");
         const chiave = ip ? (await hash(ip)).slice(0, 8) : null;
         let esito = null;
-        if (ip && env.INGRESSI) esito = await env.INGRESSI.limit({ key: "diagnosi:" + chiave });
+        if (env.INGRESSI) esito = await env.INGRESSI.limit({ key: "diagnosi-chiave-fissa" });
         return json({ limitatore: !!env.INGRESSI, tipo: typeof env.INGRESSI?.limit, chiave, esito, colo: request.cf?.colo ?? null });
       }
 
