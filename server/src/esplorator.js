@@ -4,6 +4,7 @@
 
 import { preparaSchema } from "./esplorazioni.js";
 import { INFORMATIVA_VERSIONE } from "./costanti.js";
+import { dimenticaNickname } from "./classifica.js";
 
 export const NICK_MIN = 3, NICK_MAX = 20;
 // lettere (anche accentate), numeri, spazi e pochi segni
@@ -74,8 +75,12 @@ export async function rinominaNickname(db, id, testo) {
   }
 }
 
+// Cancellazione su richiesta: sparisce anche dalla classifica della stagione in corso;
+// nelle stagioni archiviate i suoi risultati restano come «Esplorator* rimoss*».
 export async function rimuoviNickname(db, id) {
   await preparaSchema(db);
+  if (!(await leggiNickname(db, id))) return false;
+  await dimenticaNickname(db, id);
   const r = await db.prepare("DELETE FROM esplorator WHERE id = ?").bind(id).run();
   return r.meta.changes > 0;
 }

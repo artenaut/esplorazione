@@ -251,6 +251,23 @@ def main():
             expect(t.locator(".sessione-info")).to_contain_text(nuovo)
             expect(t.locator(".sessione-info")).to_contain_text("tabellone")
 
+        @prova("La partita chiusa entra nella classifica pubblica; riordino e «Torna alla classifica»")
+        def _():
+            ctx, pg = telefono()
+            pg.goto(APP + "classifica.html" + Q)
+            expect(pg.locator("tbody tr", has_text=NICK)).to_be_visible()
+            assert stato["bruno"] not in pg.inner_text("body"), "il guest non deve comparire"
+            expect(pg.locator("#stagione option").first).to_contain_text("(in corso)")
+            pg.select_option("#vista", "lowrenzia")
+            expect(pg.locator("thead")).to_contain_text("Forza")
+            expect(pg.locator("thead")).to_contain_text("Sapienza")
+            pg.click("th >> text=Esplorator*")
+            expect(pg.locator("#ufficiale")).to_be_visible()
+            pg.click("#ufficiale")
+            assert pg.locator("#ufficiale").count() == 0
+            nessuno_scorrimento(pg)
+            ctx.close()
+
         @prova("Annulla partita e torna all'inizio: tutti vedono la fine")
         def _():
             pg = stato["alba"][1]

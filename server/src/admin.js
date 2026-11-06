@@ -3,6 +3,7 @@
 import { verificaAccess } from "./accesso.js";
 import { elencoAdmin, leggi, salva, rimuovi } from "./esplorazioni.js";
 import { elencoAdminNickname, rinominaNickname, rimuoviNickname } from "./esplorator.js";
+import { elencoStagioni, rinominaStagione, chiudiStagione, partiteStagione, modificaRisultato, eliminaRisultato, eliminaPartita } from "./classifica.js";
 
 const LIMITE_FILE = 1024 * 1024; // 1 MB: un pianeta è di poche decine di kB
 const RE_ID = /^[a-z0-9-]{1,40}$/;
@@ -49,6 +50,34 @@ export async function gestisciAdmin(request, env, url) {
       return (await rimuoviNickname(env.DB, id)) ? json({ ok: true }) : json({ errore: "Nickname non trovato." }, 404);
     }
   }
+
+  // Classifica (fase 5): stagioni, partite salvate e singoli risultati.
+  if (p === "/admin/api/stagioni" && request.method === "GET") return json(await elencoStagioni(env.DB));
+  if (p === "/admin/api/stagioni/chiudi" && request.method === "POST") return json(await chiudiStagione(env.DB));
+  const st = p.match(/^\/admin\/api\/stagioni\/(\d{1,9})(\/partite)?$/);
+  if (st) {
+    const id = Number(st[1]);
+    if (st[2] && request.method === "GET") return json(await partiteStagione(env.DB, id));
+    if (!st[2] && request.method === "PATCH") {
+      const corpo = await leggiJson(request);
+      if (corpo.errore) return json(corpo, 400);
+      const r = await rinominaStagione(env.DB, id, corpo.dati?.nome);
+      return r.errore ? json({ errore: r.errore }, r.nonTrovato ? 404 : 422) : json(r);
+    }
+  }
+  const ri = p.match(/^\/admin\/api\/risultati\/(\d{1,9})$/);
+  if (ri) {
+    const id = Number(ri[1]);
+    if (request.method === "PATCH") {
+      const corpo = await leggiJson(request);
+      if (corpo.errore) return json(corpo, 400);
+      const r = await modificaRisultato(env.DB, id, corpo.dati ?? {});
+      return r.errore ? json({ errore: r.errore }, r.nonTrovato ? 404 : 422) : json(r);
+    }
+    if (request.method === "DELETE") return (await eliminaRisultato(env.DB, id)) ? json({ ok: true }) : json({ errore: "Risultato non trovato." }, 404);
+  }
+  const pa = p.match(/^\/admin\/api\/partite\/(\d{1,9})$/);
+  if (pa && request.method === "DELETE") return (await eliminaPartita(env.DB, Number(pa[1]))) ? json({ ok: true }) : json({ errore: "Partita non trovata." }, 404);
 
   const m = p.match(/^\/admin\/api\/esplorazioni\/([^/]+)$/);
   if (m) {
@@ -150,6 +179,8 @@ button:focus-visible{outline:2px solid var(--torch);outline-offset:2px}
 details.simlv{border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--stone)}
 details.simlv summary{cursor:pointer}
 #sim-out{display:flex;flex-direction:column;gap:10px}
+.num-in{width:5.2em;padding:4px 6px;text-align:right}
+#qr-cl svg{width:100%;height:auto;display:block}
 </style></head><body><div class="wrap">
 <header><div><span class="eyebrow">Area admin</span><h1>Esplorazioni sul server</h1></div>
 <p class="hint">Accesso come ${esc(chi.email) || "chi amministra"} · <a class="hint" href="/cdn-cgi/access/logout">Esci</a></p></header>
@@ -157,6 +188,19 @@ details.simlv summary{cursor:pointer}
 <section class="panel">
   <div><h2>Esplorazioni caricate</h2><p class="hint">Sono quelle che si possono scegliere quando si crea una partita. I testi delle stanze restano solo qui sul server.</p></div>
   <div class="list" id="lista"><p class="hint">Caricamento…</p></div>
+</section>
+
+<section class="panel">
+  <div><h2>Classifica e stagioni</h2><p class="hint">Ogni partita chiusa con «Chiudi partita» entra nella stagione in corso. Qui puoi dare un nome alle stagioni, chiudere quella in corso (se ne apre subito una nuova, da zero) e correggere o eliminare i risultati salvati.</p></div>
+  <div class="row"><select id="stagione" class="field" style="flex:1;min-width:0" aria-label="Stagione"></select>
+    <button class="btn" id="rinomina-stagione">Rinomina</button><button class="btn danger" id="chiudi-stagione">Chiudi la stagione in corso</button></div>
+  <div class="list" id="partite"></div>
+  <p class="msg" id="esito-cl" aria-live="polite"></p>
+  <details><summary class="hint" style="cursor:pointer">QR code della classifica, da stampare per il club</summary>
+    <div class="row" style="align-items:center;margin-top:10px"><div id="qr-cl" style="width:180px;background:#fff;padding:6px;border-radius:8px"></div>
+      <div><p class="hint"><a class="hint" href="https://artenaut.github.io/esplorazione/classifica.html" target="_blank" rel="noopener">artenaut.github.io/esplorazione/classifica.html</a></p>
+      <button class="btn" id="scarica-qr">Scarica il QR (SVG)</button></div></div>
+  </details>
 </section>
 
 <section class="panel">
@@ -185,6 +229,7 @@ details.simlv summary{cursor:pointer}
 </div>
 <script>
 const $ = s => document.querySelector(s);
+const APP_SITO = 'https://artenaut.github.io/esplorazione/';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const H = { 'X-Richiesta': 'admin' };
 const data = s => new Date(s).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' });
@@ -223,6 +268,86 @@ document.addEventListener('click', async e => {
   }
 });
 
+// ---------- classifica e stagioni ----------
+let stagioni = [];
+function esitoCl(t, ok){ const e=$('#esito-cl'); e.textContent=t; e.className='msg '+(ok?'ok':'err'); }
+async function caricaStagioni(scegli){
+  const r = await fetch('/admin/api/stagioni', { headers: H });
+  if(!r.ok){ esitoCl('Stagioni non disponibili ('+r.status+').'); return; }
+  stagioni = await r.json();
+  const sel = $('#stagione'), prima = scegli ?? +sel.value;
+  sel.innerHTML = stagioni.map(s => '<option value="'+s.id+'">'+esc(s.nome)+(s.chiusa ? ' · chiusa il '+esc(data(s.chiusa)) : ' · in corso')+'</option>').join('');
+  if(stagioni.some(s => s.id === prima)) sel.value = prima;
+  caricaPartite();
+}
+async function caricaPartite(){
+  const id = +$('#stagione').value, el = $('#partite');
+  const r = await fetch('/admin/api/stagioni/'+id+'/partite', { headers: H });
+  if(!r.ok){ el.innerHTML = '<p class="msg err">Partite non disponibili ('+r.status+').</p>'; return; }
+  const l = await r.json();
+  el.innerHTML = l.length ? l.map(p => \`
+    <div class="item" style="flex-direction:column;align-items:stretch">
+      <div class="row" style="justify-content:space-between"><div><strong>\${esc(p.pianeta)}</strong><small>partita chiusa il \${esc(data(p.chiusa))}</small></div>
+        <button class="btn danger" data-elimina-partita="\${p.id}">Elimina partita</button></div>
+      <div class="tablewrap"><table class="simt"><thead><tr><th>Nickname</th><th class="num">Esplorazioni</th><th class="num">Stanze</th>\${p.vie.map(v => '<th class="num">'+esc(v.breve)+'</th>').join('')}<th></th></tr></thead><tbody>
+      \${p.risultati.map(r => \`<tr data-risultato="\${r.id}"><td>\${esc(r.nickname)}</td>
+        <td class="num"><input class="field num-in" type="number" min="0" data-campo="cicli" value="\${r.cicli}" aria-label="Esplorazioni"></td>
+        <td class="num"><input class="field num-in" type="number" min="0" data-campo="stanze" value="\${r.stanze}" aria-label="Stanze"></td>
+        \${p.vie.map(v => '<td class="num"><input class="field num-in" type="number" min="0" data-via="'+esc(v.id)+'" value="'+(r.perVia[v.id] ?? 0)+'" aria-label="'+esc(v.breve)+'"></td>').join('')}
+        <td><div class="row" style="flex-wrap:nowrap"><button class="btn" data-salva-ris="\${r.id}">Salva</button><button class="btn danger" data-elimina-ris="\${r.id}">Elimina</button></div></td></tr>\`).join('')}
+      </tbody></table></div></div>\`).join('')
+    : '<p class="hint">Nessuna partita salvata in questa stagione.</p>';
+}
+$('#stagione').onchange = caricaPartite;
+$('#rinomina-stagione').onclick = async () => {
+  const s = stagioni.find(x => x.id === +$('#stagione').value); if(!s) return;
+  const nome = prompt('Nuovo nome per «'+s.nome+'»:', s.nome); if(!nome || nome === s.nome) return;
+  const r = await fetch('/admin/api/stagioni/'+s.id, { method: 'PATCH', headers: { ...H, 'Content-Type': 'application/json' }, body: JSON.stringify({ nome }) });
+  const j = await r.json().catch(() => ({}));
+  esitoCl(r.ok ? 'Stagione rinominata in «'+j.nome+'».' : (j.errore || 'Non riuscito ('+r.status+').'), r.ok); caricaStagioni(s.id);
+};
+$('#chiudi-stagione').onclick = async () => {
+  const s = stagioni.find(x => !x.chiusa); if(!s) return;
+  if(!confirm('Chiudere «'+s.nome+'»? Resterà consultabile nell’archivio e se ne aprirà subito una nuova, che parte da zero per tutti.')) return;
+  const r = await fetch('/admin/api/stagioni/chiudi', { method: 'POST', headers: H });
+  const j = await r.json().catch(() => ({}));
+  esitoCl(r.ok ? '«'+s.nome+'» chiusa. Ora è in corso «'+j.nuova.nome+'».' : 'Non riuscito ('+r.status+').', r.ok); caricaStagioni(j.nuova?.id);
+};
+document.addEventListener('click', async e => {
+  const sv = e.target.closest('[data-salva-ris]'), dr = e.target.closest('[data-elimina-ris]'), dp = e.target.closest('[data-elimina-partita]');
+  if(sv){
+    const tr = sv.closest('tr'), num = el => parseInt(el.value, 10);
+    const perVia = {}; tr.querySelectorAll('[data-via]').forEach(i => { perVia[i.dataset.via] = num(i); });
+    const corpo = { cicli: num(tr.querySelector('[data-campo=cicli]')), stanze: num(tr.querySelector('[data-campo=stanze]')), perVia };
+    const r = await fetch('/admin/api/risultati/'+sv.dataset.salvaRis, { method: 'PATCH', headers: { ...H, 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) });
+    const j = await r.json().catch(() => ({}));
+    esitoCl(r.ok ? 'Risultato aggiornato.' : (j.errore || 'Non riuscito ('+r.status+').'), r.ok); if(r.ok) caricaPartite();
+  }
+  if(dr){
+    if(!confirm('Eliminare questo risultato dalla classifica?')) return;
+    const r = await fetch('/admin/api/risultati/'+dr.dataset.eliminaRis, { method: 'DELETE', headers: H });
+    esitoCl(r.ok ? 'Risultato eliminato.' : 'Non riuscito ('+r.status+').', r.ok); caricaPartite();
+  }
+  if(dp){
+    if(!confirm('Eliminare l’intera partita e tutti i suoi risultati dalla classifica?')) return;
+    const r = await fetch('/admin/api/partite/'+dp.dataset.eliminaPartita, { method: 'DELETE', headers: H });
+    esitoCl(r.ok ? 'Partita eliminata.' : 'Non riuscito ('+r.status+').', r.ok); caricaPartite();
+  }
+});
+// QR della classifica (libreria pubblicata con l'app)
+let svgQr = '';
+import(APP_SITO+'vendor/qrcode.mjs').then(({ default: qrcode }) => {
+  const q = qrcode(0, 'M'); q.addData('https://artenaut.github.io/esplorazione/classifica.html'); q.make();
+  svgQr = q.createSvgTag({ cellSize: 8, margin: 4, scalable: true, alt: 'QR code della classifica' });
+  $('#qr-cl').innerHTML = svgQr;
+}).catch(() => { $('#qr-cl').textContent = 'QR non disponibile'; });
+$('#scarica-qr').onclick = () => {
+  if(!svgQr) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([svgQr], { type: 'image/svg+xml' })); a.download = 'qr-classifica.svg'; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
+
 async function caricaNickname(){
   const r = await fetch('/admin/api/esplorator', { headers: H });
   const el = $('#nickname');
@@ -247,7 +372,7 @@ document.addEventListener('click', async e => {
     caricaNickname();
   }
   if(cn){
-    if(!confirm('Cancellare «'+cn.dataset.nick+'»? Il nickname e la prova del consenso vengono eliminati.')) return;
+    if(!confirm('Cancellare «'+cn.dataset.nick+'»? Il nickname e la prova del consenso vengono eliminati. Sparisce dalla stagione in corso; nelle stagioni archiviate compare come «Esplorator* rimoss*».')) return;
     const r = await fetch('/admin/api/esplorator/'+cn.dataset.cancellaNick, { method: 'DELETE', headers: H });
     esitoNick(r.ok ? '«'+cn.dataset.nick+'» cancellato.' : 'Cancellazione non riuscita ('+r.status+').', r.ok);
     caricaNickname();
@@ -282,6 +407,7 @@ $('#sim-run').onclick = async () => {
 };
 carica();
 caricaNickname();
+caricaStagioni();
 </script></body></html>`;
   return new Response(html, {
     headers: {

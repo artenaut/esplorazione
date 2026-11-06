@@ -16,6 +16,7 @@ import { casuale, hash } from "./util.js";
 import { nuovaPartita } from "./crea.js";
 import { leggi } from "./esplorazioni.js";
 import { leggiNickname, creaNickname, nomeGuest } from "./esplorator.js";
+import { salvaPartita } from "./classifica.js";
 
 export const MIN_GIOCATORI = 2, MAX_GIOCATORI = 4, MAX_REGISTRO = 500;
 // Nuovi nickname creabili in una partita (contro chi ne crea in serie).
@@ -345,14 +346,24 @@ export class Partita extends DurableObject {
   }
 
   // Chiudi partita (salva: true) o Annulla partita (salva: false), poi «fine» o «stesso-gruppo».
-  // In entrambi i casi i dati della partita vengono eliminati dal server. Il riepilogo per la
-  // classifica viene calcolato e inviato con «Chiudi»; il salvataggio arriva con la fase 5.
+  // Con «Chiudi» i risultati dei nickname vanno in classifica, nella stagione in corso (fase 5);
+  // i guest non lasciano traccia. In entrambi i casi la partita viene poi eliminata dal server.
   async chiudi(ws, stato, io, { salva, poi }) {
     if (io.ruolo !== "master") return errore(ws, "ruolo", "Solo il master può chiudere o annullare la partita.");
     if (typeof salva !== "boolean" || !["fine", "stesso-gruppo"].includes(poi)) {
       return errore(ws, "messaggio-non-valido", "Indica se salvare la partita e come proseguire.");
     }
     const modo = salva ? "chiusa" : "annullata";
+    const riepilogo = salva ? riepilogoPartita(stato) : null;
+    if (salva) {
+      // prima si salva: se non riesce, la partita resta aperta e il master può riprovare
+      try {
+        await salvaPartita(this.env.DB, riepilogo, stato.esplorazione);
+      } catch (e) {
+        console.error("Salvataggio della partita non riuscito:", e?.stack ?? e);
+        return errore(ws, "salvataggio-fallito", "Non è stato possibile salvare i risultati. La partita resta aperta: riprova tra poco.");
+      }
+    }
 
     // posti con un dispositivo collegato in questo momento: restano seduti nella nuova partita
     const connessioni = this.ctx.getWebSockets().map((w) => ({ w, a: w.deserializeAttachment() ?? {} }));
@@ -368,7 +379,6 @@ export class Partita extends DurableObject {
       if (!nuova) return errore(ws, "errore-server", "Non è stato possibile creare la nuova partita. Riprova.");
     }
 
-    const riepilogo = salva ? riepilogoPartita(stato) : null;
     for (const { w, a } of connessioni) {
       let n = null;
       if (nuova) {

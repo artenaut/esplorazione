@@ -598,6 +598,10 @@ function renderHome(){
     <div class="row"><input id="codice" class="field code-field" placeholder="LWR-482" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Codice della partita">
       <button class="btn primary" type="submit">Entra</button></div>
   </form>
+  <section class="panel">
+    <div><h2>Classifica del club</h2><p class="hint">Chi gioca con un nickname del club entra nella classifica della stagione in corso.</p></div>
+    <div><a class="btn" href="classifica.html">Guarda la classifica</a></div>
+  </section>
   <footer class="foot"><a href="informativa.html" class="link" target="_blank" rel="noopener">Privacy</a> · <a href="${ADMIN}" class="link" rel="noopener">Area admin</a></footer>`;
   document.getElementById('nuova').onclick = ()=>{ UI.errore=''; UI.avviso=''; UI.schermata='crea'; render(); caricaEsplorazioni(); };
   document.getElementById('entra-form').onsubmit = e=>{ e.preventDefault(); entraConCodice(document.getElementById('codice').value); };

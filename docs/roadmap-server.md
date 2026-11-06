@@ -157,6 +157,8 @@ Entrambi chiedono prima una conferma. Poi chiedono come proseguire:
 - **Classifica pubblica:** una lettura in sola lettura dei totali per stagione, fuori da Cloudflare Access. I risultati possono stare in cache per qualche minuto, così le visite non pesano sul limite giornaliero di richieste.
 - **Stagioni:** ogni partita conclusa viene salvata con la stagione in corso. La chiusura della stagione è un'operazione admin.
 
+✅ **Fatto il 6/11/2026 (fase 5):** tabelle D1 `stagioni`, `partite`, `risultati`; salvataggio alla chiusura dal Durable Object; `GET /api/classifica` pubblico; stagioni, correzioni e QR nell'area admin.
+
 ## 5. Statistiche per l'autore [idea]
 
 - Quante volte viene scelta ogni via, quali stanze vengono mostrate o scelte di più, a che livello si arriva in media.

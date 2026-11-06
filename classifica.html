@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Classifica · Registro dell’esplorazione</title>
+<meta name="theme-color" content="#15181d">
+<style>
+@font-face{font-family:"IM Fell English SC";src:url("fonts/im-fell-english-sc-400.woff") format("woff");font-display:swap}
+@font-face{font-family:"Alegreya Sans";src:url("fonts/alegreya-sans-400.woff") format("woff");font-weight:400;font-display:swap}
+@font-face{font-family:"Alegreya Sans";src:url("fonts/alegreya-sans-500.woff") format("woff");font-weight:500;font-display:swap}
+@font-face{font-family:"Alegreya Sans";src:url("fonts/alegreya-sans-700.woff") format("woff");font-weight:700;font-display:swap}
+:root{--stone:#15181d;--slab:#1f242b;--slab2:#282e37;--line:#39404b;--parch:#ece3cf;--muted:#a69d8b;--torch:#dba24c;--ink:#1a1408;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--stone);color:var(--parch);font:16px/1.5 "Alegreya Sans","Segoe UI",system-ui,sans-serif;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));
+  min-height:100vh;background-image:radial-gradient(ellipse 80% 40% at 50% -10%, rgba(219,162,76,.10), transparent 70%);background-repeat:no-repeat}
+.hint strong{color:var(--parch);font-weight:500}
+.wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2{font-family:"IM Fell English SC",Georgia,serif;font-weight:400;margin:0}
+h1{font-size:1.9rem;line-height:1.1}
+h2{font-size:1.25rem}
+header{padding-top:22px;display:flex;flex-direction:column;gap:4px}
+.eyebrow{font-size:.74rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
+.hint{color:var(--muted);margin:0;font-size:.92rem}
+.panel{background:var(--slab);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.scelte{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted);flex:1 1 180px;min-width:0}
+select{font:inherit;color:var(--parch);background:var(--stone);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%}
+.btn{font:inherit;color:inherit;cursor:pointer;border:1px solid var(--line);background:var(--slab2);border-radius:8px;padding:8px 14px;font-weight:500}
+.btn:hover{border-color:var(--muted)}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th{font-weight:500;color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;padding:0;border-bottom:1px solid var(--line);white-space:nowrap;text-align:right}
+th button{all:unset;cursor:pointer;display:block;padding:8px;width:100%;box-sizing:border-box}
+th button:focus-visible{outline:2px solid var(--torch);outline-offset:-2px}
+th.sx{text-align:left}
+th[aria-sort] button{color:var(--torch)}
+td{padding:9px 8px;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent);text-align:right;white-space:nowrap}
+td.nick{text-align:left;font-weight:700;white-space:normal;overflow-wrap:anywhere;min-width:7em}
+td.pos{text-align:left;font-family:"IM Fell English SC",Georgia,serif;font-size:1.15rem;color:var(--torch);width:2.5em}
+tr.podio td.pos{font-size:1.4rem}
+td.rimoss{color:var(--muted);font-weight:400;font-style:italic}
+.via{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--pc);margin-right:5px;vertical-align:1px}
+td.peculiare,th.peculiare{color:var(--muted)}
+.vuota{padding:18px 0}
+.foot{display:flex;justify-content:center;gap:14px;padding-top:6px;font-size:.9rem}
+a{color:var(--muted)}
+.ordine{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+@media (max-width:520px){h1{font-size:1.55rem} td,th button{padding:7px 6px} .panel{padding:12px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><span class="eyebrow">Artenaut* Magic Exploration Companion</span><h1>Classifica del club</h1></header>
+  <section class="panel">
+    <div class="scelte">
+      <label>Stagione<select id="stagione"></select></label>
+      <label>Classifica<select id="vista"></select></label>
+    </div>
+    <p class="hint" id="info"></p>
+  </section>
+  <section class="panel" id="tabella"><p class="hint">Caricamento…</p></section>
+  <footer class="foot"><a href="./">Torna all’app</a><a href="informativa.html">Privacy</a></footer>
+</div>
+<script>
+// Classifica pubblica (fase 5), in sola lettura. Regole: docs/roadmap-classifica.md §3–8.
+const SERVER = (() => {
+  const p = new URLSearchParams(location.search).get('server');
+  return p && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(p) ? p : 'https://esplorazione.artenaut.workers.dev';
+})();
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const data = s => new Date(s).toLocaleDateString('it-IT', { day:'numeric', month:'long', year:'numeric' });
+let C = null, vista = 'generale', ordine = null; // ordine: { chiave, verso } — null = classifica ufficiale
+
+async function carica(stagione){
+  document.getElementById('tabella').innerHTML = '<p class="hint">Caricamento…</p>';
+  try{
+    const r = await fetch(`${SERVER}/api/classifica${stagione ? `?stagione=${stagione}` : ''}`);
+    if(!r.ok) throw new Error(r.status);
+    C = await r.json();
+  }catch(e){ document.getElementById('tabella').innerHTML = '<p class="hint">Non riesco a scaricare la classifica. Riprova tra poco.</p>'; return; }
+  if(vista !== 'generale' && !C.pianeti.some(p => p.id === vista)) vista = 'generale';
+  ordine = null;
+  disegnaScelte(); disegna();
+}
+
+function disegnaScelte(){
+  document.getElementById('stagione').innerHTML = C.stagioni.map(s =>
+    `<option value="${s.id}" ${s.id===C.stagione.id?'selected':''}>${esc(s.nome)}${s.chiusa ? '' : ' (in corso)'}</option>`).join('');
+  document.getElementById('vista').innerHTML = `<option value="generale">Generale</option>` +
+    C.pianeti.map(p => `<option value="${esc(p.id)}" ${p.id===vista?'selected':''}>${esc(p.nome)}</option>`).join('');
+  const s = C.stagione;
+  document.getElementById('info').textContent = s.chiusa ? `Stagione conclusa: dal ${data(s.aperta)} al ${data(s.chiusa)}.` : `Stagione in corso dal ${data(s.aperta)}. Contano solo le partite chiuse con «Chiudi partita».`;
+}
+
+function colonne(){
+  if(vista === 'generale') return [
+    { k:'pianeti', t:'Pianeti' }, { k:'esplorazioni', t:'Esplorazioni' }, { k:'stanze', t:'Stanze' }];
+  const p = C.pianeti.find(x => x.id === vista);
+  return [{ k:'esplorazioni', t:'Esplorazioni' }, { k:'stanze', t:'Stanze' },
+    ...p.vie.map(v => ({ k:'via:'+v.id, t:v.breve, colore:v.colore, peculiare:true }))];
+}
+const valore = (r, k) => k.startsWith('via:') ? (r.perVia?.[k.slice(4)] ?? 0) : k === 'nickname' ? r.nickname : r[k];
+
+function disegna(){
+  const righe = (vista === 'generale' ? C.generale : C.pianeti.find(p => p.id === vista).righe).slice();
+  const cols = colonne();
+  const el = document.getElementById('tabella');
+  if(!righe.length){
+    el.innerHTML = `<p class="hint vuota">${C.stagione.chiusa ? 'In questa stagione non ci sono state partite concluse.' : 'Ancora nessuna partita conclusa in questa stagione: la prima chiusa con «Chiudi partita» comparirà qui.'}</p>`;
+    return;
+  }
+  if(ordine){
+    righe.sort((a, b) => {
+      const x = valore(a, ordine.chiave), y = valore(b, ordine.chiave);
+      const d = typeof x === 'string' ? x.localeCompare(y, 'it', { sensitivity:'base' }) : x - y;
+      return (ordine.verso === 'asc' ? d : -d) || a.posizione - b.posizione;
+    });
+  }
+  const th = (k, t, cls = '', colore) => {
+    const attivo = ordine?.chiave === k;
+    return `<th class="${cls}" ${attivo ? `aria-sort="${ordine.verso === 'asc' ? 'ascending' : 'descending'}"` : ''}><button data-ordina="${esc(k)}" title="Ordina per ${esc(t)}">${colore ? `<span class="via" style="--pc:${esc(colore)}"></span>` : ''}${esc(t)}${attivo ? (ordine.verso === 'asc' ? ' ▲' : ' ▼') : ''}</button></th>`;
+  };
+  el.innerHTML = `
+    ${ordine ? `<div class="ordine"><span class="hint">Ordinata per colonna: la posizione resta quella ufficiale.</span><button class="btn" id="ufficiale">Torna alla classifica</button></div>` : ''}
+    <div class="tablewrap"><table>
+      <thead><tr><th class="sx"><button data-ordina="posizione">Pos.</button></th>${th('nickname', 'Esplorator*', 'sx')}${cols.map(c => th(c.k, c.t, c.peculiare ? 'peculiare' : '', c.colore)).join('')}</tr></thead>
+      <tbody>${righe.map(r => `<tr class="${r.posizione <= 3 ? 'podio' : ''}"><td class="pos">${r.posizione}</td><td class="nick ${r.rimoss ? 'rimoss' : ''}">${esc(r.nickname)}</td>${cols.map(c => `<td class="${c.peculiare ? 'peculiare' : ''}">${valore(r, c.k)}</td>`).join('')}</tr>`).join('')}</tbody>
+    </table></div>
+    <p class="hint">${vista === 'generale' ? '<strong>Pianeti</strong>: pianeti completati · ' : ''}<strong>Esplorazioni</strong>: esplorazioni portate a termine · <strong>Stanze</strong>: stanze aperte.${vista !== 'generale' ? ' Le colonne delle vie sono statistiche del pianeta: non cambiano la classifica.' : ''} Tocca un’intestazione per riordinare.</p>`;
+  el.querySelectorAll('[data-ordina]').forEach(b => b.onclick = () => {
+    const k = b.dataset.ordina;
+    if(k === 'posizione'){ ordine = null; }
+    else ordine = ordine?.chiave === k ? { chiave:k, verso: ordine.verso === 'desc' ? 'asc' : 'desc' } : { chiave:k, verso: k === 'nickname' ? 'asc' : 'desc' };
+    disegna();
+  });
+  const u = document.getElementById('ufficiale'); if(u) u.onclick = () => { ordine = null; disegna(); };
+}
+
+document.getElementById('stagione').onchange = e => carica(+e.target.value);
+document.getElementById('vista').onchange = e => { vista = e.target.value; ordine = null; disegna(); };
+carica();
+</script>
+</body>
+</html>

@@ -6,6 +6,7 @@ export { Partita } from "./partita.js";
 export { Limitatore } from "./limitatore.js";
 import { MIN_GIOCATORI, MAX_GIOCATORI } from "./partita.js";
 import { elencoPubblicoNickname } from "./esplorator.js";
+import { classifica } from "./classifica.js";
 import { nuovaPartita } from "./crea.js";
 import { hash } from "./util.js";
 import { VERSIONE, LIMITI, FINESTRA_LIMITI } from "./costanti.js";
@@ -54,6 +55,15 @@ export default {
       if (url.pathname === "/api/esplorator" && request.method === "GET") {
         const elenco = await elencoPubblicoNickname(env.DB);
         return json(elenco, 200, { ...(cors ?? {}), "Cache-Control": "no-store" });
+      }
+
+      // Classifica pubblica (sola lettura): ?stagione=ID, di default la stagione in corso.
+      if (url.pathname === "/api/classifica" && request.method === "GET") {
+        const q = url.searchParams.get("stagione");
+        const id = q && /^\d{1,9}$/.test(q) ? Number(q) : null;
+        const c = await classifica(env.DB, id);
+        if (!c) return json({ errore: "Stagione non trovata." }, 404, cors);
+        return json(c, 200, { ...(cors ?? {}), "Cache-Control": "public, max-age=60" });
       }
 
       // Creazione di una partita: { esplorazione, posti } → { codice, codiceMaster, link }

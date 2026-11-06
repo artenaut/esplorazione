@@ -103,12 +103,12 @@ Il blocco più grosso. Si sviluppa e si prova a pezzi.
 
 | # | Attività | Riferimento |
 |---|---|---|
-| 5.1 | **Salvataggio alla chiusura:** cicli, stanze aperte e stanze per via, per esplorator\* e pianeta, nella stagione in corso. I guest sono esclusi. | `roadmap-server.md` §4 |
-| 5.2 | **Calcolo:** classifica generale e dei pianeti, spareggi in cascata, pari merito con salto delle posizioni. | `roadmap-classifica.md` §3–4 |
-| 5.3 | **Stagioni:** chiusura manuale dall'admin, archivio. | `roadmap-classifica.md` §6 |
-| 5.4 | **Pagina pubblica** in sola lettura, con cache, riordino per colonna e statistiche peculiari dei pianeti. | `roadmap-classifica.md` §5, §8 |
-| 5.5 | **Area admin:** modificare o eliminare singoli dati, «Esplorator\* rimoss\*» negli archivi. | `roadmap-classifica.md` §9 |
-| 5.6 | QR code della classifica al club. | — |
+| 5.1 | ✅ **Salvataggio alla chiusura** (6/11/2026): con «Chiudi partita» la partita va nella stagione in corso, con un risultato per nickname (cicli, stanze, stanze per via). Guest e posti mai scelti esclusi. Se il salvataggio non riesce, la partita resta aperta e il master riprova. | `roadmap-server.md` §4 |
+| 5.2 | ✅ **Calcolo** (6/11/2026): generale e pianeti, spareggi in cascata, pari merito «1-2-2-4», ordine alfabetico tra pari; colonne dei pianeti dalle loro vie. | `roadmap-classifica.md` §3–4 |
+| 5.3 | ✅ **Stagioni** (6/11/2026): «Stagione 1» si apre da sola; l'admin rinomina e chiude (se ne apre subito una nuova); archivio consultabile da tutti (decisione del 6/11/2026). | `roadmap-classifica.md` §6 |
+| 5.4 | ✅ **Pagina pubblica** `classifica.html` (6/11/2026): stagione, generale o pianeta, riordino per colonna con posizione ufficiale fissa e «Torna alla classifica», statistiche delle vie. Cache di 60 secondi. | `roadmap-classifica.md` §5, §8 |
+| 5.5 | ✅ **Area admin** (6/11/2026): partite salvate per stagione, correzione ed eliminazione dei singoli risultati e delle partite. Nickname cancellato: sparisce dalla stagione in corso, nelle stagioni archiviate diventa «Esplorator\* rimoss\*». | `roadmap-classifica.md` §9 |
+| 5.6 | ✅ **QR code della classifica** (6/11/2026) nell'area admin, scaricabile in SVG per la stampa. Da appendere al club (Francesco). | — |
 
 **Risultato:** il progetto è completo nella versione attuale.
 
@@ -128,6 +128,5 @@ Da chiudere entro la fase indicata.
 
 | Decisione | Entro | Riferimento |
 |---|---|---|
-| Archivio delle stagioni consultabile e stagioni con un nome | Fase 5 | `roadmap-classifica.md` §6 |
 | Adeguare al linguaggio inclusivo i testi delle stanze che usano termini di Magic | Quando si scrivono nuovi pianeti | `roadmap-app.md` §0 |
 | App installabile (PWA) | Fase 6 | `roadmap-app.md` §5 |

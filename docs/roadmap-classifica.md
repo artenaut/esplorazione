@@ -63,8 +63,8 @@ Una classifica per ogni pianeta, cioè per ogni esplorazione (es. Lowrenzia).
 - Le classifiche sono **divise in stagioni.** Ogni partita conclusa conta nella stagione in corso.
 - **La stagione si chiude a mano, dall'admin,** quando vuole. Non c'è una durata fissa. Alla chiusura se ne apre subito una nuova, che parte da zero per tutti.
 - Ogni stagione ha classifica generale e classifiche dei pianeti, calcolate con le regole dei punti 3 e 4.
-- [da confermare] Le **stagioni concluse restano consultabili** come archivio: si sceglie la stagione da un elenco, e di default si vede quella in corso.
-- [da confermare] Una stagione ha un nome assegnato dall'admin (es. «Stagione 1», «Inverno 2026»).
+- [deciso il 6/11/2026] Le **stagioni concluse restano consultabili** da tutti come archivio: si sceglie la stagione da un elenco, e di default si vede quella in corso.
+- [deciso il 6/11/2026] Una stagione ha un nome assegnato dall'admin: proposto come «Stagione 1», «Stagione 2»… e modificabile (es. «Inverno 2026»).
 
 ## 7. Chi entra in classifica [deciso il 6/11/2026]
 
@@ -119,7 +119,7 @@ Poche righe, in linguaggio semplice, comprensibile anche ai ragazzi:
 
 ### Diritti e moderazione
 - L'admin può **rinominare** un nickname (per esempio un nome vero inserito per sbaglio, o un termine offensivo) e **cancellare** un giocatore su richiesta.
-- In caso di cancellazione, nelle **stagioni archiviate** il nickname diventa **«Esplorator\* rimoss\*»**: le posizioni degli altri non cambiano.
+- In caso di cancellazione, nelle **stagioni archiviate** il nickname diventa **«Esplorator\* rimoss\*»**: le posizioni degli altri non cambiano. Dalla **stagione in corso** i suoi risultati vengono tolti (fatto così dal 6/11/2026, coerente con la revoca del consenso nell'informativa).
 
 ### Altro
 - **Niente banner cookie:** l'app salva nel browser solo dati tecnici strettamente necessari (partita e posto del giocatore). Va mantenuto così, quindi niente strumenti di analisi delle visite.

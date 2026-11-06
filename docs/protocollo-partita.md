@@ -137,7 +137,7 @@ La conferma («Sei sicur\* di…?») la chiede l'app prima di mandare il messagg
 ```
 
 - `modo`: `"chiusa"`, `"annullata"` oppure `"scaduta"`.
-- `riepilogo` c'è solo con «Chiudi partita». In questa fase **non viene salvato da nessuna parte**: è la struttura dei dati che la fase 5 salverà in classifica. Ogni posto ha `tipo` (`"nickname"`, `"guest"` o `null` se mai scelto) e `nickname` (l'id, solo per i nickname): in classifica entreranno solo i nickname.
+- `riepilogo` c'è solo con «Chiudi partita». Prima di chiudere, il server **salva in classifica** (stagione in corso) i posti con un nickname; guest e posti mai scelti non lasciano traccia. Se il salvataggio non riesce, il master riceve `salvataggio-fallito` e la partita resta aperta. Ogni posto ha `tipo` (`"nickname"`, `"guest"` o `null` se mai scelto) e `nickname` (l'id, solo per i nickname): in classifica entreranno solo i nickname.
 - Con lo stesso gruppo i posti mantengono la loro identità (nickname o nome del guest).
 - `nuova` c'è solo con `"stesso-gruppo"`. Tutti ricevono `codice` e `link`. Il master riceve anche il nuovo `codiceMaster`, e ogni telefono seduto il nuovo `gettone` per lo stesso posto: si rientra con `entra` senza riscegliere il posto. Chi non era collegat\* in quel momento trova il proprio posto libero.
 - Subito dopo il server chiude le connessioni (codice 4000) ed **elimina tutti i dati** della partita. Il codice corto torna libero.
@@ -176,6 +176,10 @@ Dopo ogni modifica il server manda a tutti i dispositivi lo stesso messaggio `{ 
 - **Lunghezza nascosta:** c'è solo il nome del livello della prossima mossa (`livello`, vuoto se il pianeta non lo assegna), mai l'elenco dei livelli.
 - `versione` (della partita) cresce a ogni modifica; `posti[i].versione` cresce a ogni mossa o annullamento di quel posto ed è quella da mandare con la mossa.
 
+## 6bis. Classifica pubblica
+
+`GET /api/classifica[?stagione=ID]` → `{ stagione, stagioni, generale, pianeti }`, in sola lettura, solo totali per nickname (cache 60 secondi). Regole di calcolo: `roadmap-classifica.md` §3–4.
+
 ## 7. Errori
 
 `{ "tipo": "errore", "codice": "…", "messaggio": "…" }`. Il `messaggio` è già in italiano inclusivo e si può mostrare così com'è.
@@ -191,6 +195,7 @@ Dopo ogni modifica il server manda a tutti i dispositivi lo stesso messaggio `{ 
 | `nome-non-valido`, `troppi`, `troppo-pochi` | Aggiunta o rimozione di esplorator\* non valida. |
 | `identita-mancante`, `identita-bloccata` | Posto ancora da scegliere / identità non più modificabile dopo la prima mossa. |
 | `nickname-in-uso`, `nickname-inesistente`, `nickname-non-valido`, `consenso-mancante`, `troppi-nickname` | Problemi nella scelta o creazione del nickname: il messaggio dice cosa fare. |
+| `salvataggio-fallito` | «Chiudi partita» non è riuscita a salvare i risultati: la partita resta aperta, riprovare. |
 | `versione-superata` | Qualcun altro ha già mosso quel personaggio: il messaggio porta lo `stato` aggiornato. |
 | `stanza-non-proposta` | La stanza non è tra le proposte (porta lo `stato`). |
 | `niente-da-annullare` | Non c'è una mossa annullabile. |
