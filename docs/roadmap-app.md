@@ -12,7 +12,7 @@ Legenda: **[deciso]** concordato, da sviluppare · **[da decidere]** idea discus
 - [ ] **Inserire le regole del gioco di Lowrenzia** nel pulsante «Regole». Sono le regole del gioco vero e proprio, non le istruzioni dell'app. Oggi il campo `rules` contiene solo «Placeholder - ricordati di inserire istruzioni». Serve il testo da Francesco, oppure un link a un regolamento completo (`rulesUrl`).
 
 - [ ] **Caratteri ospitati nel sito, senza Google Fonts** (deciso il 6/11/2026). Scaricare i file dei due caratteri (IM Fell English SC e Alegreya Sans, in formato `woff2`) e metterli nel repository, caricandoli con `@font-face` al posto del link a Google. Così nessun IP dei visitatori viene inviato a Google, e l'informativa non deve citarlo. Va fatto prima di pubblicare la classifica. I file stanno su GitHub Pages insieme all'app: non servono al server Cloudflare.
-- [ ] **Informativa privacy:** il testo è pronto in `informativa-privacy.md` (completato il 6/11/2026). Va collegato all'inserimento del nickname. Indirizzo e codice fiscale di Artenaut* si aggiungeranno in seguito.
+- [ ] **Informativa privacy:** il testo è pronto in `informativa-privacy.md` (completato il 6/11/2026). Va collegato all'inserimento del nickname.
 
 ## 1. Estrazione «meno mostrate» [deciso] · priorità alta
 
