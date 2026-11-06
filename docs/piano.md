@@ -48,15 +48,15 @@ Tutto quello che migliora il gioco senza server. È la versione stabile da usare
 
 ---
 
-## Fase 2 · Preparazione del server
+## Fase 2 · Preparazione del server ✅ completata il 6/11/2026
 
 Decisioni e account, poco codice.
 
 | # | Attività | Riferimento |
 |---|---|---|
 | 2.1 | ✅ **Cloudflare confermato** (6/11/2026). Limiti del piano gratuito ricontrollati: 100.000 richieste, 13.000 GB-s, 100.000 scritture al giorno, 5 GB di database. | `roadmap-server.md` §1 |
-| 2.2 | Creare l'**account Cloudflare del club** (artenautspaceship@gmail.com). | `roadmap-server.md` §1 |
-| 2.3 | Attivare **Cloudflare Zero Trust** (piano Free) ora; l'applicazione Access sul percorso `/admin` si crea in fase 3, appena il server ha un indirizzo. Sola email di Francesco. | `roadmap-server.md` §3 |
+| 2.2 | ✅ **Account Cloudflare del club** creato (6/11/2026). Sottodominio: `artenaut.workers.dev`; il server sarà `esplorazione.artenaut.workers.dev`. | — |
+| 2.3 | ✅ **Cloudflare Zero Trust** attivato, piano Free, team `artenaut` (6/11/2026). L'applicazione Access sul percorso `/admin` si crea in fase 3. | — |
 | 2.4 | ✅ Decisioni chiuse il 6/11/2026: Cloudflare; **solo sessioni** (niente modalità offline); **il nickname lo crea l'esplorator\*** alla prima partita; **niente classifica locale**. | — |
 
 ---

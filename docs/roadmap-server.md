@@ -10,7 +10,8 @@ Legenda: **[deciso]** concordato · **[orientamento]** preferenza emersa, da con
 ## 1. Scelta del servizio ✅ Cloudflare, confermato il 6/11/2026
 
 - **Solo sessioni:** quando arriva il server, la modalità attuale su un solo dispositivo viene sostituita. Chi gioca da un solo telefono crea una sessione e il master muove per tutti.
-- **Indirizzo:** l'indirizzo gratuito `….workers.dev` del club (niente dominio).
+- **Indirizzo:** `esplorazione.artenaut.workers.dev` (sottodominio del club `artenaut.workers.dev`, niente dominio).
+- **Zero Trust:** team `artenaut`, piano Free. Pannello di accesso: `artenaut.cloudflareaccess.com`.
 - **Area admin:** servita dal Worker stesso sul percorso `/admin`, protetta da un'applicazione Access *self-hosted* limitata a quel percorso. Il resto (partite, WebSocket, classifica pubblica) resta fuori da Access. Nota: la protezione «di tutto il Worker» con un clic non va usata, perché bloccherebbe anche i WebSocket delle partite.
 - **Pubblicazione del codice:** Cloudflare Workers Builds collegato al repository GitHub `artenaut/esplorazione`, così ogni modifica pubblicata su GitHub aggiorna il server da sola.
 - **Limiti del piano gratuito ricontrollati il 6/11/2026:** 100.000 richieste, 13.000 GB-s, 5 milioni di letture e 100.000 scritture al giorno, 5 GB di database SQLite.
