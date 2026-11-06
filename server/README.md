@@ -13,6 +13,13 @@ npm test        # prove automatiche (Vitest dentro il runtime dei Worker)
 npm run dev     # server locale su http://localhost:8787
 ```
 
+## Prove dell'app con un server locale
+
+1. Crea il file `seme.sql` con la tabella `esplorazioni` e una riga per Lowrenzia (lo schema è in `src/esplorazioni.js`; il JSON del pianeta lo scarichi dall'area admin con «Scarica JSON»). Il file non va nel repository.
+2. `npx wrangler d1 execute esplorazione --local --persist-to /tmp/stato --file seme.sql`
+3. `npx wrangler dev --port 8787 --persist-to /tmp/stato`
+4. Dalla cartella principale: `python3 test/prova-app.py --server http://127.0.0.1:8787`
+
 ## Pubblicazione
 
 Non si pubblica a mano: **Cloudflare Workers Builds** è collegato al repository, con cartella radice `server/`.

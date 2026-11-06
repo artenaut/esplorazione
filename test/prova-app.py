@@ -1,28 +1,28 @@
-"""Prove automatiche dell'app (index.html + motore.js) con Playwright.
+"""Prove automatiche dell'app a sessioni (index.html) con Playwright e più «telefoni».
 
-Uso:  python3 test/prova-app.py [cartella]   (predefinita: la cartella del repository)
+Serve un server locale con almeno l'esplorazione «lowrenzia» (vedi server/README.md, «Prove dell'app»):
+    cd server && npx wrangler dev --port 8787 --persist-to <cartella>
+Poi:
+    python3 test/prova-app.py [--server http://127.0.0.1:8787]
 
-Serve la cartella con un piccolo server locale e controlla: partita completa,
-testi delle stanze visibili solo all'ingresso, passo senza totale, annulla,
-ricomincia, estrazione «meno mostrate», controlli del formato, simulatore e
-vista telefono. Esce con codice 1 se una prova fallisce.
+L'app viene servita da un piccolo server statico e collegata al server locale con ?server=.
+Esce con codice 1 se una prova fallisce.
 """
-import functools, http.server, json, os, re, sys, tempfile, threading
-from playwright.sync_api import sync_playwright
+import argparse, functools, http.server, os, re, sys, threading
+from playwright.sync_api import sync_playwright, expect
 
-RADICE = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), ".."))
+RADICE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 esiti = []
 
 
 def prova(nome):
     def deco(f):
-        def avvolta(*a):
-            try:
-                f(*a)
-                esiti.append((True, nome, ""))
-            except Exception as e:  # noqa: BLE001
-                esiti.append((False, nome, f"{type(e).__name__}: {e}"))
-        return avvolta
+        try:
+            f()
+            esiti.append((True, nome, ""))
+        except Exception as e:  # noqa: BLE001
+            esiti.append((False, nome, f"{type(e).__name__}: {str(e)[:400]}"))
+        return f
     return deco
 
 
@@ -31,183 +31,207 @@ class Silenzioso(http.server.SimpleHTTPRequestHandler):
         pass
 
 
-def avvia_server():
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--server", default="http://127.0.0.1:8787")
+    args = ap.parse_args()
+
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Silenzioso, directory=RADICE))
     threading.Thread(target=srv.serve_forever, daemon=True).start()
-    return srv, f"http://127.0.0.1:{srv.server_address[1]}/"
+    APP = f"http://127.0.0.1:{srv.server_address[1]}/"
+    Q = f"?server={args.server}"
 
-
-def nuova_pagina(browser, url, errori, **opts):
-    ctx = browser.new_context(**opts)
-    pg = ctx.new_page()
-    pg.on("pageerror", lambda e: errori.append(str(e)))
-    pg.on("console", lambda m: m.type == "error" and errori.append(m.text))
-    pg.goto(url)
-    pg.wait_for_selector("#start")
-    return ctx, pg
-
-
-def inizia(pg, nomi):
-    while pg.locator(".name-row").count() < len(nomi):
-        pg.click("#add")
-    for i, n in enumerate(nomi):
-        pg.fill(f"#name-{i}", n)
-    pg.click("#start")
-    pg.wait_for_selector(".cards")
-
-
-def entra_prima(pg):
-    pg.locator("[data-pick]").first.click()
-    pg.click("#enter")
-
-
-def stato(pg):
-    return pg.evaluate("JSON.parse(localStorage.getItem('dungeon.state'))")
-
-
-def main():
-    srv, url = avvia_server()
     with sync_playwright() as p:
         browser = p.chromium.launch()
+        errori = []
 
-        @prova("Caricamento senza errori e motore.js come modulo")
+        def telefono(mobile=True):
+            opts = dict(viewport={"width": 390, "height": 844}, device_scale_factor=2, is_mobile=True, has_touch=True) if mobile else dict(viewport={"width": 1100, "height": 900})
+            ctx = browser.new_context(**opts)
+            pg = ctx.new_page()
+            pg.on("pageerror", lambda e: errori.append(str(e)))
+            pg.on("console", lambda m: m.type == "error" and "WebSocket" not in m.text and "status of 404" not in m.text and errori.append(m.text))
+            return ctx, pg
+
+        def nessuno_scorrimento(pg):
+            w = pg.evaluate("[document.documentElement.scrollWidth, window.innerWidth]")
+            assert w[0] <= w[1], f"scorrimento orizzontale {w}"
+
+        stato = {}
+
+        @prova("Schermata iniziale e codice sbagliato")
         def _():
-            err = []
-            ctx, pg = nuova_pagina(browser, url, err)
-            chiavi = pg.evaluate("import('./motore.js').then(m=>Object.keys(m).sort())")
-            assert chiavi == sorted(["compile", "drawOffer", "nextOfNode", "pickRooms", "sample", "shuffle", "simulate", "validateModule"]), chiavi
-            assert "Lowrenzia" in pg.inner_text(".mods")
-            assert not err, err
+            ctx, pg = telefono()
+            pg.goto(APP + Q)
+            expect(pg.get_by_role("button", name="Crea una partita")).to_be_visible()
+            pg.fill("#codice", "ABC-123")
+            pg.click("#entra-form button[type=submit]")
+            expect(pg.locator(".banner.err")).to_contain_text("Non c’è nessuna partita")
+            pg.fill("#codice", "12")
+            pg.click("#entra-form button[type=submit]")
+            expect(pg.locator(".banner.err")).to_contain_text("tre lettere e tre numeri")
+            nessuno_scorrimento(pg)
             ctx.close()
-        _()
 
-        @prova("Partita: testo solo all'ingresso, passo senza totale, giri completati")
+        @prova("Il master crea la partita: codice, QR e codice master")
         def _():
-            err = []
-            ctx, pg = nuova_pagina(browser, url, err)
-            inizia(pg, ["Alba", "Bruno"])
-            # nelle proposte nessun testo
+            ctx, pg = telefono(mobile=False)
+            stato["master"] = (ctx, pg)
+            pg.goto(APP + Q)
+            pg.click("text=Crea una partita")
+            expect(pg.locator("input[name=mod]")).to_have_count(1)
+            pg.click("#add")
+            for i, n in enumerate(["Alba", "Bruno", "Cleo"]):
+                pg.fill(f"#name-{i}", n)
+            pg.click("#crea")
+            expect(pg.locator(".codice-grande")).to_have_text(re.compile(r"^LWR-\d{3}$"))
+            codice = pg.locator(".codice-grande").inner_text()
+            stato["codice"] = codice
+            assert pg.locator(".qr svg").count() == 1
+            pg.click("details.master-code summary")
+            assert len(pg.locator("#cm").inner_text()) >= 24
+            expect(pg.locator(".tab")).to_have_count(3)
+            # il master vede le carte di Alba, attive, con «Stai muovendo per»
+            expect(pg.locator(".per-chi")).to_contain_text("Stai muovendo per Alba")
+
+        @prova("Un telefono entra dal link del QR, sceglie il posto e lo ritrova dopo il ricaricamento")
+        def _():
+            ctx, pg = telefono()
+            stato["alba"] = (ctx, pg)
+            pg.goto(APP + Q + f"&partita={stato['codice']}")
+            expect(pg.locator(".seat")).to_have_count(3)
+            nessuno_scorrimento(pg)
+            pg.locator(".seat", has_text="Alba").click()
+            expect(pg.locator(".tab[aria-selected=true]")).to_contain_text("Alba (tu)")
+            assert "partita=" not in pg.url
+            pg.reload()
+            expect(pg.locator(".tab[aria-selected=true]")).to_contain_text("Alba (tu)")
+            # dal master il posto risulta occupato
+            m = stato["master"][1]
+            m.click("#gestisci")
+            expect(m.locator(".seat-row", has_text="Alba")).to_contain_text("Telefono collegato")
+
+        @prova("Mossa: il testo si vede solo all'ingresso, su tutti i telefoni che guardano quella scheda")
+        def _():
+            pg = stato["alba"][1]
+            m = stato["master"][1]
             assert pg.locator(".card .content").count() == 0
-            entra_prima(pg)
-            assert pg.locator(".room.reveal .content").count() == 1, "il testo non compare all'ingresso"
-            # cambiando scheda e tornando il testo non si vede più
-            pg.click("[data-tab='1']"); pg.click("[data-tab='0']")
-            assert pg.locator(".room.reveal").count() == 0, "il testo resta visibile dopo aver cambiato scheda"
-            # 60 mosse alternate: nessun «di N» nel passo, giri che si chiudono
-            for k in range(60):
-                pg.click(f"[data-tab='{k % 2}']")
-                entra_prima(pg)
-                testo = pg.inner_text("body")
-                assert not re.search(r"Passo \d+\s*(di|/|su)\s*\d+", testo), "compare la lunghezza totale"
-            s = stato(pg)
-            assert all(q["run"] >= 2 for q in s["players"]), [q["run"] for q in s["players"]]
-            assert len(s["log"]) == 61
-            # il testo non è mai nel registro
-            log = pg.inner_text(".log")
-            assert "Sorveglia" not in log and "Profetizza" not in log
-            assert not err, err
-            ctx.close()
-        _()
+            pg.locator("[data-pick]", has_text="Al Diavolo le mappe").click()
+            pg.click("#enter")
+            expect(pg.locator(".room.reveal .content")).to_contain_text("Goblin Fu-Furioso")
+            expect(m.locator(".room.reveal .content")).to_contain_text("Goblin Fu-Furioso")
+            expect(pg.locator(".tab[aria-selected=true]")).to_contain_text("Passo 1")
+            assert not re.search(r"Passo \d+\s*(di|/|su)\s*\d+", pg.inner_text("body"))
+            # cambiando scheda e tornando, il testo non c'è più
+            pg.locator("[data-tab='1']").click()
+            pg.locator("[data-tab='0']").click()
+            assert pg.locator(".room.reveal").count() == 0
+            assert "Goblin" not in pg.inner_text("body")
+            # nel registro solo il titolo
+            m.click("details.log summary")
+            expect(m.locator(".log")).to_contain_text("Al Diavolo le mappe")
+            assert "Goblin" not in m.locator(".log").inner_text()
 
-        @prova("Annulla ripristina posizione e contatori; Ricomincia azzera")
+        @prova("Chi gioca non muove per altri; il master sì e il registro lo segna")
         def _():
-            err = []
-            ctx, pg = nuova_pagina(browser, url, err)
-            inizia(pg, ["Alba", "Bruno", "Cleo"])
-            for _k in range(3):
-                entra_prima(pg)
-            prima = stato(pg)
-            entra_prima(pg)
-            pg.click("#undo"); pg.click("text=Annulla mossa")
-            dopo = stato(pg)
-            assert dopo["players"] == prima["players"], "giocatori diversi dopo Annulla"
-            assert dopo["shown"] == prima["shown"], "contatori non ripristinati"
-            pg.click("#reset"); pg.click("text=Stesso gruppo")
-            s = stato(pg)
-            assert s["shown"] == {} and s["log"] == [] and [q["name"] for q in s["players"]] == ["Alba", "Bruno", "Cleo"]
-            assert not err, err
-            ctx.close()
-        _()
+            pg = stato["alba"][1]
+            m = stato["master"][1]
+            pg.locator("[data-tab='1']").click()
+            assert pg.locator("[data-pick]").first.is_disabled()
+            expect(pg.locator(".panel", has_text="stanze tra cui scegliere")).to_contain_text("muove il master")
+            m.locator("[data-tab='1']").click()
+            expect(m.locator(".per-chi")).to_contain_text("Stai muovendo per Bruno")
+            m.locator("[data-pick]").first.click()
+            m.click("#enter")
+            expect(m.locator(".log li").first).to_contain_text("dal master")
 
-        @prova("Estrazione «meno mostrate»: le stanze ruotano in modo uniforme")
+        @prova("Annulla: spiegazione a chi non può, annullamento dal master")
         def _():
-            err = []
-            ctx, pg = nuova_pagina(browser, url, err)
-            esito = pg.evaluate("""async () => {
-              const M = await import('./motore.js');
-              // pianeta di prova: un livello con 6 stanze, 2 proposte a ogni passo
-              const st = (p,n) => Array.from({length:n},(_,i)=>({id:p+i,titolo:p+i,via:'a',testo:'x'}));
-              const src = { formato:2, id:'prova', nome:'Prova', estrazione:'meno-mostrate',
-                vie:[{id:'a',nome:'A',colore:'#112233'}],
-                ingresso:{nome:'I',stanze:st('I',1),successivo:'L'},
-                livelli:{ L:{stanze:st('L',6),proposte:{a:{a:2}},successivo:'finale'} },
-                finale:{stanze:st('F',1),proposte:{a:{a:1}}} };
-              const errore = M.validateModule(src);
-              const m = M.compile(src), shown = {};
-              for(let i=0;i<30;i++) M.drawOffer(m,'L','a',shown,{});
-              const v = Object.keys(m.nodes.L.rooms.reduce((o,r)=>(o[r.id]=1,o),{})).map(id=>shown[id]||0);
-              return { errore, v, next: M.nextOfNode(m,'L','a'), fin: M.nextOfNode(m,'finale','a') };
-            }""")
-            assert esito["errore"] is None, esito
-            assert max(esito["v"]) - min(esito["v"]) == 0, esito["v"]  # 60 estrazioni su 6 stanze: 10 ciascuna
-            assert esito["next"] == "finale" and esito["fin"] == "ingresso"
-            assert not err, err
-            ctx.close()
-        _()
+            pg = stato["alba"][1]
+            m = stato["master"][1]
+            pg.click("#undo")
+            expect(pg.locator("#modal")).to_contain_text("Non puoi annullare")
+            pg.click("#m-act button")
+            m.click("#undo")
+            m.click("#m-act >> text=Annulla mossa")
+            expect(m.locator(".tab").nth(1)).to_contain_text("All’ingresso")
 
-        @prova("Controlli del formato e area admin (carica, id riservato, simulatore)")
+        @prova("Tabellone in sola lettura")
         def _():
-            err = []
-            ctx, pg = nuova_pagina(browser, url, err)
-            pg.goto(url + "#admin"); pg.reload()
-            pg.fill("#pw", "dungeon"); pg.click("button[type=submit]")
-            pg.wait_for_selector("#sim-run")
-            base = {"formato": 2, "id": "pianeta-prova", "nome": "Pianeta di prova",
-                    "vie": [{"id": "a", "nome": "A", "colore": "#112233"}],
-                    "ingresso": {"nome": "I", "stanze": [{"id": "I1", "titolo": "I1", "via": "a", "testo": "t"}], "successivo": "L"},
-                    "livelli": {"L": {"stanze": [{"id": f"L{i}", "titolo": f"L{i}", "via": "a", "testo": "t"} for i in range(3)],
-                                      "proposte": {"a": {"a": 2}}, "successivo": "finale"}},
-                    "finale": {"stanze": [{"id": "F1", "titolo": "F1", "via": "a", "testo": "t"}], "proposte": {"a": {"a": 1}}}}
-            casi = [
-                ("non json {", "non è un JSON valido"),
-                (json.dumps({**base, "id": "lowrenzia"}), "già usato"),
-                (json.dumps({**base, "livelli": {"L": {**base["livelli"]["L"], "proposte": {"a": {"a": 5}}}}}), "ce ne sono solo 3"),
-                (json.dumps({**base, "livelli": {"L": {**base["livelli"]["L"], "successivo": "X"}}}), "che non esiste"),
-                (json.dumps(base), None),
-            ]
-            with tempfile.TemporaryDirectory() as d:
-                for i, (contenuto, atteso) in enumerate(casi):
-                    f = os.path.join(d, f"p{i}.json")
-                    open(f, "w").write(contenuto)
-                    pg.set_input_files("#file", f)
-                    if atteso:
-                        pg.wait_for_selector(".err")
-                        assert atteso in pg.inner_text(".err"), (atteso, pg.inner_text(".err"))
-                    else:
-                        pg.wait_for_selector(".okmsg")
-            assert "Pianeta di prova" in pg.inner_text(".mods")
-            pg.select_option("#sim-games", "100")
-            pg.click("#sim-run")
-            pg.wait_for_function("document.getElementById('sim-out').innerText.length > 200")
-            # il pianeta caricato resta valido dopo il ricaricamento della pagina
-            pg.goto(url); pg.wait_for_selector("#start")
-            assert "Pianeta di prova" in pg.inner_text(".mods")
-            assert not err, err
-            ctx.close()
-        _()
+            ctx, pg = telefono(mobile=False)
+            pg.goto(APP + Q)
+            pg.fill("#codice", stato["codice"].lower().replace("-", ""))
+            pg.click("#entra-form button[type=submit]")
+            pg.click("#tabellone")
+            expect(pg.locator(".tab")).to_have_count(3)
+            assert pg.locator("#enter").count() == 0
+            assert pg.locator("[data-pick]").first.is_disabled()
+            stato["tab"] = (ctx, pg)
 
-        @prova("Vista telefono: nessuno scorrimento orizzontale")
+        @prova("Il master libera il posto: il telefono torna alla scelta e lo riprende")
         def _():
-            err = []
-            ctx, pg = nuova_pagina(browser, url, err, viewport={"width": 360, "height": 740}, device_scale_factor=2, is_mobile=True, has_touch=True)
-            inizia(pg, ["Alba", "Bruno", "Cleo", "Dario"])
-            for _k in range(6):
-                entra_prima(pg)
-            larghezza = pg.evaluate("[document.documentElement.scrollWidth, window.innerWidth]")
-            assert larghezza[0] <= larghezza[1], larghezza
-            assert not err, err
-            ctx.close()
-        _()
+            pg = stato["alba"][1]
+            m = stato["master"][1]
+            m.locator(".seat-row", has_text="Alba").locator("[data-libera]").click()
+            m.click("#m-act >> text=Libera il posto")
+            expect(pg.locator(".banner")).to_contain_text("liberato il tuo posto")
+            expect(pg.locator(".seat", has_text="Alba")).to_be_enabled()
+            pg.locator(".seat", has_text="Alba").click()
+            expect(pg.locator(".tab[aria-selected=true]")).to_contain_text("Alba (tu)")
+
+        @prova("Aggiungi e togli esplorator*")
+        def _():
+            m = stato["master"][1]
+            m.fill("#nuovo-nome", "Dario")
+            m.click("#aggiungi-form button")
+            expect(m.locator(".tab")).to_have_count(4)
+            m.locator(".seat-row", has_text="Dario").locator("[data-togli]").click()
+            m.click("#m-act >> text=Togli")
+            expect(m.locator(".tab")).to_have_count(3)
+
+        @prova("Chiudi partita con lo stesso gruppo: nuovo codice, il telefono resta seduto")
+        def _():
+            pg = stato["alba"][1]
+            m = stato["master"][1]
+            vecchio = stato["codice"]
+            m.click("#chiudi-partita")
+            m.click("#m-act >> text=Chiudi partita")
+            m.click("#m-act >> text=Stesso gruppo")
+            expect(m.locator(".codice-grande")).not_to_have_text(vecchio)
+            nuovo = m.locator(".codice-grande").inner_text()
+            stato["codice"] = nuovo
+            # tutti i telefoni vedono il riepilogo della partita chiusa
+            expect(pg.locator("#modal")).to_contain_text("Partita chiusa")
+            expect(pg.locator("#modal")).to_contain_text("Alba: 0 cicli completati")
+            pg.click("#m-act >> text=Continua")
+            m.click("#m-act >> text=Continua")
+            expect(pg.locator(".sessione-info")).to_contain_text(nuovo)
+            expect(pg.locator(".tab[aria-selected=true]")).to_contain_text("Alba (tu)")
+            expect(pg.locator(".tab").first).to_contain_text("All’ingresso")
+            # il tabellone resta tabellone anche nella nuova partita
+            t = stato["tab"][1]
+            t.click("#m-act >> text=Continua")
+            expect(t.locator(".sessione-info")).to_contain_text(nuovo)
+            expect(t.locator(".sessione-info")).to_contain_text("tabellone")
+
+        @prova("Annulla partita e torna all'inizio: tutti vedono la fine")
+        def _():
+            pg = stato["alba"][1]
+            m = stato["master"][1]
+            if m.locator("#chiudi-partita").count() == 0:
+                m.click("#gestisci")
+            m.click("#annulla-partita")
+            m.click("#m-act >> text=Annulla partita")
+            m.click("#m-act >> text=Torna all’inizio")
+            expect(m.locator("h2", has_text="Partita annullata")).to_be_visible()
+            expect(pg.locator("h2", has_text="Partita annullata")).to_be_visible()
+            pg.click("#inizio")
+            expect(pg.get_by_role("button", name="Crea una partita")).to_be_visible()
+            nessuno_scorrimento(pg)
+
+        @prova("Nessun errore nella pagina")
+        def _():
+            assert not errori, errori[:5]
 
         browser.close()
     srv.shutdown()

@@ -10,16 +10,16 @@ Committente e unico amministratore: **Francesco**, per il club **Artenaut\***. S
 | App pubblicata | https://artenaut.github.io/esplorazione/ (GitHub Pages, branch `main`, cartella principale) |
 | Repository | `artenaut/esplorazione` (organizzazione GitHub del club) |
 | Server (fase 3) | https://esplorazione.artenaut.workers.dev · codice in `server/` · pubblicato da Workers Builds a ogni push su `main` · account Cloudflare del club · Zero Trust team `artenaut` |
-| Anteprima in claude.ai | https://claude.ai/artifact/WPk2xdyAkrgY2yM4sbjtg3 (va ripubblicata con lo stesso URL dopo ogni modifica dell'app) |
 | **Piano di lavoro a fasi** | `docs/piano.md` ← **partire sempre da qui** |
 | Decisioni dettagliate | `docs/roadmap-app.md`, `docs/roadmap-server.md`, `docs/roadmap-classifica.md` |
 | Formato dei pianeti | `docs/formato-esplorazione.md` (formato 2) |
 | Protocollo app ↔ server | `docs/protocollo-partita.md` (creazione, WebSocket, ruoli, stato, errori) |
 | Informativa privacy | `docs/informativa-privacy.md` |
 
-L'app è **`index.html`** (CSS e interfaccia inline, script come modulo ES) più **`motore.js`**, `fonts/` (caratteri ospitati nel sito, niente Google Fonts) e `img/` (immagine delle regole).
+L'app è **`index.html`** (CSS e interfaccia inline, script come modulo ES) più `vendor/qrcode.mjs` (QR code, licenza MIT), `fonts/` (caratteri ospitati nel sito, niente Google Fonts) e `img/` (immagine delle regole). **Dal 6/11/2026 funziona solo a sessioni:** la partita vive sul server, l'app mostra lo stato e manda le azioni (`docs/protocollo-partita.md`). Nel dispositivo restano solo la sessione (`esplorazione.sessione`: codice, ruolo, codice master o gettone) e gli ultimi nomi usati. Nessun testo di stanza nell'app: le esplorazioni stanno solo sul server.
+`simulatore.js`: tabelle del simulatore, importato (con `motore.js`) dalla pagina `/admin` del server. L'anteprima in claude.ai non si usa più: il server accetta solo l'app su `artenaut.github.io` (e localhost per le prove).
 **`motore.js` è condiviso tra app e server** (modulo ES senza DOM né localStorage): `validateModule` (controllo del formato 2, con `idRiservati`), `compile`, `drawOffer` / `pickRooms` (estrazione «meno mostrate»), `nextOfNode`, `simulate` (simulatore nell'area admin). Una modifica al motore cambia il gioco su entrambi i lati.
-**Prove:** `python3 test/prova-app.py` (Playwright, app) e `cd server && npm test` (Vitest, server e motore). Stato della partita in `localStorage` (`dungeon.state`). Password dell'area admin predefinita: `dungeon`.
+**Prove:** `cd server && npm test` (Vitest, server e motore) e `python3 test/prova-app.py` (Playwright, app con più telefoni, contro un server locale con Lowrenzia: vedi `server/README.md`). L'area admin è solo sul server, dietro Cloudflare Access: la vecchia password `dungeon` non esiste più.
 
 ## Regole permanenti
 
@@ -29,6 +29,6 @@ L'app è **`index.html`** (CSS e interfaccia inline, script come modulo ES) più
 4. **Le esplorazioni sono dati, non codice.** Nessuno script nei file dei pianeti. Se una regola chiede più stanze di quelle disponibili, il file si rifiuta (niente ripieghi).
 5. **Privacy:** nessun dato personale nei commit e nei documenti (niente email personali, niente dati di pagamento). Niente strumenti di analisi delle visite e niente banner cookie. In classifica solo nickname; i guest non lasciano dati.
 6. **Commit** con autore `Claude <noreply@anthropic.com>`. Pubblicare su `main` aggiorna il sito in un paio di minuti.
-7. **Verificare prima di pubblicare:** prove automatiche con Playwright (preinstallato, `test/prova-app.py`) su partita, estrazione, controlli del formato e vista telefono, più `npm test` in `server/` quando si tocca il server o `motore.js`.
+7. **Verificare prima di pubblicare:** `npm test` in `server/` e le prove Playwright dell'app (`test/prova-app.py`, più telefoni, vista telefono) contro un server locale. Il modulo principale del Worker (`server/src/index.js`) può esportare solo il gestore e le classi dei Durable Object: le costanti stanno in `server/src/costanti.js`.
 8. **Tenere aggiornati i documenti:** dopo ogni passo, spuntare la voce in `docs/piano.md` e nella roadmap di riferimento, con la data.
 9. **Decisioni:** quelle già prese sono nelle roadmap e non si rimettono in discussione. Le scelte nuove che cambiano il gioco o i dati si chiedono a Francesco prima di svilupparle.

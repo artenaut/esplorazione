@@ -7,11 +7,10 @@ export { Limitatore } from "./limitatore.js";
 import { MIN_GIOCATORI, MAX_GIOCATORI, controllaNome } from "./partita.js";
 import { nuovaPartita } from "./crea.js";
 import { hash } from "./util.js";
-export { prefissoCodice } from "./crea.js";
+import { VERSIONE, LIMITI, FINESTRA_LIMITI } from "./costanti.js";
 import { elencoPubblico, leggi } from "./esplorazioni.js";
 import { gestisciAdmin } from "./admin.js";
 
-export const VERSIONE = "3.10";
 
 // Codice corto della partita, es. LWR-482: tre lettere dal pianeta e tre cifre.
 const CODICE = /^[A-Z]{3}-\d{3}$/;
@@ -122,7 +121,6 @@ async function creaPartita(request, env, cors) {
 // Limite ai tentativi per indirizzo (passo 3.10): contro chi prova i codici a caso o crea partite in serie.
 // La chiave è l'impronta dell'indirizzo IP; il conteggio vive solo nella memoria del Limitatore per un minuto.
 // Senza l'intestazione CF-Connecting-IP (prove locali) il limite non si applica.
-export const LIMITI = { INGRESSI: 30, CREAZIONI: 10 }, FINESTRA_LIMITI = 60 * 1000;
 async function troppiTentativi(env, request, tipo) {
   const ip = request.headers.get("CF-Connecting-IP");
   if (!ip || !env.LIMITATORE) return false;

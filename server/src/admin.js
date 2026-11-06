@@ -76,7 +76,7 @@ function testo(t, status) {
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
-function pagina(chi) {
+export function pagina(chi) {
   const html = `<!doctype html>
 <html lang="it"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -109,6 +109,30 @@ header{padding-top:22px;display:flex;flex-wrap:wrap;justify-content:space-betwee
 .msg{margin:0;font-size:.95rem}.msg.err{color:var(--err)}.msg.ok{color:var(--ok)}
 code{font-size:.85em;color:var(--muted)}
 button:focus-visible{outline:2px solid var(--torch);outline-offset:2px}
+.field{font:inherit;color:var(--parch);background:var(--stone);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;text-transform:uppercase;letter-spacing:.1em;color:var(--pc);border:1px solid color-mix(in srgb,var(--pc) 55%,transparent);border-radius:999px;padding:2px 9px;white-space:nowrap}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--pc)}
+.okmsg{color:var(--ok);margin:0}
+.eyebrow{font-size:.74rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
+.simform{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.simform label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted)}
+.simsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:6px}
+.simsum div{background:var(--stone);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.simsum strong{font-size:1.3rem;font-variant-numeric:tabular-nums}
+.simwarn{border:1px dashed var(--torch);border-radius:8px;padding:10px 14px}
+.simwarn strong{color:var(--torch)}
+.simwarn ul{margin:6px 0 0;padding-left:1.2em;display:flex;flex-direction:column;gap:3px;font-size:.92rem}
+.simh{font-family:"IM Fell English SC",Georgia,serif;font-weight:400;font-size:1.1rem;margin:8px 0 0}
+.tablewrap{overflow-x:auto}
+.simt{width:100%;border-collapse:collapse;font-size:.9rem;font-variant-numeric:tabular-nums}
+.simt th{text-align:left;font-weight:500;color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.simt td{padding:6px 8px;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+.simt .num{text-align:right;white-space:nowrap}
+.simt tr.bad td{color:var(--err)}
+.simt tr.warnrow td{color:var(--torch)}
+details.simlv{border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--stone)}
+details.simlv summary{cursor:pointer}
+#sim-out{display:flex;flex-direction:column;gap:10px}
 </style></head><body><div class="wrap">
 <header><div><span class="eyebrow">Area admin</span><h1>Esplorazioni sul server</h1></div>
 <p class="hint">Accesso come ${esc(chi.email) || "chi amministra"} · <a class="hint" href="/cdn-cgi/access/logout">Esci</a></p></header>
@@ -116,6 +140,18 @@ button:focus-visible{outline:2px solid var(--torch);outline-offset:2px}
 <section class="panel">
   <div><h2>Esplorazioni caricate</h2><p class="hint">Sono quelle che si possono scegliere quando si crea una partita. I testi delle stanze restano solo qui sul server.</p></div>
   <div class="list" id="lista"><p class="hint">Caricamento…</p></div>
+</section>
+
+<section class="panel">
+  <div><h2>Simulatore</h2><p class="hint">Gioca tante partite con scelte casuali e le stesse regole del server, per controllare il bilanciamento di un’esplorazione prima di portarla al tavolo.</p></div>
+  <div class="simform">
+    <label>Esplorazione<select id="sim-mod" class="field"></select></label>
+    <label>Partite<select id="sim-games" class="field"><option>100</option><option selected>1000</option><option>5000</option></select></label>
+    <label>Esplorator*<select id="sim-players" class="field"><option>2</option><option>3</option><option selected>4</option></select></label>
+    <label>Mosse a testa<input id="sim-moves" class="field" type="number" min="1" max="60" value="10"></label>
+  </div>
+  <div><button class="btn primary" id="sim-run">Simula</button></div>
+  <div id="sim-out" aria-live="polite"></div>
 </section>
 
 <section class="panel">
@@ -136,6 +172,9 @@ async function carica(){
   const el = $('#lista');
   if(!r.ok){ el.innerHTML = '<p class="msg err">Elenco non disponibile ('+r.status+').</p>'; return; }
   const l = await r.json();
+  const sel = $('#sim-mod'), prima = sel.value;
+  sel.innerHTML = l.map(m => '<option value="'+esc(m.id)+'">'+esc(m.nome)+'</option>').join('');
+  if(l.some(m => m.id === prima)) sel.value = prima;
   el.innerHTML = l.length ? l.map(m => \`
     <div class="item"><div><strong>\${esc(m.nome)}</strong>
       <small><code>\${esc(m.id)}</code> · \${m.livelli} livelli · \${m.stanze} stanze · versione \${m.versione} · aggiornata il \${esc(data(m.aggiornata))}</small></div>
@@ -171,6 +210,22 @@ $('#file').onchange = async e => {
   else esito(j.errore || ('Caricamento non riuscito ('+r.status+').'));
   carica();
 };
+// Il simulatore usa lo stesso motore del server, pubblicato con l'app (motore.js, simulatore.js).
+const APP = 'https://artenaut.github.io/esplorazione/';
+$('#sim-run').onclick = async () => {
+  const out = $('#sim-out'), btn = $('#sim-run'), id = $('#sim-mod').value;
+  if(!id) return;
+  btn.disabled = true; out.innerHTML = '<p class="hint">Simulazione in corso…</p>';
+  try{
+    const [M, V, r] = await Promise.all([import(APP+'motore.js'), import(APP+'simulatore.js'), fetch('/admin/api/esplorazioni/'+encodeURIComponent(id), { headers: H })]);
+    if(!r.ok) throw new Error('lettura '+r.status);
+    const m = M.compile(await r.json());
+    const mosse = Math.max(1, Math.min(60, parseInt($('#sim-moves').value, 10) || 10));
+    await new Promise(ok => setTimeout(ok, 30));
+    out.innerHTML = V.simHtml(M.simulate(m, +$('#sim-games').value, +$('#sim-players').value, mosse));
+  }catch(e){ out.innerHTML = '<p class="msg err">Simulazione non riuscita ('+esc(e.message)+').</p>'; }
+  btn.disabled = false;
+};
 carica();
 </script></body></html>`;
   return new Response(html, {
@@ -178,7 +233,7 @@ carica();
       "Content-Type": "text/html; charset=utf-8",
       ...SICUREZZA,
       "Content-Security-Policy":
-        "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; font-src https://artenaut.github.io; connect-src 'self'; img-src 'self' blob:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+        "default-src 'none'; script-src 'unsafe-inline' https://artenaut.github.io; style-src 'unsafe-inline'; font-src https://artenaut.github.io; connect-src 'self'; img-src 'self' blob:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
     },
   });
 }

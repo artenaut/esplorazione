@@ -82,7 +82,7 @@ Riprende la tabella della fase 3 in `docs/piano.md`.
 5. **3.6–3.7** Mosse sul server con «meno mostrate», controllo di versione per le mosse contemporanee, annulla solo l'ultima mossa della sessione.
 6. **3.8–3.9** Chiudi o annulla partita al posto di Ricomincia, scadenza automatica.
 7. **3.10** Controlli di sicurezza: validazione di ogni mossa e ruolo, limite ai tentativi sul codice corto.
-8. **Nuova interfaccia dell'app** basata sulle sessioni: crea partita, entra con codice o QR, scegli il posto, gioca. Mantenere tutte le regole permanenti di `CLAUDE.md`.
+8. ✅ **Nuova interfaccia dell'app** basata sulle sessioni (6/11/2026).
 9. **3.11** Prova al tavolo con più telefoni (Francesco).
 
 Dopo ogni passo: prove automatiche, voce spuntata in `docs/piano.md` e nella roadmap, poi pubblicazione.

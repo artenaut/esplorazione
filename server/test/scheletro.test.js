@@ -1,6 +1,6 @@
 // Prove del passo 3.1: il Worker risponde e instrada i WebSocket verso le partite.
 import { exports } from "cloudflare:workers";
-import { VERSIONE } from "../src/index.js";
+import { VERSIONE } from "../src/costanti.js";
 import { describe, it, expect } from "vitest";
 
 const BASE = "https://esplorazione.artenaut.workers.dev";

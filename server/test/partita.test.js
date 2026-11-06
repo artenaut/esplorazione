@@ -3,7 +3,7 @@ import { env, exports } from "cloudflare:workers";
 import { evictDurableObject } from "cloudflare:test";
 import { describe, it, expect, beforeAll } from "vitest";
 import { salva } from "../src/esplorazioni.js";
-import { prefissoCodice } from "../src/index.js";
+import { prefissoCodice } from "../src/crea.js";
 
 const BASE = "https://esplorazione.artenaut.workers.dev";
 const APP = "https://artenaut.github.io";
