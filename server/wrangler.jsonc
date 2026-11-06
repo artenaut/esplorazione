@@ -24,9 +24,9 @@
     // Origini da cui l'app può chiamare il server.
     "ORIGINI_CONSENTITE": "https://artenaut.github.io",
     // Cloudflare Access per l'area /admin: dominio del team e «Application Audience (AUD) Tag»
-    // dell'applicazione Access. Finché l'AUD è vuoto, l'area admin risponde «non configurata».
+    // dell'applicazione Access «Esplorazione · admin» (percorso /admin). Se l'AUD è vuoto, l'area admin risponde «non configurata».
     "ACCESS_TEAM": "artenaut.cloudflareaccess.com",
-    "ACCESS_AUD": ""
+    "ACCESS_AUD": "e0b340f183ccedd8fc8575f4af5b53383a62bb4a5b009f939e6dd2e06b859859"
   },
 
   // Registri nel pannello Cloudflare: solo i messaggi scritti dal codice (errori),
