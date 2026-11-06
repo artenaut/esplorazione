@@ -120,7 +120,7 @@ Poche righe, in linguaggio semplice, comprensibile anche ai ragazzi:
 ## 10. Guest [deciso il 6/11/2026]
 
 - Chiunque può entrare in partita **come guest**, senza nickname e senza dati.
-- Il guest ha un **nome buffo generato dall'app**, per esempio «Gallina in incognito» o «Alpaca curioso».
+- Il guest ha un **nome buffo generato dall'app**, per esempio «Gallina in incognito» o «Alpaca col monocolo».
   - Il nome viene da un elenco di frasi in italiano **senza aggettivi di genere**: un animale più un complemento invariabile, come «Gallina in incognito», «Alpaca col monocolo», «Lama dal cappello buffo». Si evitano forme come «Alpaca curioso».
   - **Il nome non si può modificare a mano,** perché qualcuno ci scriverebbe il proprio. Un pulsante «Un altro nome» ne estrae uno nuovo.
   - Nella stessa partita non possono esserci due nomi uguali.
