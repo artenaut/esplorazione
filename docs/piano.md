@@ -73,8 +73,8 @@ Il blocco più grosso. Si sviluppa e si prova a pezzi.
 | 3.3 | ✅ **Creazione della partita** (6/11/2026): `POST /api/partite`, codice corto dal pianeta (es. `LWR-482`), codice master, link per il QR (il QR si disegna nell'app), copia del pianeta nella partita. | `protocollo-partita.md` §1 |
 | 3.4 | ✅ **Posti e dispositivi** (6/11/2026): gettone del posto (sul server solo l'impronta), rientro automatico, il master libera i posti, posti senza dispositivo, aggiungere e togliere esplorator\* (2–4). | `protocollo-partita.md` §2–3 |
 | 3.5 | ✅ **Ruoli** (6/11/2026): master (anche tabellone, più dispositivi con lo stesso codice master), esplorator\*, tabellone separato in sola lettura, ospite. Ruoli controllati sul server; lo stato condiviso non contiene mai i testi. | `protocollo-partita.md` §2–4 |
-| 3.6 | **Mosse:** estrazioni sul server con «meno mostrate», mosse contemporanee, controllo di versione, testo inviato solo con la mossa di ingresso. | `roadmap-server.md` §2 |
-| 3.7 | **Annulla** solo l'ultima mossa della sessione, da chi l'ha fatta o dal master. | `roadmap-server.md` §2 |
+| 3.6 | ✅ **Mosse** (6/11/2026): estrazioni sul server con «meno mostrate», mosse contemporanee di persone diverse, controllo di versione **per personaggio** (conflitto solo sullo stesso personaggio, come da roadmap), testo inviato a tutti solo con la mossa di ingresso. | `protocollo-partita.md` §4 |
+| 3.7 | ✅ **Annulla** (6/11/2026) solo l'ultima mossa della sessione, da chi l'ha fatta o dal master; ripristina anche i contatori. | `protocollo-partita.md` §4 |
 | 3.8 | **Chiudi partita / Annulla partita** al posto di Ricomincia, con scelta tra nuovo gruppo e stesso gruppo. | `roadmap-server.md` §2 |
 | 3.9 | **Scadenza automatica:** 6 ore senza attività, 24 ore al massimo. | `roadmap-server.md` §2 |
 | 3.10 | **Sicurezza:** il server valida ogni mossa e ogni ruolo, limite ai tentativi sul codice corto. | `roadmap-server.md` §3 |

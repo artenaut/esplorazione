@@ -7,7 +7,7 @@ import { MIN_GIOCATORI, MAX_GIOCATORI, controllaNome, casuale } from "./partita.
 import { elencoPubblico, leggi } from "./esplorazioni.js";
 import { gestisciAdmin } from "./admin.js";
 
-export const VERSIONE = "3.5";
+export const VERSIONE = "3.7";
 
 // Codice corto della partita, es. LWR-482: tre lettere dal pianeta e tre cifre.
 const CODICE = /^[A-Z]{3}-\d{3}$/;

@@ -4,14 +4,14 @@
 // Per questo nulla vive solo in memoria: lo stato sta nello storage, il ruolo di ogni
 // connessione nell'«attachment» del WebSocket.
 //
-// Passi 3.3–3.5: creazione, posti con gettone, ruoli (master, esplorator*, tabellone, ospite).
-// Mosse, annulla, chiusura e scadenza arrivano nei passi 3.6–3.9.
+// Passi 3.3–3.7: creazione, posti con gettone, ruoli (master, esplorator*, tabellone, ospite),
+// mosse con estrazione sul server e annullamento dell'ultima mossa. Chiusura e scadenza: passi 3.8–3.9.
 // Protocollo completo: docs/protocollo-partita.md.
 
 import { DurableObject } from "cloudflare:workers";
-import { compile, drawOffer } from "../../motore.js";
+import { compile, drawOffer, nextOfNode } from "../../motore.js";
 
-export const MIN_GIOCATORI = 2, MAX_GIOCATORI = 4, MAX_NOME = 24;
+export const MIN_GIOCATORI = 2, MAX_GIOCATORI = 4, MAX_NOME = 24, MAX_REGISTRO = 500;
 
 // Ruoli di una connessione: «ospite» (ha il codice ma non ha ancora un posto), «esplorator» (ha un posto),
 // «master» (ha il codice master), «tabellone» (sola lettura).
@@ -91,6 +91,8 @@ export class Partita extends DurableObject {
         case "libera": return await this.libera(ws, stato, io, dati);
         case "aggiungi": return await this.aggiungi(ws, stato, io, dati);
         case "togli": return await this.togli(ws, stato, io, dati);
+        case "mossa": return await this.mossa(ws, stato, io, dati);
+        case "annulla": return await this.annulla(ws, stato, io);
         case "stato": return invia(ws, { tipo: "stato", stato: this.vista(stato) });
         default: return errore(ws, "tipo-sconosciuto", "Tipo di messaggio sconosciuto.");
       }
@@ -186,6 +188,7 @@ export class Partita extends DurableObject {
     if (!Number.isInteger(posto) || !stato.posti[posto]) return errore(ws, "posto-inesistente", "Questo posto non esiste.");
     if (stato.posti.length <= MIN_GIOCATORI) return errore(ws, "troppo-pochi", `Servono almeno ${MIN_GIOCATORI} esplorator*.`);
     stato.posti.splice(posto, 1);
+    stato.ultima = null; // dopo una rimozione i posti scalano: l'ultima mossa non si può più annullare
     await this.salva(stato, { attivita: true });
     for (const altro of this.ctx.getWebSockets()) {
       const a = altro.deserializeAttachment();
@@ -198,6 +201,68 @@ export class Partita extends DurableObject {
       }
     }
     this.trasmetti(stato);
+  }
+
+  // Una mossa: entrare in una delle stanze proposte a un* esplorator*.
+  // { tipo:"mossa", posto, stanza, versione } — «versione» è quella del posto nello stato da cui parte la mossa.
+  async mossa(ws, stato, io, { posto, stanza, versione }) {
+    const p = stato.posti[posto];
+    if (!Number.isInteger(posto) || !p) return errore(ws, "posto-inesistente", "Questo posto non esiste.");
+    if (io.ruolo === "esplorator") {
+      if (io.posto !== posto) return errore(ws, "ruolo", `Puoi muovere solo per te. Per ${p.name} può muovere il master.`);
+    } else if (io.ruolo !== "master") {
+      return errore(ws, "ruolo", "Questo dispositivo non può muovere.");
+    }
+    // Conflitto sullo stesso personaggio (esplorator* e master insieme): vince la prima mossa arrivata.
+    if (versione !== (p.v ?? 0)) {
+      return errore(ws, "versione-superata", `${p.name} ha già mosso: ecco la situazione aggiornata.`, { stato: this.vista(stato) });
+    }
+    if (typeof stanza !== "string" || !p.offer.includes(stanza)) {
+      return errore(ws, "stanza-non-proposta", "Questa stanza non è tra quelle proposte.", { stato: this.vista(stato) });
+    }
+
+    const m = this.compilato(stato);
+    const { gettoneHash, ...giocatore } = p;
+    // fotografia per l'annullamento: solo l'ultima mossa della sessione
+    const ultima = { posto, autore: io.ruolo === "master" ? "master" : posto, giocatore: structuredClone(giocatore), shown: { ...stato.shown } };
+
+    // stesse regole dell'app (enterRoom)
+    if (p.node === "ingresso" && p.trail.length) { p.run++; p.trail = []; }
+    p.trail.push(stanza);
+    p.moves++;
+    const info = m.roomMap[stanza];
+    const prossimo = nextOfNode(m, p.node, info.room.path);
+    stato.log.unshift({ player: p.name, room: info.room.title, path: info.room.path, step: p.trail.length, run: p.run, master: io.ruolo === "master" });
+    if (stato.log.length > MAX_REGISTRO) stato.log.length = MAX_REGISTRO;
+    p.node = prossimo;
+    p.step = prossimo === "ingresso" ? 1 : p.trail.length + 1;
+    p.seen ??= {};
+    p.offer = drawOffer(m, prossimo, info.room.path, stato.shown, p.seen);
+    p.v = (p.v ?? 0) + 1;
+    stato.ultima = ultima;
+    await this.salva(stato, { attivita: true });
+
+    // Il testo della stanza viaggia solo qui, una volta, con la mossa di ingresso. Lo stato non lo contiene mai.
+    const testo = { id: info.room.id, titolo: info.room.title, via: info.room.path, testo: info.room.content };
+    this.trasmetti(stato, { tipo: "mossa", posto, stanza: testo });
+  }
+
+  // Annulla l'ultima mossa della sessione: può farlo chi l'ha fatta oppure il master.
+  async annulla(ws, stato, io) {
+    const u = stato.ultima;
+    if (!u) return errore(ws, "niente-da-annullare", "Non c’è nessuna mossa da annullare: si può annullare solo l’ultima mossa della partita.");
+    if (!(io.ruolo === "master" || (io.ruolo === "esplorator" && u.autore === io.posto))) {
+      return errore(ws, "ruolo", "Solo chi ha fatto l’ultima mossa, oppure il master, può annullarla.");
+    }
+    const p = stato.posti[u.posto];
+    const v = p.v ?? 0;
+    Object.assign(p, u.giocatore); // il gettone del posto resta quello attuale
+    p.v = v + 1;
+    stato.shown = u.shown;         // anche i contatori «meno mostrate» tornano com'erano
+    stato.log.shift();
+    stato.ultima = null;
+    await this.salva(stato, { attivita: true });
+    this.trasmetti(stato, { tipo: "annullata", posto: u.posto });
   }
 
   // ---------- vista e invio ----------
@@ -225,6 +290,7 @@ export class Partita extends DurableObject {
         const completato = p.node === "ingresso" && p.trail.length > 0;
         return {
           nome: p.name,
+          versione: p.v ?? 0,
           occupato: !!p.gettoneHash,
           giro: p.run,
           passo: p.step,
@@ -235,12 +301,17 @@ export class Partita extends DurableObject {
           proposte: p.offer.map(stanza),
         };
       }),
-      registro: stato.log.slice(0, 60),
+      registro: stato.log.slice(0, 60).map((e) => ({ nome: e.player, stanza: e.room, via: e.path, passo: e.step, giro: e.run, master: !!e.master })),
+      // L'ultima mossa della sessione, se si può ancora annullare. autore: "master" oppure il numero del posto.
+      annullabile: stato.ultima
+        ? { posto: stato.ultima.posto, nome: stato.posti[stato.ultima.posto]?.name ?? "", stanza: stato.log[0]?.room ?? "", autore: stato.ultima.autore }
+        : null,
     };
   }
 
-  trasmetti(stato) {
-    const msg = JSON.stringify({ tipo: "stato", stato: this.vista(stato) });
+  // Manda a tutti lo stesso aggiornamento: { tipo:"stato" } oppure un evento (mossa, annullata) con lo stato.
+  trasmetti(stato, evento = { tipo: "stato" }) {
+    const msg = JSON.stringify({ ...evento, stato: this.vista(stato) });
     for (const ws of this.ctx.getWebSockets()) {
       if (ws.deserializeAttachment()?.ruolo) {
         try { ws.send(msg); } catch { /* connessione chiusa */ }
@@ -274,7 +345,7 @@ export class Partita extends DurableObject {
 // l'impronta del gettone del dispositivo. Il gettone vero lo conosce solo il dispositivo.
 function nuovoPosto(m, nome, shown) {
   return {
-    name: nome, run: 1, trail: [], node: "ingresso", step: 1, moves: 0, seen: {},
+    name: nome, run: 1, trail: [], node: "ingresso", step: 1, moves: 0, seen: {}, v: 0,
     offer: drawOffer(m, "ingresso", null, shown, null),
     gettoneHash: null,
   };

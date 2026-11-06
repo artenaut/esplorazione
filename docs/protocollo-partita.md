@@ -3,7 +3,7 @@
 Come l'app parla con il server durante una partita. Riferimento per la nuova interfaccia a sessioni.
 Decisioni di gioco: `roadmap-server.md` §2–3. Codice: `server/src/index.js` e `server/src/partita.js`.
 
-Stato: passi **3.3–3.5** (creazione, posti, ruoli). Le mosse (3.6–3.7), la chiusura (3.8) e la scadenza (3.9) si aggiungono qui quando sono pronte.
+Stato: passi **3.3–3.7** (creazione, posti, ruoli, mosse, annulla). La chiusura (3.8) e la scadenza (3.9) si aggiungono qui quando sono pronte.
 
 ---
 
@@ -63,7 +63,37 @@ Risposta: `{ "tipo": "benvenuto", "ruolo": "esplorator", "posto": 1, "stato": { 
 
 Il server controlla il ruolo di ogni azione. Chi non ha il ruolo giusto riceve `{ "tipo": "errore", "codice": "ruolo" }`.
 
-## 4. Lo stato
+## 4. Mosse e annulla
+
+### Muovere
+
+`{ "tipo": "mossa", "posto": 0, "stanza": "L2-F3", "versione": 4 }`
+
+- `stanza` deve essere tra le `proposte` di quel posto.
+- `versione` è la `versione` **di quel posto** nello stato da cui parte la mossa.
+- L'esplorator\* muove solo per il proprio posto; il master muove per chiunque. In quel caso l'app lo deve dire chiaramente: «Stai muovendo per Giulia».
+- Il server estrae le nuove proposte con la regola del pianeta («meno mostrate»: contatori condivisi da tutta la partita, spareggio sulle stanze già viste da chi muove, poi caso).
+- Risposta a **tutti** i dispositivi:
+
+```json
+{ "tipo": "mossa", "posto": 0,
+  "stanza": { "id": "L2-F3", "titolo": "Rompi il sigillo maledetto", "via": "forza", "testo": "Distruggi fino ad un incantesimo bersaglio" },
+  "stato": { … } }
+```
+
+- **È l'unico messaggio che porta il testo di una stanza.** L'app lo mostra in quel momento e non lo conserva: dopo, nel percorso e nel registro, resta solo il titolo.
+- Mosse contemporanee di persone **diverse** vanno tutte a buon fine. Due mosse sullo **stesso** personaggio (per esempio esplorator\* e master insieme): vince la prima, l'altra riceve `{ "tipo": "errore", "codice": "versione-superata", "messaggio": "Giulia ha già mosso: ecco la situazione aggiornata.", "stato": { … } }`.
+
+### Annullare
+
+`{ "tipo": "annulla" }` → a tutti `{ "tipo": "annullata", "posto": 0, "stato": { … } }`
+
+- Si annulla **solo l'ultima mossa della partita**. Ripristina posizione, proposte e contatori «meno mostrate».
+- Può farlo chi l'ha fatta (il dispositivo di quel posto) oppure il master. Se la mossa l'ha fatta il master per qualcun\*, solo il master la può annullare.
+- `stato.annullabile` dice se c'è una mossa annullabile: `{ "posto": 0, "nome": "Alba", "stanza": "Titolo", "autore": 0 }` (`autore` è `"master"` o il numero del posto). Se è `null`, o se il dispositivo non è l'autore né il master, il pulsante va disattivato spiegando il motivo (per esempio «Dopo di te ha mosso Bruno»).
+- Dopo «togli» non si può annullare la mossa precedente.
+
+## 5. Lo stato
 
 Dopo ogni modifica il server manda a tutti i dispositivi lo stesso messaggio `{ "tipo": "stato", "stato": … }`. Si può chiedere di nuovo con `{ "tipo": "stato" }`.
 
@@ -74,20 +104,22 @@ Dopo ogni modifica il server manda a tutti i dispositivi lo stesso messaggio `{ 
   "esplorazione": { "id": "lowrenzia", "nome": "…", "descrizione": "…", "vie": [ { "id": "forza", "nome": "…", "breve": "…", "colore": "#c95a40" } ], "regole": "…", "regoleImmagine": "img/esploratore.png" },
   "posti": [
     {
-      "nome": "Alba", "occupato": true, "giro": 1, "passo": 3, "livello": "", "completato": false, "mosse": 2,
+      "nome": "Alba", "versione": 4, "occupato": true, "giro": 1, "passo": 3, "livello": "", "completato": false, "mosse": 2,
       "percorso": [ { "id": "L1-F", "titolo": "Al Diavolo le mappe", "via": "forza" } ],
       "proposte":  [ { "id": "L3-F2", "titolo": "In preda alla furia!", "via": "forza" } ]
     }
   ],
-  "registro": []
+  "registro": [ { "nome": "Alba", "stanza": "Al Diavolo le mappe", "via": "forza", "passo": 1, "giro": 1, "master": false } ],
+  "annullabile": null
 }
 ```
 
-- **Mai i testi delle stanze.** Il testo arriverà solo con la mossa di ingresso (passo 3.6).
+- **Mai i testi delle stanze.** Il testo arriva solo con l'evento `mossa`.
+- `registro`: le ultime 60 mosse, la più recente per prima. `master: true` se l'ha fatta il master.
 - **Lunghezza nascosta:** c'è solo il nome del livello della prossima mossa (`livello`, vuoto se il pianeta non lo assegna), mai l'elenco dei livelli.
-- `versione` cresce a ogni modifica. Le mosse la useranno per rifiutare quelle partite da uno stato vecchio.
+- `versione` (della partita) cresce a ogni modifica; `posti[i].versione` cresce a ogni mossa o annullamento di quel posto ed è quella da mandare con la mossa.
 
-## 5. Errori
+## 6. Errori
 
 `{ "tipo": "errore", "codice": "…", "messaggio": "…" }`. Il `messaggio` è già in italiano inclusivo e si può mostrare così com'è.
 
@@ -100,4 +132,7 @@ Dopo ogni modifica il server manda a tutti i dispositivi lo stesso messaggio `{ 
 | `ruolo` | Azione non permessa a questo dispositivo. |
 | `posto-inesistente`, `posto-occupato`, `posto-libero` | Problemi con il posto indicato. |
 | `nome-non-valido`, `troppi`, `troppo-pochi` | Aggiunta o rimozione di esplorator\* non valida. |
+| `versione-superata` | Qualcun altro ha già mosso quel personaggio: il messaggio porta lo `stato` aggiornato. |
+| `stanza-non-proposta` | La stanza non è tra le proposte (porta lo `stato`). |
+| `niente-da-annullare` | Non c'è una mossa annullabile. |
 | `messaggio-non-valido`, `tipo-sconosciuto`, `errore-server` | Errori tecnici. |
