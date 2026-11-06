@@ -16,8 +16,9 @@ Committente e unico amministratore: **Francesco**, per il club **Artenaut\***. S
 | Formato dei pianeti | `docs/formato-esplorazione.md` (formato 2) |
 | Informativa privacy | `docs/informativa-privacy.md` |
 
-L'app oggi è **un unico file `index.html`** con CSS e JavaScript inline, più `fonts/` (caratteri ospitati nel sito, niente Google Fonts) e `img/` (immagine delle regole).
-Funzioni principali del motore: `validateModule` (controllo del formato 2), `compile`, `drawOffer` / `pickRooms` (estrazione «meno mostrate»), `nextOfNode`, `simulate` (simulatore nell'area admin). Stato della partita in `localStorage` (`dungeon.state`). Password dell'area admin predefinita: `dungeon`.
+L'app è **`index.html`** (CSS e interfaccia inline, script come modulo ES) più **`motore.js`**, `fonts/` (caratteri ospitati nel sito, niente Google Fonts) e `img/` (immagine delle regole).
+**`motore.js` è condiviso tra app e server** (modulo ES senza DOM né localStorage): `validateModule` (controllo del formato 2, con `idRiservati`), `compile`, `drawOffer` / `pickRooms` (estrazione «meno mostrate»), `nextOfNode`, `simulate` (simulatore nell'area admin). Una modifica al motore cambia il gioco su entrambi i lati.
+**Prove:** `python3 test/prova-app.py` (Playwright, app) e `cd server && npm test` (Vitest, server e motore). Stato della partita in `localStorage` (`dungeon.state`). Password dell'area admin predefinita: `dungeon`.
 
 ## Regole permanenti
 
@@ -27,6 +28,6 @@ Funzioni principali del motore: `validateModule` (controllo del formato 2), `com
 4. **Le esplorazioni sono dati, non codice.** Nessuno script nei file dei pianeti. Se una regola chiede più stanze di quelle disponibili, il file si rifiuta (niente ripieghi).
 5. **Privacy:** nessun dato personale nei commit e nei documenti (niente email personali, niente dati di pagamento). Niente strumenti di analisi delle visite e niente banner cookie. In classifica solo nickname; i guest non lasciano dati.
 6. **Commit** con autore `Claude <noreply@anthropic.com>`. Pubblicare su `main` aggiorna il sito in un paio di minuti.
-7. **Verificare prima di pubblicare:** prove automatiche con Playwright (preinstallato) su partita, estrazione, controlli del formato e vista telefono.
+7. **Verificare prima di pubblicare:** prove automatiche con Playwright (preinstallato, `test/prova-app.py`) su partita, estrazione, controlli del formato e vista telefono, più `npm test` in `server/` quando si tocca il server o `motore.js`.
 8. **Tenere aggiornati i documenti:** dopo ogni passo, spuntare la voce in `docs/piano.md` e nella roadmap di riferimento, con la data.
 9. **Decisioni:** quelle già prese sono nelle roadmap e non si rimettono in discussione. Le scelte nuove che cambiano il gioco o i dati si chiedono a Francesco prima di svilupparle.
