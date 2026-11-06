@@ -5,10 +5,9 @@
 export { Partita } from "./partita.js";
 export { Limitatore } from "./limitatore.js";
 import { MIN_GIOCATORI, MAX_GIOCATORI } from "./partita.js";
-import { elencoPubblicoNickname } from "./esplorator.js";
 import { classifica } from "./classifica.js";
 import { nuovaPartita } from "./crea.js";
-import { hash } from "./util.js";
+import { improntaRete } from "./util.js";
 import { VERSIONE, LIMITI, FINESTRA_LIMITI } from "./costanti.js";
 import { elencoPubblico, leggi } from "./esplorazioni.js";
 import { gestisciAdmin } from "./admin.js";
@@ -23,7 +22,9 @@ export default {
     const origine = request.headers.get("Origin");
     const cors = intestazioniCors(origine, env);
 
+    // richieste CORS preliminari solo per l'API pubblica (mai per /admin)
     if (request.method === "OPTIONS") {
+      if (!url.pathname.startsWith("/api/")) return new Response(null, { status: 404 });
       return new Response(null, { status: cors ? 204 : 403, headers: cors ?? {} });
     }
 
@@ -49,12 +50,6 @@ export default {
       if (url.pathname === "/api/esplorazioni" && request.method === "GET") {
         const elenco = await elencoPubblico(env.DB);
         return json(elenco, 200, { ...(cors ?? {}), "Cache-Control": "public, max-age=60" });
-      }
-
-      // Nickname del club (pubblici: sono gli stessi della classifica).
-      if (url.pathname === "/api/esplorator" && request.method === "GET") {
-        const elenco = await elencoPubblicoNickname(env.DB);
-        return json(elenco, 200, { ...(cors ?? {}), "Cache-Control": "no-store" });
       }
 
       // Classifica pubblica (sola lettura): ?stagione=ID, di default la stagione in corso.
@@ -98,7 +93,13 @@ export default {
           return json({ errore: "Codice della partita non valido." }, 400, cors);
         }
         const stub = env.PARTITA.get(env.PARTITA.idFromName(codice));
-        return stub.fetch(request);
+        // alla partita arriva solo l'impronta della rete (per il limite sui nuovi nickname), mai l'indirizzo;
+        // un'intestazione con lo stesso nome mandata dal dispositivo viene scartata
+        const intestazioni = new Headers(request.headers);
+        intestazioni.delete("X-Impronta-Rete");
+        const rete = await improntaRete(request);
+        if (rete) intestazioni.set("X-Impronta-Rete", rete);
+        return stub.fetch(new Request(request, { headers: intestazioni }));
       }
 
       return json({ errore: "Indirizzo non trovato." }, 404, cors);
@@ -133,9 +134,9 @@ async function creaPartita(request, env, cors) {
 // La chiave è l'impronta dell'indirizzo IP; il conteggio vive solo nella memoria del Limitatore per un minuto.
 // Senza l'intestazione CF-Connecting-IP (prove locali) il limite non si applica.
 async function troppiTentativi(env, request, tipo) {
-  const ip = request.headers.get("CF-Connecting-IP");
-  if (!ip || !env.LIMITATORE) return false;
-  const chiave = `${tipo}:${await hash(ip)}`;
+  const rete = await improntaRete(request);
+  if (!rete || !env.LIMITATORE) return false;
+  const chiave = `${tipo}:${rete}`;
   const ammesso = await env.LIMITATORE.get(env.LIMITATORE.idFromName(chiave)).conta(LIMITI[tipo], FINESTRA_LIMITI);
   return !ammesso;
 }

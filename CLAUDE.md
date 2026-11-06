@@ -29,6 +29,7 @@ L'app è **`index.html`** (CSS e interfaccia inline, script come modulo ES) più
 4. **Le esplorazioni sono dati, non codice.** Nessuno script nei file dei pianeti. Se una regola chiede più stanze di quelle disponibili, il file si rifiuta (niente ripieghi).
 5. **Privacy:** nessun dato personale nei commit e nei documenti (niente email personali, niente dati di pagamento). Niente strumenti di analisi delle visite e niente banner cookie. In classifica solo nickname; i guest non lasciano dati.
 6. **Commit** con autore `Claude <noreply@anthropic.com>`. Pubblicare su `main` aggiorna il sito in un paio di minuti.
+6bis. **Sicurezza:** le pagine hanno una CSP (`<meta http-equiv="Content-Security-Policy">`): una nuova risorsa esterna va aggiunta lì, solo se indispensabile. L'area admin richiede Access **e** l'email nel segreto `ADMIN_EMAILS` del Worker. Revisione e limiti: `docs/roadmap-server.md` §3.
 7. **Verificare prima di pubblicare:** `npm test` in `server/` e le prove Playwright dell'app (`test/prova-app.py`, più telefoni, vista telefono) contro un server locale. Il modulo principale del Worker (`server/src/index.js`) può esportare solo il gestore e le classi dei Durable Object: le costanti stanno in `server/src/costanti.js`.
 8. **Tenere aggiornati i documenti:** dopo ogni passo, spuntare la voce in `docs/piano.md` e nella roadmap di riferimento, con la data.
 9. **Decisioni:** quelle già prese sono nelle roadmap e non si rimettono in discussione. Le scelte nuove che cambiano il gioco o i dati si chiedono a Francesco prima di svilupparle.

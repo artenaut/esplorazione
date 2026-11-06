@@ -2,7 +2,7 @@
 import { env, exports } from "cloudflare:workers";
 import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import { gestisciAdmin } from "../src/admin.js";
-import { creaNickname } from "../src/esplorator.js";
+import { creaNickname, elencoPubblicoNickname } from "../src/esplorator.js";
 
 const BASE = "https://esplorazione.artenaut.workers.dev";
 const TEAM = "artenaut.cloudflareaccess.com";
@@ -140,10 +140,24 @@ describe("Moderazione dei nickname (4.4)", () => {
     expect((await rinomina("altro nick")).status).toBe(422);            // esiste già
     expect((await rinomina("x")).status).toBe(422);                     // troppo corto
     expect(await (await rinomina("Esploratore Uno")).json()).toEqual({ id, nickname: "Esploratore Uno" });
-    expect((await (await chiama("/api/esplorator")).json()).map((n) => n.nickname)).toContain("Esploratore Uno");
+    expect((await elencoPubblicoNickname(env.DB)).map((n) => n.nickname)).toContain("Esploratore Uno");
 
     expect((await comeAdmin(`/admin/api/esplorator/${id}`, { method: "DELETE" })).status).toBe(200);
     expect((await comeAdmin(`/admin/api/esplorator/${id}`, { method: "DELETE" })).status).toBe(404);
-    expect((await (await chiama("/api/esplorator")).json()).some((n) => n.id === id)).toBe(false);
+    expect((await elencoPubblicoNickname(env.DB)).some((n) => n.id === id)).toBe(false);
+  });
+});
+
+describe("Secondo controllo dell'accesso (ADMIN_EMAILS)", () => {
+  it("se il segreto c'è, entra solo un'email dell'elenco; senza, la pagina lo segnala", async () => {
+    const richiesta = async (ammesse) => {
+      const req = new Request(BASE + "/admin", { headers: { "Cf-Access-Jwt-Assertion": await token() } });
+      return gestisciAdmin(req, { ...env, ACCESS_TEAM: TEAM, ACCESS_AUD: "aud-di-prova", ADMIN_EMAILS: ammesse }, new URL(BASE + "/admin"));
+    };
+    expect((await richiesta("altra@esempio.it")).status).toBe(403);
+    const ok = await richiesta(" ADMIN@esempio.it , seconda@esempio.it");
+    expect(ok.status).toBe(200);
+    expect(await ok.text()).not.toContain("Secondo controllo dell'accesso non attivo");
+    expect(await (await richiesta(undefined)).text()).toContain("Secondo controllo dell'accesso non attivo");
   });
 });

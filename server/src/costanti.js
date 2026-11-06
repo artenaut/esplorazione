@@ -1,7 +1,7 @@
 // Costanti del server. Stanno qui e non in index.js: il modulo principale del Worker
 // può esportare solo il gestore e le classi dei Durable Object.
 
-export const VERSIONE = "5.0";
+export const VERSIONE = "5.1";
 
 // Versione dell'informativa privacy in vigore (docs/informativa-privacy.md, «Ultimo aggiornamento»).
 // Va cambiata insieme al testo: viene salvata con ogni nuovo consenso.

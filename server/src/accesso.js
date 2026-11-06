@@ -3,15 +3,17 @@
 // la firma del token, così una richiesta che aggira Access viene rifiutata.
 // Non si salva nulla: l'email letta dal token serve solo a mostrare con chi si è entrati.
 
-const cacheChiavi = { team: null, chiavi: null, scadenza: 0 };
+const cacheChiavi = { team: null, chiavi: null, scadenza: 0, scaricate: 0 };
 
 async function chiaviAccess(team, forza = false) {
   const ora = Date.now();
   if (!forza && cacheChiavi.team === team && cacheChiavi.chiavi && ora < cacheChiavi.scadenza) return cacheChiavi.chiavi;
+  // una chiave sconosciuta non fa riscaricare le chiavi più di una volta al minuto
+  if (forza && cacheChiavi.team === team && cacheChiavi.chiavi && ora - cacheChiavi.scaricate < 60 * 1000) return cacheChiavi.chiavi;
   const res = await fetch(`https://${team}/cdn-cgi/access/certs`);
   if (!res.ok) throw new Error(`Chiavi Access non disponibili (${res.status})`);
   const { keys } = await res.json();
-  Object.assign(cacheChiavi, { team, chiavi: keys ?? [], scadenza: ora + 60 * 60 * 1000 });
+  Object.assign(cacheChiavi, { team, chiavi: keys ?? [], scadenza: ora + 60 * 60 * 1000, scaricate: ora });
   return cacheChiavi.chiavi;
 }
 

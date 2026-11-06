@@ -144,6 +144,21 @@ Entrambi chiedono prima una conferma. Poi chiedono come proseguire:
 - **Area `/admin`:** applicazione Access self-hosted «Esplorazione · admin» sul percorso `esplorazione.artenaut.workers.dev/admin`, policy «Solo admin» (solo l'email di Francesco). Il Worker verifica firma, emittente, AUD e scadenza del token; le modifiche richiedono anche l'intestazione `X-Richiesta: admin` (CSRF). Funzioni: elenco, lettura completa, caricamento con `validateModule`, rimozione.
 - **Lowrenzia** caricata da Francesco dall'area admin. La versione sul server può differire da quella in `index.html` (deciso il 6/11/2026: le modifiche ai testi si fanno solo sul server; l'app attuale resta com'è finché non viene sostituita dall'interfaccia a sessioni).
 
+### Revisione di sicurezza del 6/11/2026
+Nessuna falla critica (verificati: token di Access, CSRF, query parametrizzate, escape HTML, codici casuali salvati come impronta, ruoli e testi lato server, nessun segreto nel repository). Correzioni applicate:
+1. **WebSocket:** al massimo 30 messaggi ogni 10 secondi per connessione (oltre, la connessione si chiude) e 20 connessioni per partita, contro chi vuole esaurire la quota gratuita.
+2. **IPv6:** i limiti contano per blocco /64, non per singolo indirizzo.
+3. **Nuovi nickname:** al massimo 5 ogni 10 minuti per rete (oltre agli 8 per partita). Il Worker passa alla partita solo l'impronta della rete, scartando quella eventualmente mandata dal dispositivo.
+4. **Elenco dei nickname non più pubblico:** lo riceve solo chi ha un posto in una partita, o il master.
+5. Le chiavi di Access si riscaricano al massimo una volta al minuto.
+6. Richieste CORS preliminari solo per `/api/`.
+7. **CSP** nelle pagine dell'app: connessioni solo verso il server del club.
+8. (Nome utente personale in `roadmap-app.md`: lasciato, per scelta di Francesco.)
+9. **Immagine delle regole solo dalla cartella `img/`** del sito, niente indirizzi esterni.
+10. **Secondo controllo dell'area admin:** il Worker ammette solo le email del segreto `ADMIN_EMAILS` (impostato nel pannello Cloudflare, mai nel repository). Senza il segreto, la pagina admin mostra un avviso.
+
+Non cambiato, per scelta: codice della partita a 3 cifre.
+
 ## 4. Classifica del club [deciso il 6/11/2026]
 
 **Regole di calcolo e visualizzazione: vedi `roadmap-classifica.md`.** Qui restano solo gli aspetti lato server.

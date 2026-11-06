@@ -18,6 +18,9 @@ describe("motore.js nel Worker", () => {
   it("valida, compila ed estrae", () => {
     expect(validateModule(PIANETA)).toBeNull();
     expect(validateModule({ ...PIANETA, id: "lowrenzia" }, { idRiservati: ["lowrenzia"] })).toContain("già usato");
+    // immagine delle regole solo dal sito (niente indirizzi esterni)
+    expect(validateModule({ ...PIANETA, regoleImmagine: "img/esploratore.png" })).toBeNull();
+    expect(validateModule({ ...PIANETA, regoleImmagine: "https://esempio.it/x.png" })).toContain("cartella img/");
     const m = compile(PIANETA);
     const shown = {}, seen = {};
     const offerta = drawOffer(m, "LA", "a", shown, seen);

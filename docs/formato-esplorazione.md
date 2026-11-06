@@ -34,7 +34,7 @@ Le stanze si possono continuare a scrivere nel foglio di calcolo: la conversione
 | `estrazione` | no | `"meno-mostrate"` oppure `"casuale"` (predefinito). |
 | `regole` | no | Testo delle regole del gioco: righe con `## ` per i titoli, `- ` per gli elenchi, `**grassetto**`, simboli come `{T}`. |
 | `regoleLink` | no | Link `https://` a un regolamento completo. |
-| `regoleImmagine` | no | Immagine in cima alle regole (es. `img/esploratore.png`). |
+| `regoleImmagine` | no | Immagine in cima alle regole, **solo un file della cartella `img/` del sito** (es. `img/esploratore.png`; png, webp o jpg). Niente indirizzi esterni: farebbero arrivare a terzi l'IP di chi apre le regole (deciso il 6/11/2026). |
 | `vie` | sì | L'elenco delle vie (vedi sotto). |
 | `ingresso` | sì | Il livello iniziale (vedi sotto). |
 | `livelli` | sì | I livelli dello sviluppo, ciascuno con un proprio nome tecnico. |

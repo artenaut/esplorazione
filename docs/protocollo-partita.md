@@ -41,6 +41,8 @@ Per indirizzo IP: **30 tentativi di ingresso al minuto** (controlli del codice e
 
 ### Il WebSocket
 
+Limiti: al massimo **30 messaggi ogni 10 secondi** per connessione (oltre: `troppi-messaggi` e chiusura con il codice 4429) e **20 connessioni** contemporanee per partita (oltre: `troppe-connessioni` e chiusura 4429).
+
 WebSocket su `wss://esplorazione.artenaut.workers.dev/api/partite/LWR-482/ws` (il codice si può scrivere anche in minuscolo).
 
 - Ogni messaggio è un oggetto JSON con un campo `tipo`. Fa eccezione il ping: il testo `ping` riceve `pong`, senza risvegliare il server. Conviene mandarlo ogni 30 secondi circa, per tenere viva la connessione.
@@ -81,8 +83,8 @@ Il server controlla il ruolo di ogni azione. Chi non ha il ruolo giusto riceve `
 
 | `scelta` | Effetto |
 |---|---|
-| `{ "tipo": "nickname", "id": 12 }` | Nickname del club, preso da `GET /api/esplorator` (`[{ "id", "nickname" }]`, pubblico come la classifica). Lo stesso nickname non può stare in due posti della stessa partita. |
-| `{ "tipo": "nuovo", "nickname": "Zia Pina", "eta14": true, "consenso": true }` | Crea un nickname del club. Servono **entrambe** le caselle. Il server salva solo nickname, data del consenso, versione dell'informativa e conferma dei 14 anni. Da 3 a 20 caratteri: lettere, numeri, spazi e `. _ - '`; unico senza distinguere maiuscole e minuscole. Al massimo 8 nuovi nickname per partita. |
+| `{ "tipo": "nickname", "id": 12 }` | Nickname del club. L'elenco si chiede alla partita con `{ "tipo": "nickname" }` → `{ "tipo": "nickname", "elenco": [{ "id", "nickname" }] }`, solo dal master o da chi ha un posto: non è pubblico. Lo stesso nickname non può stare in due posti della stessa partita. |
+| `{ "tipo": "nuovo", "nickname": "Zia Pina", "eta14": true, "consenso": true }` | Crea un nickname del club. Servono **entrambe** le caselle. Il server salva solo nickname, data del consenso, versione dell'informativa e conferma dei 14 anni. Da 3 a 20 caratteri: lettere, numeri, spazi e `. _ - '`; unico senza distinguere maiuscole e minuscole. Al massimo 8 nuovi nickname per partita e 5 ogni 10 minuti per rete. |
 | `{ "tipo": "guest" }` | Nome buffo scelto **dal server** («Gallina in incognito»…), diverso dagli altri della partita. Mandarlo di nuovo dà **un altro nome**. Il nome non si può scrivere a mano. |
 
 Il master che crea un nickname per chi non ha il telefono deve passare il telefono alla persona: le due caselle valgono come sua dichiarazione.
@@ -195,6 +197,7 @@ Dopo ogni modifica il server manda a tutti i dispositivi lo stesso messaggio `{ 
 | `nome-non-valido`, `troppi`, `troppo-pochi` | Aggiunta o rimozione di esplorator\* non valida. |
 | `identita-mancante`, `identita-bloccata` | Posto ancora da scegliere / identità non più modificabile dopo la prima mossa. |
 | `nickname-in-uso`, `nickname-inesistente`, `nickname-non-valido`, `consenso-mancante`, `troppi-nickname` | Problemi nella scelta o creazione del nickname: il messaggio dice cosa fare. |
+| `troppi-messaggi`, `troppe-connessioni` | Limiti della connessione superati (§2). |
 | `salvataggio-fallito` | «Chiudi partita» non è riuscita a salvare i risultati: la partita resta aperta, riprovare. |
 | `versione-superata` | Qualcun altro ha già mosso quel personaggio: il messaggio porta lo `stato` aggiornato. |
 | `stanza-non-proposta` | La stanza non è tra le proposte (porta lo `stato`). |

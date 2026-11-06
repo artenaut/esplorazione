@@ -58,11 +58,16 @@ describe("Scelta dell'identità (4.1–4.2)", () => {
     expect((await tel.aspetta("stato")).stato.posti[0].nome).not.toBe("Mario Rossi");
   });
 
-  it("nickname dall'elenco pubblico; non due volte nella stessa partita", async () => {
+  it("elenco dei nickname solo dentro la partita; non due volte nella stessa partita", async () => {
     const id = await nickname("Zia Pina");
-    const elenco = await (await chiama("/api/esplorator")).json();
-    expect(elenco).toContainEqual({ id, nickname: "Zia Pina" });
-    const { master, tel } = await partitaVuota();
+    expect((await chiama("/api/esplorator")).status).toBe(404);   // non è pubblico
+    const { corpo, master, tel } = await partitaVuota();
+    tel.manda({ tipo: "nickname" });
+    expect((await tel.aspetta("nickname")).elenco).toContainEqual({ id, nickname: "Zia Pina" });
+    const ospite = await apriWs(corpo.codice);
+    ospite.manda({ tipo: "entra" }); await ospite.aspetta("benvenuto");
+    ospite.manda({ tipo: "nickname" });
+    expect((await ospite.aspetta("errore")).codice).toBe("ruolo");
     scegli(tel, 0, { tipo: "nickname", id });
     expect((await tel.aspetta("stato")).stato.posti[0]).toMatchObject({ nome: "Zia Pina", identita: { tipo: "nickname", id } });
     scegli(master, 1, { tipo: "nickname", id });

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Registro dell’esplorazione</title>
 <meta name="theme-color" content="#15181d">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://esplorazione.artenaut.workers.dev wss://esplorazione.artenaut.workers.dev http://localhost:* ws://localhost:* http://127.0.0.1:* ws://127.0.0.1:*; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
 /* Caratteri ospitati nel sito (licenza SIL OFL, vedi fonts/). Nessuna richiesta a Google. */
@@ -447,6 +448,7 @@ function ricevi(m){
       salvaSessione({ codice:sessione.codice, ruolo:'ospite' });
       ruolo = 'ospite'; mioPosto = null; UI.schermata = 'posto'; UI.avviso = m.messaggio;
       break;
+    case 'nickname': UI.nicknames = m.elenco || []; break;
     case 'chiusa': return partitaChiusa(m);
     case 'errore': return erroreServer(m);
   }
@@ -812,13 +814,8 @@ function renderGioco(){
 }
 
 /* ---------- chi gioca in un posto (fase 4) ---------- */
-async function caricaNickname(){
-  try{
-    const r = await fetch(`${SERVER}/api/esplorator`);
-    UI.nicknames = r.ok ? await r.json() : [];
-  }catch(e){ UI.nicknames = []; }
-  if(UI.schermata==='gioco') render();
-}
+// l'elenco dei nickname non è pubblico: lo manda la partita a chi ha un posto o al master
+function caricaNickname(){ manda({ tipo:'nickname' }); }
 
 function pannelloIdentita(posto){
   const p = S.posti[posto], perAltri = ruolo==='master';

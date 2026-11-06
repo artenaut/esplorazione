@@ -17,10 +17,16 @@ import { nuovaPartita } from "./crea.js";
 import { leggi } from "./esplorazioni.js";
 import { leggiNickname, creaNickname, nomeGuest } from "./esplorator.js";
 import { salvaPartita } from "./classifica.js";
+import { elencoPubblicoNickname } from "./esplorator.js";
 
 export const MIN_GIOCATORI = 2, MAX_GIOCATORI = 4, MAX_REGISTRO = 500;
 // Nuovi nickname creabili in una partita (contro chi ne crea in serie).
 export const MAX_NUOVI_NICKNAME = 8;
+// Limiti contro chi vuole consumare la quota del piano gratuito (revisione di sicurezza del 6/11/2026):
+// messaggi per connessione in una finestra di tempo, connessioni contemporanee per partita,
+// nuovi nickname per rete (impronta dell'indirizzo, passata dal Worker).
+export const MAX_MESSAGGI = 30, FINESTRA_MESSAGGI = 10 * 1000, MAX_CONNESSIONI = 20;
+export const MAX_NICKNAME_RETE = 5, FINESTRA_NICKNAME_RETE = 10 * 60 * 1000;
 const ROMANI = ["I", "II", "III", "IV"];
 // Scadenza: 6 ore senza attività, e comunque 24 ore dopo la creazione (roadmap-server.md §2).
 export const SENZA_ATTIVITA = 6 * 60 * 60 * 1000, DURATA_MASSIMA = 24 * 60 * 60 * 1000;
@@ -36,6 +42,7 @@ export class Partita extends DurableObject {
     this.stato = null;     // copia in memoria, ricaricata dallo storage dopo l'ibernazione
     this.motore = null;    // pianeta compilato (cache)
     this.allarmeVerificato = false;
+    this.messaggi = new WeakMap(); // connessione → { inizio, n }: conteggio in memoria (si azzera con l'ibernazione)
   }
 
   // ---------- creazione (chiamata dal Worker via RPC) ----------
@@ -78,11 +85,17 @@ export class Partita extends DurableObject {
     if (request.headers.get("Upgrade") !== "websocket") {
       return new Response("Serve una connessione WebSocket.", { status: 426 });
     }
+    const giaCollegati = this.ctx.getWebSockets().length;
     const { 0: client, 1: server } = new WebSocketPair();
     this.ctx.acceptWebSocket(server); // attiva l'ibernazione
-    server.serializeAttachment({ ruolo: null, posto: null });
+    // impronta della rete, calcolata dal Worker (mai l'indirizzo in chiaro)
+    const rete = request.headers.get("X-Impronta-Rete");
+    server.serializeAttachment({ ruolo: null, posto: null, rete: /^[0-9a-f]{64}$/.test(rete ?? "") ? rete : null });
     const stato = await this.carica();
-    if (!stato) {
+    if (stato && giaCollegati >= MAX_CONNESSIONI) {
+      invia(server, { tipo: "errore", codice: "troppe-connessioni", messaggio: "Troppi dispositivi collegati a questa partita. Chiudi l’app sui dispositivi che non servono e riprova." });
+      server.close(4429, "Troppe connessioni");
+    } else if (!stato) {
       invia(server, { tipo: "errore", codice: "partita-inesistente", messaggio: "Non c’è nessuna partita con questo codice. Controlla il codice o chiedi a chi l’ha creata." });
       server.close(4404, "Partita inesistente");
     } else if (!this.allarmeVerificato) {
@@ -94,6 +107,15 @@ export class Partita extends DurableObject {
   }
 
   async webSocketMessage(ws, messaggio) {
+    // limite di messaggi per connessione: oltre, la connessione si chiude
+    const ora = Date.now();
+    let c = this.messaggi.get(ws);
+    if (!c || ora - c.inizio > FINESTRA_MESSAGGI) this.messaggi.set(ws, (c = { inizio: ora, n: 0 }));
+    if (++c.n > MAX_MESSAGGI) {
+      errore(ws, "troppi-messaggi", "Troppi messaggi in poco tempo: la connessione è stata chiusa.");
+      try { ws.close(4429, "Troppi messaggi"); } catch { /* già chiusa */ }
+      return;
+    }
     let dati;
     try {
       if (typeof messaggio !== "string" || messaggio.length > 4096) throw new Error();
@@ -120,6 +142,7 @@ export class Partita extends DurableObject {
         case "aggiungi": return await this.aggiungi(ws, stato, io, dati);
         case "togli": return await this.togli(ws, stato, io, dati);
         case "identita": return await this.identita(ws, stato, io, dati);
+        case "nickname": return await this.elencoNickname(ws, io);
         case "mossa": return await this.mossa(ws, stato, io, dati);
         case "annulla": return await this.annulla(ws, stato, io);
         case "chiudi": return await this.chiudi(ws, stato, io, dati);
@@ -163,7 +186,7 @@ export class Partita extends DurableObject {
     } else if (dati.ruolo === "tabellone") {
       ruolo = "tabellone";
     }
-    ws.serializeAttachment({ ruolo, posto });
+    imposta(ws, { ruolo, posto });
     invia(ws, { tipo: "benvenuto", ruolo, posto, stato: this.vista(stato) });
   }
 
@@ -178,7 +201,7 @@ export class Partita extends DurableObject {
     const gettone = casuale();
     p.gettoneHash = await hash(gettone);
     await this.salva(stato, { attivita: true });
-    ws.serializeAttachment({ ruolo: "esplorator", posto });
+    imposta(ws, { ruolo: "esplorator", posto });
     invia(ws, { tipo: "posto", posto, gettone });
     this.trasmetti(stato);
   }
@@ -194,7 +217,7 @@ export class Partita extends DurableObject {
     for (const altro of this.ctx.getWebSockets()) {
       const a = altro.deserializeAttachment();
       if (a?.ruolo === "esplorator" && a.posto === posto) {
-        altro.serializeAttachment({ ruolo: "ospite", posto: null });
+        imposta(altro, { ruolo: "ospite", posto: null });
         invia(altro, { tipo: "liberato", posto, messaggio: "Il master ha liberato il tuo posto. Puoi sceglierne un altro." });
       }
     }
@@ -222,10 +245,10 @@ export class Partita extends DurableObject {
       const a = altro.deserializeAttachment();
       if (a?.ruolo !== "esplorator") continue;
       if (a.posto === posto) {
-        altro.serializeAttachment({ ruolo: "ospite", posto: null });
+        imposta(altro, { ruolo: "ospite", posto: null });
         invia(altro, { tipo: "liberato", posto, messaggio: "Il master ti ha tolto dalla partita. Puoi scegliere un altro posto." });
       } else if (a.posto > posto) {
-        altro.serializeAttachment({ ruolo: "esplorator", posto: a.posto - 1 });
+        imposta(altro, { ruolo: "esplorator", posto: a.posto - 1 });
       }
     }
     this.trasmetti(stato);
@@ -263,6 +286,10 @@ export class Partita extends DurableObject {
       if ((stato.nuoviNickname ?? 0) >= MAX_NUOVI_NICKNAME) {
         return errore(ws, "troppi-nickname", "In questa partita sono già stati creati troppi nickname: chiedi a chi amministra.");
       }
+      if (io.rete && this.env.LIMITATORE) {
+        const ok = await this.env.LIMITATORE.get(this.env.LIMITATORE.idFromName(`NICKNAME:${io.rete}`)).conta(MAX_NICKNAME_RETE, FINESTRA_NICKNAME_RETE);
+        if (!ok) return errore(ws, "troppi-nickname", "Troppi nickname creati da questa rete in poco tempo: riprova tra qualche minuto.");
+      }
       const r = await creaNickname(this.env.DB, scelta.nickname);
       if (r.errore) return errore(ws, "nickname-non-valido", r.errore);
       stato.nuoviNickname = (stato.nuoviNickname ?? 0) + 1;
@@ -274,6 +301,13 @@ export class Partita extends DurableObject {
     p.name = nuova.nome;
     await this.salva(stato, { attivita: true });
     this.trasmetti(stato);
+  }
+
+  // Elenco dei nickname del club, solo per chi è dentro la partita e può sceglierne uno
+  // (non è pubblico: chi ha dato il consenso compare nella classifica, non in un elenco aperto a tutti).
+  async elencoNickname(ws, io) {
+    if (io.ruolo !== "master" && io.ruolo !== "esplorator") return errore(ws, "ruolo", "Prima scegli il tuo posto.");
+    invia(ws, { tipo: "nickname", elenco: await elencoPubblicoNickname(this.env.DB) });
   }
 
   // Una mossa: entrare in una delle stanze proposte a un* esplorator*.
@@ -529,6 +563,11 @@ export function riepilogoPartita(stato) {
       cicli: p.cicli ?? 0, stanze: p.moves, perVia: { ...(p.perVia ?? {}) },
     })),
   };
+}
+
+// Aggiorna ruolo e posto di una connessione, conservando gli altri campi (impronta della rete).
+function imposta(ws, campi) {
+  ws.serializeAttachment({ ...(ws.deserializeAttachment() ?? {}), ...campi });
 }
 
 function invia(ws, dati) {

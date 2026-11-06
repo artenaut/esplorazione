@@ -14,6 +14,13 @@ export async function gestisciAdmin(request, env, url) {
   }
   const chi = await verificaAccess(request, env);
   if (!chi) return testo("Accesso negato. Entra dall'indirizzo dell'area admin per fare il login con Cloudflare Access.", 403);
+  // Secondo controllo, indipendente dalla policy di Access: le email ammesse stanno nel segreto ADMIN_EMAILS
+  // (impostato nel pannello Cloudflare, mai nel repository). Finché manca, la pagina lo segnala.
+  const ammesse = (env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+  if (ammesse.length && !ammesse.includes(chi.email.toLowerCase())) {
+    return testo("Accesso negato: questo account non è tra chi amministra.", 403);
+  }
+  chi.secondoControllo = ammesse.length > 0;
 
   const p = url.pathname.replace(/\/+$/, "") || "/admin";
   if (p === "/admin" && request.method === "GET") return pagina(chi);
@@ -184,6 +191,7 @@ details.simlv summary{cursor:pointer}
 </style></head><body><div class="wrap">
 <header><div><span class="eyebrow">Area admin</span><h1>Esplorazioni sul server</h1></div>
 <p class="hint">Accesso come ${esc(chi.email) || "chi amministra"} · <a class="hint" href="/cdn-cgi/access/logout">Esci</a></p></header>
+${chi.secondoControllo ? "" : `<p class="msg err" style="border:1px dashed currentColor;border-radius:10px;padding:10px 12px">Secondo controllo dell'accesso non attivo: aggiungi il segreto ADMIN_EMAILS nelle impostazioni del Worker su Cloudflare.</p>`}
 
 <section class="panel">
   <div><h2>Esplorazioni caricate</h2><p class="hint">Sono quelle che si possono scegliere quando si crea una partita. I testi delle stanze restano solo qui sul server.</p></div>

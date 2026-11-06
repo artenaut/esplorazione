@@ -21,7 +21,8 @@ export function validateModule(m, opts){
   if(m.estrazione!=null && !['casuale','meno-mostrate'].includes(m.estrazione)) return 'L’"estrazione" deve essere "casuale" oppure "meno-mostrate".';
   if(m.regole!=null && typeof m.regole!=='string') return 'Le "regole" devono essere un testo.';
   if(m.regoleLink!=null && (typeof m.regoleLink!=='string' || !/^https:\/\/\S+$/.test(m.regoleLink))) return 'Il "regoleLink" deve essere un indirizzo che inizia con https://.';
-  if(m.regoleImmagine!=null && (typeof m.regoleImmagine!=='string' || !/^(img\/[a-z0-9._-]+\.(png|webp|jpg)|https:\/\/\S+)$/.test(m.regoleImmagine))) return 'La "regoleImmagine" deve essere un file in img/ o un indirizzo https://.';
+  // solo immagini del sito: un indirizzo esterno farebbe arrivare a terzi l'IP di chi apre le regole
+  if(m.regoleImmagine!=null && (typeof m.regoleImmagine!=='string' || !/^img\/[a-z0-9._-]+\.(png|webp|jpg)$/.test(m.regoleImmagine))) return 'La "regoleImmagine" deve essere un file nella cartella img/ del sito (png, webp o jpg).';
 
   // vie
   if(!Array.isArray(m.vie) || !m.vie.length || m.vie.length>8) return 'Servono da 1 a 8 vie in "vie".';
