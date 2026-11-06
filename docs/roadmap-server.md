@@ -70,7 +70,23 @@ Al tavolo i giocatori leggono comunque ad alta voce le stanze proposte, quindi l
 
 ### Logica lato server
 - **Estrazioni sul server,** con la regola «meno mostrate» (vedi `roadmap-app.md`, punto 1). I contatori sono nello stato della partita.
-- **Ricomincia** azzera i contatori.
+- Ogni nuova partita parte con i contatori azzerati.
+
+### Chiusura della partita [deciso il 6/11/2026]
+Una partita che non arriva in fondo si annulla: **in classifica entrano solo le partite concluse.** Le partite non continuano in una serata successiva, quindi non serve un «sospendi e riprendi».
+
+Due pulsanti, riservati al master, sostituiscono «Ricomincia»:
+- **Chiudi partita:** conclude la partita e **salva** i dati per la classifica e le statistiche.
+- **Annulla partita:** chiude la partita **senza salvare nulla.** Tutti i dati della partita vengono eliminati.
+
+Entrambi chiedono prima una conferma. Poi chiedono come proseguire:
+- **tornare alla schermata iniziale**, per inserire nuovi giocatori;
+- oppure **iniziare subito una nuova partita con gli stessi giocatori.**
+
+**Scadenza automatica per inattività:**
+- la partita viene eliminata dopo **6 ore senza attività**, e comunque **24 ore dopo la creazione**;
+- contano come attività solo le azioni vere: mosse, annullamenti, ingresso di un giocatore. Un dispositivo collegato o in standby non tiene viva la partita;
+- alla scadenza si elimina **tutto ciò che non è stato concluso**, senza salvare nulla, come con «Annulla partita». Il codice corto torna libero.
 
 ## 3. Sicurezza [deciso il 6/11/2026]
 
@@ -95,7 +111,7 @@ Al tavolo i giocatori leggono comunque ad alta voce le stanze proposte, quindi l
 - **Codice master e gettone del posto** (quello che lega un dispositivo a un giocatore): sono casuali e lunghi, generati dal server e validi solo per quella partita.
 - **Codice corto della partita** (es. `LWR-482`): è indovinabile per tentativi, quindi:
   - va limitato il numero di tentativi di ingresso per dispositivo;
-  - la partita **scade da sola** dopo un periodo di inattività, per esempio 24 ore.
+  - la partita **scade da sola**: 6 ore senza attività, 24 ore al massimo dalla creazione (vedi «Chiusura della partita»).
 
   Il danno possibile è piccolo, perché si entra solo in una partita da tavolo, ma il limite costa poco.
 
@@ -105,10 +121,11 @@ Al tavolo i giocatori leggono comunque ad alta voce le stanze proposte, quindi l
 ## 4. Classifica del club [da decidere]
 
 - Si appoggia allo stesso stato condiviso delle sessioni.
+- **Entrano in classifica solo le partite concluse con «Chiudi partita».** Le partite annullate o scadute non lasciano traccia. (Deciso il 6/11/2026.)
 - **Identità dei giocatori:** un elenco gestito dall'admin, da cui scegliere il nome a inizio partita, più l'opzione «ospite», che non entra in classifica. Niente account con login.
 - **Cosa vale punti,** da decidere: esplorazioni completate, profondità, punti per livello con bonus per giro, media per partita, vittoria della partita (chiesta a fine partita).
 - Classifiche separate **per esplorazione e per stagione**.
-- **Partite ufficiali:** contano solo quelle create o confermate dall'admin.
+- **Partite ufficiali** [da decidere]: oltre alla chiusura con «Chiudi partita», serve anche una conferma dell'admin?
 - **Privacy:** soprannomi o nomi di battesimo e un avviso ai partecipanti.
 
 ## 5. Statistiche per l'autore [idea]
