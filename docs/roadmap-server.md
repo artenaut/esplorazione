@@ -72,7 +72,37 @@ Al tavolo i giocatori leggono comunque ad alta voce le stanze proposte, quindi l
 - **Estrazioni sul server,** con la regola «meno mostrate» (vedi `roadmap-app.md`, punto 1). I contatori sono nello stato della partita.
 - **Ricomincia** azzera i contatori.
 
-## 3. Classifica del club [da decidere]
+## 3. Sicurezza [deciso il 6/11/2026]
+
+### Area admin protetta da Cloudflare Access
+- Con il server, la password controllata nella pagina non protegge più nulla: chiunque potrebbe chiamare il server direttamente. **La protezione deve stare sul server.**
+- Si usa **Cloudflare Access (Zero Trust)** davanti alle pagine e a tutte le chiamate dell'area admin. Non va scritto codice di autenticazione. Si entra con email e codice monouso, oppure con un account Google. Il piano gratuito copre fino a 50 utenti.
+- **Amministratore unico: Francesco.** La regola di Access ammette solo la sua email.
+- Il Worker verifica comunque il token di Access su ogni chiamata admin, così una chiamata che aggira Access viene rifiutata.
+- Sono operazioni admin, quindi protette:
+  - caricare, modificare, rimuovere **e leggere** le esplorazioni (i testi delle stanze stanno solo sul server);
+  - gestire l'elenco dei giocatori del club;
+  - confermare le partite ufficiali;
+  - correggere la classifica e azzerare le stagioni.
+- La schermata con password nella pagina può restare come comodità, ma non è più la protezione.
+
+### Il server non si fida dei dispositivi
+- Il server rifiuta una mossa verso una stanza che non è tra quelle proposte a quel giocatore.
+- Il server rifiuta una mossa su un personaggio di cui il dispositivo non occupa il posto, salvo che a farla sia il master.
+- Annulla, ricomincia e la gestione dei posti vengono controllati sul server in base al ruolo, non sull'interfaccia.
+
+### Codici e gettoni delle sessioni
+- **Codice master e gettone del posto** (quello che lega un dispositivo a un giocatore): sono casuali e lunghi, generati dal server e validi solo per quella partita.
+- **Codice corto della partita** (es. `LWR-482`): è indovinabile per tentativi, quindi:
+  - va limitato il numero di tentativi di ingresso per dispositivo;
+  - la partita **scade da sola** dopo un periodo di inattività, per esempio 24 ore.
+
+  Il danno possibile è piccolo, perché si entra solo in una partita da tavolo, ma il limite costa poco.
+
+### Finché il server non c'è
+- Con l'app attuale e le esplorazioni incorporate, la password nella pagina resta sufficiente come «anti-pasticcio».
+
+## 4. Classifica del club [da decidere]
 
 - Si appoggia allo stesso stato condiviso delle sessioni.
 - **Identità dei giocatori:** un elenco gestito dall'admin, da cui scegliere il nome a inizio partita, più l'opzione «ospite», che non entra in classifica. Niente account con login.
@@ -81,7 +111,7 @@ Al tavolo i giocatori leggono comunque ad alta voce le stanze proposte, quindi l
 - **Partite ufficiali:** contano solo quelle create o confermate dall'admin.
 - **Privacy:** soprannomi o nomi di battesimo e un avviso ai partecipanti.
 
-## 4. Statistiche per l'autore [idea]
+## 5. Statistiche per l'autore [idea]
 
 - Quante volte viene scelta ogni via, quali stanze vengono mostrate o scelte di più, a che livello si arriva in media.
 - Sono la versione reale, con partite vere, del simulatore dell'area admin.
