@@ -26,7 +26,7 @@ Per inserire un nickname in classifica devi avere **almeno 14 anni** (art. 2-qui
 
 ### 5. Chi può vedere i dati
 - **Chiunque** visiti la pagina della classifica vede il nickname e le statistiche di gioco.
-- L'**amministratore** di Artenaut\* può modificare o cancellare i dati, per esempio per correggere errori o su tua richiesta.
+- Lo **staff** di Artenaut\* che amministra l'app può modificare o cancellare i dati, per esempio per correggere errori o su tua richiesta.
 - Per far funzionare il servizio ci appoggiamo a due fornitori, che trattano i dati per nostro conto:
   - **Cloudflare, Inc.**, che ospita il server delle partite e della classifica;
   - **GitHub, Inc.**, che ospita il sito dell'app.
@@ -35,13 +35,13 @@ Per inserire un nickname in classifica devi avere **almeno 14 anni** (art. 2-qui
 
 ### 6. Per quanto tempo conserviamo i dati
 Conserviamo nickname e statistiche **finché non ne chiedi la cancellazione**, o fino alla chiusura del servizio.
-Le stagioni concluse restano consultabili come archivio. Se chiedi la cancellazione, nelle stagioni archiviate il tuo nickname viene sostituito da «Giocatore rimosso».
+Le stagioni concluse restano consultabili come archivio. Se chiedi la cancellazione, nelle stagioni archiviate il tuo nickname viene sostituito da «Esplorator\* rimoss\*».
 
 ### 7. Moderazione dei nickname
-Se un nickname corrisponde a un nome reale o è offensivo, l'amministratore può rinominarlo o rimuoverlo.
+Se un nickname corrisponde a un nome reale o è offensivo, lo staff di Artenaut\* può rinominarlo o rimuoverlo.
 
 ### 8. Dati salvati sul tuo dispositivo
-L'app salva nel browser del tuo dispositivo solo le informazioni tecniche necessarie a farla funzionare, come la partita in corso e il posto del giocatore. Non usiamo cookie di profilazione né strumenti di analisi delle visite.
+L'app salva nel browser del tuo dispositivo solo le informazioni tecniche necessarie a farla funzionare, come la partita in corso e il tuo posto al tavolo. Non usiamo cookie di profilazione né strumenti di analisi delle visite.
 
 ### 9. I tuoi diritti
 Puoi in qualsiasi momento, scrivendo a **artenautspaceship@gmail.com**:

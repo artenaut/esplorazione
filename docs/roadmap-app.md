@@ -9,6 +9,13 @@ Legenda: **[deciso]** concordato, da sviluppare · **[da decidere]** idea discus
 
 ## 0. Da completare
 
+- [ ] **PRIORITÀ: linguaggio inclusivo in tutto il progetto** (deciso il 6/11/2026). Vale per app, area admin, classifica, informativa, messaggi di errore e nomi dei guest. Si applica a **ogni versione in produzione**: le roadmap possono usare «giocatore», ma tutto ciò che vedono le persone no.
+  - Le persone che giocano si chiamano sempre **esplorator\*** (singolare e plurale), con l'asterisco come in Artenaut\*. Gli aggettivi e i participi riferiti a loro usano lo stesso asterisco (es. «Esplorator\* rimoss\*»).
+  - Dove si può, meglio ancora una **forma neutra** che non richiede l'asterisco: «chi gioca», «chi amministra», «il tuo turno», «persone», «staff».
+  - Da correggere nell'app attuale: «Giocatori», «Aggiungi giocatore», «Rimuovi giocatore», «Nome del giocatore N», «Ognuno si muove», «avventurieri», «Percorso di …» (già neutro), «Nuovi giocatori», «Stessi giocatori», «Tutti i progressi», «amministratore» nell'area admin, e i messaggi di errore che parlano di «giocatori».
+  - I nomi dei guest non usano aggettivi di genere: vedi `roadmap-classifica.md`, punto 10.
+  - L'informativa è già stata adeguata (6/11/2026).
+
 - [ ] **Inserire le regole del gioco di Lowrenzia** nel pulsante «Regole». Sono le regole del gioco vero e proprio, non le istruzioni dell'app. Oggi il campo `rules` contiene solo «Placeholder - ricordati di inserire istruzioni». Serve il testo da Francesco, oppure un link a un regolamento completo (`rulesUrl`).
 
 - [ ] **Caratteri ospitati nel sito, senza Google Fonts** (deciso il 6/11/2026). Scaricare i file dei due caratteri (IM Fell English SC e Alegreya Sans, in formato `woff2`) e metterli nel repository, caricandoli con `@font-face` al posto del link a Google. Così nessun IP dei visitatori viene inviato a Google, e l'informativa non deve citarlo. Va fatto prima di pubblicare la classifica. I file stanno su GitHub Pages insieme all'app: non servono al server Cloudflare.

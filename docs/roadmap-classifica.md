@@ -110,7 +110,7 @@ Poche righe, in linguaggio semplice, comprensibile anche ai ragazzi:
 
 ### Diritti e moderazione
 - L'admin può **rinominare** un nickname (per esempio un nome vero inserito per sbaglio, o un termine offensivo) e **cancellare** un giocatore su richiesta.
-- In caso di cancellazione, nelle **stagioni archiviate** il nickname diventa **«Giocatore rimosso»**: le posizioni degli altri non cambiano.
+- In caso di cancellazione, nelle **stagioni archiviate** il nickname diventa **«Esplorator\* rimoss\*»**: le posizioni degli altri non cambiano.
 
 ### Altro
 - **Niente banner cookie:** l'app salva nel browser solo dati tecnici strettamente necessari (partita e posto del giocatore). Va mantenuto così, quindi niente strumenti di analisi delle visite.
@@ -121,7 +121,7 @@ Poche righe, in linguaggio semplice, comprensibile anche ai ragazzi:
 
 - Chiunque può entrare in partita **come guest**, senza nickname e senza dati.
 - Il guest ha un **nome buffo generato dall'app**, per esempio «Gallina in incognito» o «Alpaca curioso».
-  - Il nome viene da un elenco di frasi già concordate in italiano (animale + aggettivo o espressione), così il genere torna sempre.
+  - Il nome viene da un elenco di frasi in italiano **senza aggettivi di genere**: un animale più un complemento invariabile, come «Gallina in incognito», «Alpaca col monocolo», «Lama dal cappello buffo». Si evitano forme come «Alpaca curioso».
   - **Il nome non si può modificare a mano,** perché qualcuno ci scriverebbe il proprio. Un pulsante «Un altro nome» ne estrae uno nuovo.
   - Nella stessa partita non possono esserci due nomi uguali.
 - Il guest gioca normalmente, ma **non entra in classifica.** Alla chiusura della partita i suoi dati vengono scartati e non salvati.
