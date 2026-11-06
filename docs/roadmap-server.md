@@ -98,8 +98,8 @@ Entrambi chiedono prima una conferma. Poi chiedono come proseguire:
 - Sono operazioni admin, quindi protette:
   - caricare, modificare, rimuovere **e leggere** le esplorazioni (i testi delle stanze stanno solo sul server);
   - gestire l'elenco dei giocatori del club;
-  - confermare le partite ufficiali;
-  - correggere la classifica e azzerare le stagioni.
+  - **modificare o eliminare a mano i singoli dati salvati** delle partite concluse, cioè le singole partite e i singoli risultati in classifica;
+  - azzerare le stagioni.
 - La schermata con password nella pagina può restare come comodità, ma non è più la protezione.
 
 ### Il server non si fida dei dispositivi
@@ -125,7 +125,7 @@ Entrambi chiedono prima una conferma. Poi chiedono come proseguire:
 - **Identità dei giocatori:** un elenco gestito dall'admin, da cui scegliere il nome a inizio partita, più l'opzione «ospite», che non entra in classifica. Niente account con login.
 - **Cosa vale punti,** da decidere: esplorazioni completate, profondità, punti per livello con bonus per giro, media per partita, vittoria della partita (chiesta a fine partita).
 - Classifiche separate **per esplorazione e per stagione**.
-- **Partite ufficiali** [da decidere]: oltre alla chiusura con «Chiudi partita», serve anche una conferma dell'admin?
+- **Partite valide:** basta che il master prema «Chiudi partita». L'admin non deve confermare nulla: può solo modificare o eliminare a mano i singoli dati salvati, per correggere errori. (Deciso il 6/11/2026.)
 - **Privacy:** soprannomi o nomi di battesimo e un avviso ai partecipanti.
 
 ## 5. Statistiche per l'autore [idea]
