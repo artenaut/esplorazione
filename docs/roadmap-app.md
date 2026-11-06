@@ -21,7 +21,7 @@ Legenda: **[deciso]** concordato, da sviluppare · **[da decidere]** idea discus
 
 - [x] **Caratteri ospitati nel sito, senza Google Fonts** (deciso e fatto il 6/11/2026: file `woff` nella cartella `fonts/`, solo caratteri latini). Scaricare i file dei due caratteri (IM Fell English SC e Alegreya Sans, in formato `woff2`) e metterli nel repository, caricandoli con `@font-face` al posto del link a Google. Così nessun IP dei visitatori viene inviato a Google, e l'informativa non deve citarlo. Va fatto prima di pubblicare la classifica. I file stanno su GitHub Pages insieme all'app: non servono al server Cloudflare.
 - [ ] **Informativa privacy:** il testo è pronto in `informativa-privacy.md` (completato il 6/11/2026). Va collegato all'inserimento del nickname.
-- [ ] **Spostare il repository in un'organizzazione GitHub del club** (es. `artenaut`), al posto dell'account personale di Francesco. Va fatto **prima di distribuire link o QR code**.
+- [x] **Spostare il repository in un'organizzazione GitHub del club** (fatto il 6/11/2026: `artenaut/esplorazione`, sito su `artenaut.github.io/esplorazione`), al posto dell'account personale di Francesco. Va fatto **prima di distribuire link o QR code**.
   1. Francesco crea l'organizzazione da github.com/organizations/plan (piano Free) e ne resta amministratore. Altri membri del club si possono aggiungere con ruoli diversi, senza condividere password.
   2. Repository → Settings → General → Danger Zone → **Transfer ownership** verso l'organizzazione. Codice, cronologia, roadmap e impostazioni seguono il repository, e i link al vecchio repository vengono reindirizzati.
   3. Controllare che GitHub Pages sia ancora attivo (Settings → Pages, branch `main`, cartella principale).
