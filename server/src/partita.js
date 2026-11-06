@@ -4,14 +4,19 @@
 // Per questo nulla vive solo in memoria: lo stato sta nello storage, il ruolo di ogni
 // connessione nell'«attachment» del WebSocket.
 //
-// Passi 3.3–3.7: creazione, posti con gettone, ruoli (master, esplorator*, tabellone, ospite),
-// mosse con estrazione sul server e annullamento dell'ultima mossa. Chiusura e scadenza: passi 3.8–3.9.
+// Passi 3.3–3.9: creazione, posti con gettone, ruoli (master, esplorator*, tabellone, ospite),
+// mosse con estrazione sul server, annullamento dell'ultima mossa, chiusura e scadenza automatica.
 // Protocollo completo: docs/protocollo-partita.md.
 
 import { DurableObject } from "cloudflare:workers";
 import { compile, drawOffer, nextOfNode } from "../../motore.js";
+import { casuale, hash } from "./util.js";
+import { nuovaPartita } from "./crea.js";
+import { leggi } from "./esplorazioni.js";
 
 export const MIN_GIOCATORI = 2, MAX_GIOCATORI = 4, MAX_NOME = 24, MAX_REGISTRO = 500;
+// Scadenza: 6 ore senza attività, e comunque 24 ore dopo la creazione (roadmap-server.md §2).
+export const SENZA_ATTIVITA = 6 * 60 * 60 * 1000, DURATA_MASSIMA = 24 * 60 * 60 * 1000;
 
 // Ruoli di una connessione: «ospite» (ha il codice ma non ha ancora un posto), «esplorator» (ha un posto),
 // «master» (ha il codice master), «tabellone» (sola lettura).
@@ -23,12 +28,14 @@ export class Partita extends DurableObject {
     ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair("ping", "pong"));
     this.stato = null;     // copia in memoria, ricaricata dallo storage dopo l'ibernazione
     this.motore = null;    // pianeta compilato (cache)
+    this.allarmeVerificato = false;
   }
 
   // ---------- creazione (chiamata dal Worker via RPC) ----------
 
-  // dati = { codice, esplorazione (file completo, già validato), nomi, codiceMaster }
-  async crea({ codice, esplorazione, nomi, codiceMaster }) {
+  // dati = { codice, esplorazione (file completo, già validato), nomi, codiceMaster,
+  //          gettoniHash (facoltativo: impronte dei gettoni dei posti, per «stesso gruppo») }
+  async crea({ codice, esplorazione, nomi, codiceMaster, gettoniHash = [] }) {
     if (await this.carica()) return { occupato: true };
     const m = compile(esplorazione);
     const shown = {};
@@ -41,11 +48,12 @@ export class Partita extends DurableObject {
       esplorazione,
       masterHash: await hash(codiceMaster),
       shown,
-      posti: nomi.map((nome) => nuovoPosto(m, nome, shown)),
+      posti: nomi.map((nome, i) => ({ ...nuovoPosto(m, nome, shown), gettoneHash: gettoniHash[i] ?? null })),
       log: [],
     };
     this.stato = stato;
     await this.ctx.storage.put("stato", stato);
+    await this.ctx.storage.setAlarm(scadenza(stato));
     return { ok: true };
   }
 
@@ -58,9 +66,14 @@ export class Partita extends DurableObject {
     const { 0: client, 1: server } = new WebSocketPair();
     this.ctx.acceptWebSocket(server); // attiva l'ibernazione
     server.serializeAttachment({ ruolo: null, posto: null });
-    if (!(await this.carica())) {
+    const stato = await this.carica();
+    if (!stato) {
       invia(server, { tipo: "errore", codice: "partita-inesistente", messaggio: "Non c’è nessuna partita con questo codice. Controlla il codice o chiedi a chi l’ha creata." });
       server.close(4404, "Partita inesistente");
+    } else if (!this.allarmeVerificato) {
+      // partite create prima del passo 3.9: si assegna la scadenza
+      if ((await this.ctx.storage.getAlarm()) == null) await this.ctx.storage.setAlarm(scadenza(stato));
+      this.allarmeVerificato = true;
     }
     return new Response(null, { status: 101, webSocket: client });
   }
@@ -93,6 +106,7 @@ export class Partita extends DurableObject {
         case "togli": return await this.togli(ws, stato, io, dati);
         case "mossa": return await this.mossa(ws, stato, io, dati);
         case "annulla": return await this.annulla(ws, stato, io);
+        case "chiudi": return await this.chiudi(ws, stato, io, dati);
         case "stato": return invia(ws, { tipo: "stato", stato: this.vista(stato) });
         default: return errore(ws, "tipo-sconosciuto", "Tipo di messaggio sconosciuto.");
       }
@@ -231,6 +245,10 @@ export class Partita extends DurableObject {
     p.trail.push(stanza);
     p.moves++;
     const info = m.roomMap[stanza];
+    // dati per la classifica (fase 5): stanze per via e cicli completati (si conta l'ingresso nel finale)
+    p.perVia ??= {};
+    p.perVia[info.room.path] = (p.perVia[info.room.path] ?? 0) + 1;
+    if (info.node === "finale") p.cicli = (p.cicli ?? 0) + 1;
     const prossimo = nextOfNode(m, p.node, info.room.path);
     stato.log.unshift({ player: p.name, room: info.room.title, path: info.room.path, step: p.trail.length, run: p.run, master: io.ruolo === "master" });
     if (stato.log.length > MAX_REGISTRO) stato.log.length = MAX_REGISTRO;
@@ -257,12 +275,73 @@ export class Partita extends DurableObject {
     const p = stato.posti[u.posto];
     const v = p.v ?? 0;
     Object.assign(p, u.giocatore); // il gettone del posto resta quello attuale
+    p.perVia = u.giocatore.perVia ?? {};
+    p.cicli = u.giocatore.cicli ?? 0;
     p.v = v + 1;
     stato.shown = u.shown;         // anche i contatori «meno mostrate» tornano com'erano
     stato.log.shift();
     stato.ultima = null;
     await this.salva(stato, { attivita: true });
     this.trasmetti(stato, { tipo: "annullata", posto: u.posto });
+  }
+
+  // Chiudi partita (salva: true) o Annulla partita (salva: false), poi «fine» o «stesso-gruppo».
+  // In entrambi i casi i dati della partita vengono eliminati dal server. Il riepilogo per la
+  // classifica viene calcolato e inviato con «Chiudi»; il salvataggio arriva con la fase 5.
+  async chiudi(ws, stato, io, { salva, poi }) {
+    if (io.ruolo !== "master") return errore(ws, "ruolo", "Solo il master può chiudere o annullare la partita.");
+    if (typeof salva !== "boolean" || !["fine", "stesso-gruppo"].includes(poi)) {
+      return errore(ws, "messaggio-non-valido", "Indica se salvare la partita e come proseguire.");
+    }
+    const modo = salva ? "chiusa" : "annullata";
+
+    // posti con un dispositivo collegato in questo momento: restano seduti nella nuova partita
+    const connessioni = this.ctx.getWebSockets().map((w) => ({ w, a: w.deserializeAttachment() ?? {} }));
+    let nuova = null;
+    const gettoni = [];
+    if (poi === "stesso-gruppo") {
+      const seduti = new Set(connessioni.filter((c) => c.a.ruolo === "esplorator").map((c) => c.a.posto));
+      stato.posti.forEach((_, i) => { gettoni[i] = seduti.has(i) ? casuale() : null; });
+      const impronte = await Promise.all(gettoni.map((g) => (g ? hash(g) : null)));
+      // la nuova partita usa la versione attuale del pianeta; se nel frattempo è stato rimosso, la copia di questa
+      const esplorazione = (await leggi(this.env.DB, stato.esplorazione.id).catch(() => null)) ?? stato.esplorazione;
+      nuova = await nuovaPartita(this.env, esplorazione, stato.posti.map((p) => p.name), impronte);
+      if (!nuova) return errore(ws, "errore-server", "Non è stato possibile creare la nuova partita. Riprova.");
+    }
+
+    const riepilogo = salva ? riepilogoPartita(stato) : null;
+    for (const { w, a } of connessioni) {
+      let n = null;
+      if (nuova) {
+        n = { codice: nuova.codice, link: nuova.link };
+        if (a.ruolo === "master") n.codiceMaster = nuova.codiceMaster;
+        if (a.ruolo === "esplorator" && gettoni[a.posto]) Object.assign(n, { posto: a.posto, gettone: gettoni[a.posto] });
+      }
+      invia(w, { tipo: "chiusa", modo, poi, ...(riepilogo ? { riepilogo } : {}), nuova: n });
+      try { w.close(4000, salva ? "Partita chiusa" : "Partita annullata"); } catch { /* già chiusa */ }
+    }
+    await this.elimina();
+  }
+
+  // Scadenza automatica: l'allarme scatta all'ora di scadenza calcolata dall'ultima attività.
+  async alarm() {
+    const stato = await this.carica();
+    if (!stato) return;
+    const s = scadenza(stato);
+    if (Date.now() < s - 1000) return this.ctx.storage.setAlarm(s); // c'è stata attività nel frattempo
+    for (const w of this.ctx.getWebSockets()) {
+      invia(w, { tipo: "chiusa", modo: "scaduta", poi: "fine", nuova: null,
+        messaggio: "La partita è scaduta (6 ore senza mosse, oppure 24 ore dalla creazione): i suoi dati sono stati eliminati." });
+      try { w.close(4000, "Partita scaduta"); } catch { /* già chiusa */ }
+    }
+    await this.elimina();
+  }
+
+  async elimina() {
+    await this.ctx.storage.deleteAlarm();
+    await this.ctx.storage.deleteAll();
+    this.stato = null;
+    this.motore = null;
   }
 
   // ---------- vista e invio ----------
@@ -279,6 +358,7 @@ export class Partita extends DurableObject {
     return {
       codice: stato.codice,
       versione: stato.versione,
+      scade: scadenza(stato), // data e ora (ms) in cui la partita verrà eliminata se nessuno muove
       esplorazione: {
         id: e.id, nome: e.nome, descrizione: e.descrizione ?? "",
         vie: e.vie.map(({ id, nome, breve, colore }) => ({ id, nome, breve: breve ?? nome, colore })),
@@ -331,6 +411,7 @@ export class Partita extends DurableObject {
     if (attivita) stato.ultimaAttivita = Date.now();
     this.stato = stato;
     await this.ctx.storage.put("stato", stato);
+    if (attivita) await this.ctx.storage.setAlarm(scadenza(stato));
   }
 
   compilato(stato) {
@@ -345,7 +426,7 @@ export class Partita extends DurableObject {
 // l'impronta del gettone del dispositivo. Il gettone vero lo conosce solo il dispositivo.
 function nuovoPosto(m, nome, shown) {
   return {
-    name: nome, run: 1, trail: [], node: "ingresso", step: 1, moves: 0, seen: {}, v: 0,
+    name: nome, run: 1, trail: [], node: "ingresso", step: 1, moves: 0, seen: {}, v: 0, cicli: 0, perVia: {},
     offer: drawOffer(m, "ingresso", null, shown, null),
     gettoneHash: null,
   };
@@ -359,14 +440,16 @@ export function controllaNome(nome, esistenti = []) {
   return { nome: n };
 }
 
-export function casuale(byte = 18) {
-  const b = crypto.getRandomValues(new Uint8Array(byte));
-  return btoa(String.fromCharCode(...b)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+export function scadenza(stato) {
+  return Math.min(stato.ultimaAttivita + SENZA_ATTIVITA, stato.creata + DURATA_MASSIMA);
 }
 
-async function hash(testo) {
-  const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(testo));
-  return [...new Uint8Array(d)].map((x) => x.toString(16).padStart(2, "0")).join("");
+// Dati per la classifica (fase 5), per ogni esplorator*: cicli completati, stanze aperte, stanze per via.
+export function riepilogoPartita(stato) {
+  return {
+    esplorazione: stato.esplorazione.id,
+    posti: stato.posti.map((p) => ({ nome: p.name, cicli: p.cicli ?? 0, stanze: p.moves, perVia: { ...(p.perVia ?? {}) } })),
+  };
 }
 
 function invia(ws, dati) {

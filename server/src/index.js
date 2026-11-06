@@ -3,11 +3,13 @@
 // e l'area /admin protetta da Cloudflare Access.
 
 export { Partita } from "./partita.js";
-import { MIN_GIOCATORI, MAX_GIOCATORI, controllaNome, casuale } from "./partita.js";
+import { MIN_GIOCATORI, MAX_GIOCATORI, controllaNome } from "./partita.js";
+import { nuovaPartita } from "./crea.js";
+export { prefissoCodice } from "./crea.js";
 import { elencoPubblico, leggi } from "./esplorazioni.js";
 import { gestisciAdmin } from "./admin.js";
 
-export const VERSIONE = "3.7";
+export const VERSIONE = "3.9";
 
 // Codice corto della partita, es. LWR-482: tre lettere dal pianeta e tre cifre.
 const CODICE = /^[A-Z]{3}-\d{3}$/;
@@ -98,25 +100,9 @@ async function creaPartita(request, env, cors) {
   const esplorazione = /^[a-z0-9-]{1,40}$/.test(id) ? await leggi(env.DB, id) : null;
   if (!esplorazione) return json({ errore: "Questa esplorazione non esiste." }, 404, cors);
 
-  const codiceMaster = casuale();
-  const prefisso = prefissoCodice(esplorazione.id);
-  for (let tentativo = 0; tentativo < 20; tentativo++) {
-    const cifre = 100 + (crypto.getRandomValues(new Uint32Array(1))[0] % 900);
-    const codice = `${prefisso}-${cifre}`;
-    const stub = env.PARTITA.get(env.PARTITA.idFromName(codice));
-    const esito = await stub.crea({ codice, esplorazione, nomi, codiceMaster });
-    if (esito.ok) {
-      return json({ codice, codiceMaster, link: `${env.INDIRIZZO_APP}?partita=${codice}` }, 201, cors);
-    }
-  }
-  return json({ errore: "Non è stato possibile trovare un codice libero. Riprova." }, 503, cors);
-}
-
-// Tre lettere dal nome tecnico del pianeta: la prima, poi le consonanti (lowrenzia → LWR).
-export function prefissoCodice(id) {
-  const lettere = id.toUpperCase().replace(/[^A-Z]/g, "");
-  const scelte = (lettere[0] ?? "") + lettere.slice(1).replace(/[AEIOU]/g, "");
-  return (scelte + lettere.slice(1) + "XXX").slice(0, 3);
+  const partita = await nuovaPartita(env, esplorazione, nomi);
+  if (!partita) return json({ errore: "Non è stato possibile trovare un codice libero. Riprova." }, 503, cors);
+  return json(partita, 201, cors);
 }
 
 // Le origini consentite sono quelle dell'app (GitHub Pages) più, in sviluppo, localhost.

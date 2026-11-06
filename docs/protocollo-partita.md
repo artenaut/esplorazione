@@ -3,7 +3,7 @@
 Come l'app parla con il server durante una partita. Riferimento per la nuova interfaccia a sessioni.
 Decisioni di gioco: `roadmap-server.md` §2–3. Codice: `server/src/index.js` e `server/src/partita.js`.
 
-Stato: passi **3.3–3.7** (creazione, posti, ruoli, mosse, annulla). La chiusura (3.8) e la scadenza (3.9) si aggiungono qui quando sono pronte.
+Stato: passi **3.3–3.9** (creazione, posti, ruoli, mosse, annulla, chiusura, scadenza). Limiti ai tentativi (3.10): in arrivo.
 
 ---
 
@@ -93,7 +93,38 @@ Il server controlla il ruolo di ogni azione. Chi non ha il ruolo giusto riceve `
 - `stato.annullabile` dice se c'è una mossa annullabile: `{ "posto": 0, "nome": "Alba", "stanza": "Titolo", "autore": 0 }` (`autore` è `"master"` o il numero del posto). Se è `null`, o se il dispositivo non è l'autore né il master, il pulsante va disattivato spiegando il motivo (per esempio «Dopo di te ha mosso Bruno»).
 - Dopo «togli» non si può annullare la mossa precedente.
 
-## 5. Lo stato
+## 5. Fine della partita
+
+### Chiudi partita / Annulla partita (master)
+
+`{ "tipo": "chiudi", "salva": true, "poi": "fine" }`
+
+| Campo | Valori |
+|---|---|
+| `salva` | `true` = **Chiudi partita** (i dati vanno alla classifica, dalla fase 5) · `false` = **Annulla partita** (non si salva nulla) |
+| `poi` | `"fine"` = tornare alla schermata iniziale · `"stesso-gruppo"` = nuova partita subito, con gli stessi nomi |
+
+La conferma («Sei sicur\* di…?») la chiede l'app prima di mandare il messaggio. Il server poi manda a ogni dispositivo:
+
+```json
+{ "tipo": "chiusa", "modo": "chiusa", "poi": "stesso-gruppo",
+  "riepilogo": { "esplorazione": "lowrenzia", "posti": [ { "nome": "Alba", "cicli": 1, "stanze": 5, "perVia": { "forza": 3, "neutrale": 2 } } ] },
+  "nuova": { "codice": "LWR-731", "link": "…", "posto": 0, "gettone": "…" } }
+```
+
+- `modo`: `"chiusa"`, `"annullata"` oppure `"scaduta"`.
+- `riepilogo` c'è solo con «Chiudi partita». In questa fase **non viene salvato da nessuna parte**: è la struttura dei dati che la fase 5 salverà in classifica.
+- `nuova` c'è solo con `"stesso-gruppo"`. Tutti ricevono `codice` e `link`. Il master riceve anche il nuovo `codiceMaster`, e ogni telefono seduto il nuovo `gettone` per lo stesso posto: si rientra con `entra` senza riscegliere il posto. Chi non era collegat\* in quel momento trova il proprio posto libero.
+- Subito dopo il server chiude le connessioni (codice 4000) ed **elimina tutti i dati** della partita. Il codice corto torna libero.
+
+### Scadenza automatica
+
+- La partita viene eliminata **6 ore dopo l'ultima attività**, e comunque **24 ore dopo la creazione**.
+- Contano come attività: mosse, annullamenti, occupare un posto, aggiungere o togliere esplorator\*. Collegarsi, chiedere lo stato o restare in standby non contano.
+- Allo scadere i dispositivi collegati ricevono `{ "tipo": "chiusa", "modo": "scaduta", "messaggio": "…" }` e la partita sparisce come con «Annulla partita».
+- `stato.scade` dice quando scadrà (data e ora in millisecondi), se nessuno fa nulla.
+
+## 6. Lo stato
 
 Dopo ogni modifica il server manda a tutti i dispositivi lo stesso messaggio `{ "tipo": "stato", "stato": … }`. Si può chiedere di nuovo con `{ "tipo": "stato" }`.
 
@@ -101,6 +132,7 @@ Dopo ogni modifica il server manda a tutti i dispositivi lo stesso messaggio `{ 
 {
   "codice": "LWR-482",
   "versione": 7,
+  "scade": 1794012345678,
   "esplorazione": { "id": "lowrenzia", "nome": "…", "descrizione": "…", "vie": [ { "id": "forza", "nome": "…", "breve": "…", "colore": "#c95a40" } ], "regole": "…", "regoleImmagine": "img/esploratore.png" },
   "posti": [
     {
@@ -119,7 +151,7 @@ Dopo ogni modifica il server manda a tutti i dispositivi lo stesso messaggio `{ 
 - **Lunghezza nascosta:** c'è solo il nome del livello della prossima mossa (`livello`, vuoto se il pianeta non lo assegna), mai l'elenco dei livelli.
 - `versione` (della partita) cresce a ogni modifica; `posti[i].versione` cresce a ogni mossa o annullamento di quel posto ed è quella da mandare con la mossa.
 
-## 6. Errori
+## 7. Errori
 
 `{ "tipo": "errore", "codice": "…", "messaggio": "…" }`. Il `messaggio` è già in italiano inclusivo e si può mostrare così com'è.
 
