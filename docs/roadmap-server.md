@@ -124,10 +124,10 @@ Entrambi chiedono prima una conferma. Poi chiedono come proseguire:
 
 - Si appoggia allo stesso stato condiviso delle sessioni.
 - **Entrano in classifica solo le partite concluse con «Chiudi partita»** del master. Le partite annullate o scadute non lasciano traccia.
-- **Identità dei giocatori:** un elenco gestito dall'admin, da cui scegliere il nome a inizio partita, più l'opzione «ospite», che non entra in classifica. Niente account con login.
+- **Identità dei giocatori:** un elenco di **nickname** del club, da cui scegliere a inizio partita, più l'opzione **guest** con nome buffo generato, che non entra in classifica. Niente account con login. Dettagli in `roadmap-classifica.md`, punti 9 e 10.
 - **Admin:** modifica o elimina a mano i singoli dati salvati. Non conferma le partite.
 - **Dati da salvare alla chiusura,** per ogni giocatore e per ogni pianeta: cicli completati, stanze aperte e stanze aperte per via o categoria. Da questi si calcolano tutte le classifiche.
-- **Privacy:** soprannomi o nomi di battesimo e un avviso ai partecipanti.
+- **Privacy:** solo nickname, con consenso, casella dei 14 anni e informativa breve. I dati dei guest non vengono mai salvati oltre la partita. Dettagli in `roadmap-classifica.md`, punto 9.
 - **Classifica pubblica:** una lettura in sola lettura dei totali per stagione, fuori da Cloudflare Access. I risultati possono stare in cache per qualche minuto, così le visite non pesano sul limite giornaliero di richieste.
 - **Stagioni:** ogni partita conclusa viene salvata con la stagione in corso. La chiusura della stagione è un'operazione admin.
 

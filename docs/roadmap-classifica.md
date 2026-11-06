@@ -10,7 +10,7 @@ Legenda: **[deciso]** concordato · **[da confermare]** proposta, manca un sì �
 ## 1. Da dove arrivano i dati [deciso]
 
 - Contano **solo le partite concluse** con «Chiudi partita» dal master. Le partite annullate o scadute per inattività non lasciano traccia.
-- I giocatori sono quelli dell'**elenco del club** gestito dall'admin. Gli **ospiti** non entrano in classifica.
+- I giocatori sono quelli dell'**elenco del club**, identificati solo da un **nickname** (vedi punto 9). I **guest** non entrano in classifica (vedi punto 10).
 - L'admin può **modificare o eliminare a mano i singoli dati** salvati, per correggere errori. Non deve confermare le partite.
 
 ## 2. Le statistiche di base
@@ -79,4 +79,50 @@ Una classifica per ogni pianeta, cioè per ogni esplorazione (es. Lowrenzia).
 - Si vede **in sola lettura**: stagione in corso, archivio delle stagioni, generale e pianeti, riordino per colonna.
 - Modifiche ai dati, elenco dei giocatori e chiusura delle stagioni restano nell'area admin, protetta da Cloudflare Access.
 - Il server espone solo i **totali per giocatore**, non i dettagli delle partite né i testi delle stanze.
-- **Privacy:** visto che è pubblica, in classifica compaiono soprannomi o nomi di battesimo, e i giocatori vanno avvisati. Un giocatore può chiedere all'admin di togliere o rinominare il proprio nome.
+- **Privacy:** in classifica compaiono solo nickname. Vedi il punto 9.
+
+## 9. Nickname e privacy [deciso il 6/11/2026]
+
+Riferimento: GDPR e Codice privacy italiano. Analisi del 6/11/2026, da far verificare a un consulente prima della pubblicazione.
+
+### Dati raccolti
+- **Solo un nickname.** Nessun altro dato: niente nome, email, età, telefono.
+- Il nickname va trattato comunque come **dato personale pseudonimo**, perché in un club chi lo usa è spesso riconoscibile. Il rischio è basso, ma il GDPR si applica.
+- **Titolare del trattamento: l'associazione** (il club), non una persona.
+- Vale per l'inserimento del nickname e quindi per chi entra in classifica. I guest non inseriscono dati (punto 10).
+
+### Al momento dell'inserimento del nickname
+- **Disclaimer:** «Il nickname sarà visibile a chiunque nella classifica pubblica: non usare il tuo nome vero.»
+- **Casella di consenso** da spuntare: «Acconsento a comparire con questo nickname nella classifica pubblica del club.» Il consenso si può revocare chiedendo la cancellazione.
+- **Casella dell'età:** «Ho almeno 14 anni.» In Italia è l'età minima per dare da soli il consenso ai servizi online (art. 2-quinquies del Codice privacy). Chi ha meno di 14 anni gioca come guest.
+- **Link all'informativa breve.**
+
+### Informativa breve (art. 13 GDPR)
+Poche righe, in linguaggio semplice, comprensibile anche ai ragazzi:
+- chi è il titolare (l'associazione) e un contatto;
+- dati trattati: nickname e statistiche di gioco;
+- scopo: la classifica pubblica del club;
+- base giuridica: il consenso;
+- conservazione: finché il giocatore non chiede la cancellazione;
+- fornitori coinvolti: Cloudflare (server) e GitHub (sito), che trattano anche gli indirizzi IP dei visitatori nei loro log;
+- diritti: accesso, rettifica, cancellazione, revoca del consenso, reclamo al Garante privacy;
+- l'admin può rinominare o rimuovere nickname che sono nomi veri o offensivi.
+
+### Diritti e moderazione
+- L'admin può **rinominare** un nickname (per esempio un nome vero inserito per sbaglio, o un termine offensivo) e **cancellare** un giocatore su richiesta.
+- In caso di cancellazione, nelle **stagioni archiviate** il nickname diventa **«Giocatore rimosso»**: le posizioni degli altri non cambiano.
+
+### Altro
+- **Niente banner cookie:** l'app salva nel browser solo dati tecnici strettamente necessari (partita e posto del giocatore). Va mantenuto così, quindi niente strumenti di analisi delle visite.
+- **Google Fonts** [da valutare]: con la classifica pubblica, il trasferimento dell'IP dei visitatori a Google diventa un po' più rilevante. Il rischio è basso; si risolve salvando i caratteri nel sito.
+
+## 10. Guest [deciso il 6/11/2026]
+
+- Chiunque può entrare in partita **come guest**, senza nickname e senza dati.
+- Il guest ha un **nome buffo generato dall'app**, per esempio «Gallina in incognito» o «Alpaca curioso».
+  - Il nome viene da un elenco di frasi già concordate in italiano (animale + aggettivo o espressione), così il genere torna sempre.
+  - **Il nome non si può modificare a mano,** perché qualcuno ci scriverebbe il proprio. Un pulsante «Un altro nome» ne estrae uno nuovo.
+  - Nella stessa partita non possono esserci due nomi uguali.
+- Il guest gioca normalmente, ma **non entra in classifica.** Alla chiusura della partita i suoi dati vengono scartati e non salvati.
+- Serve in particolare ai **minori di 14 anni**, che così giocano senza bisogno del consenso dei genitori. Lo può usare anche un adulto che non vuole comparire in classifica.
+- Il guest sostituisce l'«ospite» previsto in precedenza.
