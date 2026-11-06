@@ -153,7 +153,7 @@ Nessuna falla critica (verificati: token di Access, CSRF, query parametrizzate, 
 5. Le chiavi di Access si riscaricano al massimo una volta al minuto.
 6. Richieste CORS preliminari solo per `/api/`.
 7. **CSP** nelle pagine dell'app: connessioni solo verso il server del club.
-8. (Nome utente personale in `roadmap-app.md`: lasciato, per scelta di Francesco.)
+8. Nome utente personale tolto da `roadmap-app.md` (6/11/2026). Resta nella cronologia dei commit, che non viene riscritta.
 9. **Immagine delle regole solo dalla cartella `img/`** del sito, niente indirizzi esterni.
 10. **Secondo controllo dell'area admin:** il Worker ammette solo le email del segreto `ADMIN_EMAILS` (impostato nel pannello Cloudflare, mai nel repository). Senza il segreto, la pagina admin mostra un avviso. ✅ Segreto impostato da Francesco il 6/11/2026 (Settings → Runtime variables and secrets, tipo Secret; non nella sezione Builds).
 
