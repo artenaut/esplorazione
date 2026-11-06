@@ -38,6 +38,15 @@ export default {
         return json({ ok: true, versione: VERSIONE }, 200, cors);
       }
 
+      // DIAGNOSI TEMPORANEA del limitatore (da rimuovere subito dopo la verifica)
+      if (url.pathname === "/api/diagnosi-limite") {
+        const ip = request.headers.get("CF-Connecting-IP");
+        const chiave = ip ? (await hash(ip)).slice(0, 8) : null;
+        let esito = null;
+        if (ip && env.INGRESSI) esito = await env.INGRESSI.limit({ key: "diagnosi:" + chiave });
+        return json({ limitatore: !!env.INGRESSI, tipo: typeof env.INGRESSI?.limit, chiave, esito, colo: request.cf?.colo ?? null });
+      }
+
       // Area admin, protetta da Cloudflare Access (e verificata anche qui).
       if (url.pathname === "/admin" || url.pathname.startsWith("/admin/")) {
         return gestisciAdmin(request, env, url);
