@@ -983,9 +983,9 @@ function bindSetup(){
 function renderGame(){
   const m = mod(), n = m.levels.length, P = S.players, p = P[S.active];
   const finished = p.nextLevel===0 && p.trail.length>0;
-  const viewId = (UI.view && p.trail.includes(UI.view)) ? UI.view : p.trail[p.trail.length-1];
+  const viewId = p.trail[p.trail.length-1];
   const view = viewId ? roomInfo(viewId) : null;
-  const isLatest = viewId && viewId===p.trail[p.trail.length-1];
+  const showText = UI.justMoved && UI.view===viewId; // il testo si vede solo subito dopo l'ingresso
 
   const tabs = P.map((q,i)=>{
     const cur = q.trail.length ? roomInfo(q.trail[q.trail.length-1]) : null;
@@ -997,16 +997,16 @@ function renderGame(){
   const slots = m.levels.map((lv,li)=>{
     const id = p.trail[li];
     if(id){ const r=roomInfo(id).room;
-      return `<button class="slot done p-${r.path} ${id===viewId?'viewing':''}" data-view="${esc(id)}" aria-label="Rivedi ${esc(r.title)}"><span class="lv">Liv. ${li+1}</span><span class="rt">${esc(r.title)}</span></button>`; }
+      return `<div class="slot done p-${r.path} ${id===viewId?'viewing':''}"><span class="lv">Liv. ${li+1}</span><span class="rt">${esc(r.title)}</span></div>`; }
     const isNext = li===p.nextLevel && !finished;
     return `<div class="slot ${isNext?'next':'empty'}"><span class="lv">Liv. ${li+1}</span><span class="rt">${isNext?'Prossima mossa':esc(lv.name||'—')}</span></div>`;
   }).join('');
 
   const roomHtml = view ? `
-    <section class="room p-${view.room.path} ${UI.justMoved&&isLatest?'reveal':''}" aria-live="polite">
-      <div class="row"><span class="eyebrow">${esc(levelLabel(view.li))}</span>${badge(view.room.path)}${isLatest?'':'<span class="eyebrow">· stanza già visitata</span>'}</div>
+    <section class="room p-${view.room.path} ${showText?'reveal':''}" aria-live="polite">
+      <div class="row"><span class="eyebrow">${esc(levelLabel(view.li))}</span>${badge(view.room.path)}</div>
       <h3>${esc(view.room.title)}</h3>
-      <p class="content">${rich(view.room.content||'')}</p>
+      ${showText?`<p class="content">${rich(view.room.content||'')}</p>`:`<p class="content hint">Stanza attuale di ${esc(p.name)}. L’effetto si legge solo al momento dell’ingresso.</p>`}
     </section>` : `
     <section class="room intro">
       <span class="eyebrow">Giro ${p.run}</span>
@@ -1044,7 +1044,6 @@ function renderGame(){
   ${logHtml}`;
 
   app.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>selectPlayer(+b.dataset.tab));
-  app.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{ UI.view=b.dataset.view; UI.justMoved=false; render(); });
   app.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{ UI.selected = UI.selected===b.dataset.pick?null:b.dataset.pick; render(); });
   document.getElementById('enter').onclick=enterRoom;
   document.getElementById('undo').onclick=askUndo;

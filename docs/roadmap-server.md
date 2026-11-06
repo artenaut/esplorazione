@@ -65,6 +65,7 @@ Al tavolo i giocatori leggono comunque ad alta voce le stanze proposte, quindi l
 - **Il testo di una stanza non viene mai mostrato prima di entrarci**, nemmeno se nella sessione quella stanza è già stata visitata, da quel giocatore o da altri. Tra le proposte compaiono solo titolo e via: chi l'ha già vista deve ricordarsela. (Deciso il 6/11/2026.)
   - Il server invia il testo solo nell'aggiornamento della mossa con cui un giocatore entra nella stanza. Non costa chiamate in più.
   - Le stanze proposte nello stato della partita non portano mai il testo, neanche se il dispositivo lo ha già ricevuto in precedenza.
+  - Nel percorso e nella cronologia, su tutti i dispositivi, resta solo il **titolo** delle stanze già visitate. Lo stato della partita non contiene mai i testi: il testo arriva una sola volta, con la mossa di ingresso, e il dispositivo lo mostra solo in quel momento.
 - Le selezioni prima di confermare restano solo sul dispositivo e non vengono inviate al server.
 
 ### Logica lato server

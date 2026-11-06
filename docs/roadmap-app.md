@@ -83,4 +83,4 @@ Si può fare già nella versione attuale con un solo dispositivo. I contatori vi
 - Le esplorazioni definitive sono incorporate nell'app. Il caricamento da file nell'area admin è per prove.
 - Interfaccia ottimizzata per il telefono e schermo tenuto acceso durante la partita.
 - I commit non devono contenere l'email personale.
-- Il testo di una stanza non si vede mai prima di entrarci, nemmeno se è già stata visitata nella sessione: tra le proposte solo titolo e via. Va mantenuto in ogni versione futura.
+- Il testo di una stanza si vede **solo al momento dell'ingresso**. Non si vede tra le proposte, nemmeno se la stanza è già stata visitata nella sessione. Nel percorso e nella cronologia, di tutti i giocatori, resta solo il titolo. Le stanze del percorso non sono più cliccabili per rileggerle. Il testo rimane visibile finché si resta sul giocatore che ha appena mosso; cambiando scheda o ricaricando la pagina sparisce. Va mantenuto in ogni versione futura. (Deciso e applicato il 6/11/2026.)
