@@ -11,11 +11,13 @@ Legenda: **[deciso]** concordato, da sviluppare · **[da decidere]** idea discus
 
 Si può fare già nella versione attuale con un solo dispositivo. I contatori vivono nella partita salvata nel browser.
 
-- Regola unica: si pescano per prime le stanze **mostrate meno volte nella sessione**. A parità di conteggio si sceglie a caso.
-  - Le stanze mai mostrate hanno conteggio 0, quindi escono per prime.
-  - Quando sono state mostrate tutte, si passa a quelle mostrate 1 volta, poi 2, e così via.
-  - Se nel gruppo con il conteggio più basso ci sono meno stanze di quelle necessarie, si prendono tutte e si completa dal gruppo successivo.
-- Spareggio intermedio: a parità di conteggio nella sessione, si preferiscono le stanze che **quel giocatore** non ha ancora visto. Poi si sceglie a caso.
+- **Ordine di priorità** (deciso il 6/11/2026):
+  1. **Conteggio nella sessione:** si pescano per prime le stanze mostrate meno volte nella sessione, a tutti i giocatori insieme.
+     - Le stanze mai mostrate hanno conteggio 0, quindi escono per prime.
+     - Quando sono state mostrate tutte, si passa a quelle mostrate 1 volta, poi 2, e così via.
+     - Se nel gruppo con il conteggio più basso ci sono meno stanze di quelle necessarie, si prendono tutte e si completa dal gruppo successivo.
+  2. **Spareggio per giocatore:** a parità di conteggio nella sessione, si preferiscono le stanze che **il giocatore che sta muovendo non ha ancora visto**.
+  3. **Caso:** se restano ancora pari, si sceglie a caso.
 - Una stanza conta come «mostrata» appena compare tra le proposte, anche se non viene scelta.
 - Sono escluse le stanze fisse dell'ingresso e, in generale, i livelli che mostrano tutte le stanze.
 - **Annulla mossa** riporta indietro anche i contatori, che vanno salvati insieme allo stato.
