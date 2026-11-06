@@ -42,7 +42,7 @@ Tutto quello che migliora il gioco senza server. È la versione stabile da usare
 | 1.3 | ✅ **Convertire Lowrenzia** al formato v2, senza cambiare come si gioca. | `roadmap-app.md` §2 |
 | 1.4 | ✅ **Validazione al caricamento** nell'area admin: ogni percorso arriva al finale, pool sufficienti, id unici. | `roadmap-app.md` §2 |
 | 1.5 | ✅ **Simulatore** «Simula 1.000 partite» nell'area admin. | `roadmap-app.md` §3 |
-| 1.6 | Prova al tavolo e correzioni. | — |
+| 1.6 | Prova al tavolo e correzioni. **Rimandata:** si fa appena possibile, in parallelo alla fase 2. | — |
 
 **Risultato:** si possono scrivere e bilanciare nuovi pianeti con logiche diverse, e le stanze ruotano bene.
 
@@ -54,10 +54,10 @@ Decisioni e account, poco codice.
 
 | # | Attività | Riferimento |
 |---|---|---|
-| 2.1 | **Confermare Cloudflare** come servizio, ricontrollando i limiti del piano gratuito. | `roadmap-server.md` §1 |
+| 2.1 | ✅ **Cloudflare confermato** (6/11/2026). Limiti del piano gratuito ricontrollati: 100.000 richieste, 13.000 GB-s, 100.000 scritture al giorno, 5 GB di database. | `roadmap-server.md` §1 |
 | 2.2 | Creare l'**account Cloudflare del club** (artenautspaceship@gmail.com). | `roadmap-server.md` §1 |
-| 2.3 | Configurare **Cloudflare Access** per l'area admin, con la sola email di Francesco. | `roadmap-server.md` §3 |
-| 2.4 | Chiudere le decisioni aperte che servono alle fasi 3–5 (elenco più sotto). | — |
+| 2.3 | Attivare **Cloudflare Zero Trust** (piano Free) ora; l'applicazione Access sul percorso `/admin` si crea in fase 3, appena il server ha un indirizzo. Sola email di Francesco. | `roadmap-server.md` §3 |
+| 2.4 | ✅ Decisioni chiuse il 6/11/2026: Cloudflare; **solo sessioni** (niente modalità offline); **il nickname lo crea l'esplorator\*** alla prima partita; **niente classifica locale**. | — |
 
 ---
 
@@ -126,10 +126,6 @@ Da chiudere entro la fase indicata.
 
 | Decisione | Entro | Riferimento |
 |---|---|---|
-| Confermare Cloudflare | Fase 2 | `roadmap-server.md` §1 |
-| L'app su un solo dispositivo resta disponibile come modalità «offline» anche dopo il server, o viene sostituita dalle sessioni? | Fase 2 | — |
-| Chi crea il nickname: l'esplorator\* stessa alla prima partita (con consenso), oppure l'admin su richiesta? | Fase 2 | `roadmap-classifica.md` §9 |
-| Classifica locale su un solo dispositivo: probabilmente superata dalla classifica del club | Fase 2 | `roadmap-app.md` §4 |
 | Archivio delle stagioni consultabile e stagioni con un nome | Fase 5 | `roadmap-classifica.md` §6 |
 | Adeguare al linguaggio inclusivo i testi delle stanze che usano termini di Magic | Quando si scrivono nuovi pianeti | `roadmap-app.md` §0 |
 | App installabile (PWA) | Fase 6 | `roadmap-app.md` §5 |

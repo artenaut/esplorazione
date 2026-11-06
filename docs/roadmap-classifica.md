@@ -91,6 +91,9 @@ Riferimento: GDPR e Codice privacy italiano. Analisi del 6/11/2026, da far verif
 - **Titolare del trattamento: l'associazione** (il club), non una persona.
 - Vale per l'inserimento del nickname e quindi per chi entra in classifica. I guest non inseriscono dati (punto 10).
 
+### Chi crea il nickname [deciso il 6/11/2026]
+- **L'esplorator\* stess\*, alla prima partita:** entrando in una sessione sceglie «Nuovo nickname», spunta le caselle e da quel momento lo ritrova nell'elenco. L'admin interviene solo per rinominare o cancellare.
+
 ### Al momento dell'inserimento del nickname
 - **Disclaimer:** «Il nickname sarà visibile a chiunque nella classifica pubblica: non usare il tuo nome vero.»
 - **Casella di consenso** da spuntare: «Acconsento a comparire con questo nickname nella classifica pubblica del club.» Il consenso si può revocare chiedendo la cancellazione.

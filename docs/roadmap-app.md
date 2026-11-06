@@ -87,7 +87,9 @@ Parametri: esplorazione, numero di partite (100, 1.000, 5.000), esplorator\* (2�
 - Mostra quante volte compare e viene scelta ogni stanza, a che livello si arriva e se qualche pool resta vuoto.
 - Serve a bilanciare un'esplorazione prima di portarla al tavolo.
 
-## 4. Classifica locale, su un solo dispositivo [da decidere]
+## 4. Classifica locale, su un solo dispositivo [scartato il 6/11/2026]
+
+Non serve: la classifica esiste solo online, unica per il club. Anche la modalità su un solo dispositivo verrà sostituita dalle sessioni (vedi `roadmap-server.md` §1). Le note sotto restano solo come riferimento.
 
 - Si salva un riepilogo di ogni partita conclusa nel browser.
 - Limiti: vale solo su quel dispositivo, si perde cancellando i dati del browser, e il giocatore è riconosciuto dal nome scritto.
