@@ -831,7 +831,7 @@ function rulesHtml(src){
 const rulesEl=document.getElementById('rules');
 function openRules(m){
   if(!m) return;
-  document.getElementById('r-title').textContent='Regole · '+m.name;
+  document.getElementById('r-title').textContent='Regole dell’esplorazione';
   const body=document.getElementById('r-body');
   body.innerHTML = m.rules ? rulesHtml(m.rules) : '<p class="hint">Questa esplorazione non ha ancora le regole.</p>';
   if(m.rulesUrl) body.insertAdjacentHTML('beforeend',`<p class="rules-link"><a class="link" href="${esc(m.rulesUrl)}" target="_blank" rel="noopener">Regolamento completo</a></p>`);
