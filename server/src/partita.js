@@ -57,6 +57,12 @@ export class Partita extends DurableObject {
     return { ok: true };
   }
 
+  // Controllo veloce del codice (GET /api/partite/:codice): niente nomi né stato, solo il pianeta.
+  async info() {
+    const stato = await this.carica();
+    return stato ? { codice: stato.codice, esplorazione: { id: stato.esplorazione.id, nome: stato.esplorazione.nome } } : null;
+  }
+
   // ---------- connessioni ----------
 
   async fetch(request) {

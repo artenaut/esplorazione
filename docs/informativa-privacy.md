@@ -33,6 +33,8 @@ Per inserire un nickname in classifica devi avere **almeno 14 anni** (art. 2-qui
 
   Come ogni sito, questi fornitori registrano nei loro log tecnici l'**indirizzo IP** di chi visita le pagine, per motivi di sicurezza e funzionamento. Hanno sede negli Stati Uniti: il trasferimento dei dati avviene sulla base delle garanzie previste dal GDPR, come il Data Privacy Framework UE-USA o le clausole contrattuali standard.
 
+  Il nostro server usa inoltre l'indirizzo IP, in forma trasformata e non leggibile, solo per contare i tentativi di ingresso e di creazione delle partite e bloccare chi ne fa troppi in poco tempo (per esempio chi prova i codici a caso). Il conteggio dura al massimo un minuto e non viene salvato.
+
 ### 6. Per quanto tempo conserviamo i dati
 Conserviamo nickname e statistiche **finché non ne chiedi la cancellazione**, o fino alla chiusura del servizio.
 Le stagioni concluse restano consultabili come archivio. Se chiedi la cancellazione, nelle stagioni archiviate il tuo nickname viene sostituito da «Esplorator\* rimoss\*».

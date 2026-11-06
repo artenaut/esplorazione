@@ -5,11 +5,12 @@
 export { Partita } from "./partita.js";
 import { MIN_GIOCATORI, MAX_GIOCATORI, controllaNome } from "./partita.js";
 import { nuovaPartita } from "./crea.js";
+import { hash } from "./util.js";
 export { prefissoCodice } from "./crea.js";
 import { elencoPubblico, leggi } from "./esplorazioni.js";
 import { gestisciAdmin } from "./admin.js";
 
-export const VERSIONE = "3.9";
+export const VERSIONE = "3.10";
 
 // Codice corto della partita, es. LWR-482: tre lettere dal pianeta e tre cifre.
 const CODICE = /^[A-Z]{3}-\d{3}$/;
@@ -51,7 +52,18 @@ export default {
       // Creazione di una partita: { esplorazione, nomi } → { codice, codiceMaster, link }
       if (url.pathname === "/api/partite" && request.method === "POST") {
         if (origine && !cors) return json({ errore: "Origine non consentita." }, 403);
+        if (await troppiTentativi(env, request, "CREAZIONI")) return troppi(cors);
         return creaPartita(request, env, cors);
+      }
+
+      // Controllo del codice prima di collegarsi: { codice, esplorazione: { id, nome } } oppure 404.
+      const info = url.pathname.match(/^\/api\/partite\/([^/]+)$/);
+      if (info && request.method === "GET") {
+        const codice = decodeURIComponent(info[1]).toUpperCase();
+        if (await troppiTentativi(env, request, "INGRESSI")) return troppi(cors);
+        const trovata = CODICE.test(codice) ? await env.PARTITA.get(env.PARTITA.idFromName(codice)).info() : null;
+        if (!trovata) return json({ errore: "Non c’è nessuna partita con questo codice. Controlla il codice o chiedi a chi l’ha creata." }, 404, cors);
+        return json(trovata, 200, { ...(cors ?? {}), "Cache-Control": "no-store" });
       }
 
       // WebSocket di una partita: /api/partite/:codice/ws
@@ -63,6 +75,7 @@ export default {
         if (origine && !cors) {
           return json({ errore: "Origine non consentita." }, 403);
         }
+        if (await troppiTentativi(env, request, "INGRESSI")) return troppi(cors);
         const codice = decodeURIComponent(ws[1]).toUpperCase();
         if (!CODICE.test(codice)) {
           return json({ errore: "Codice della partita non valido." }, 400, cors);
@@ -103,6 +116,20 @@ async function creaPartita(request, env, cors) {
   const partita = await nuovaPartita(env, esplorazione, nomi);
   if (!partita) return json({ errore: "Non è stato possibile trovare un codice libero. Riprova." }, 503, cors);
   return json(partita, 201, cors);
+}
+
+// Limite ai tentativi per indirizzo (passo 3.10): contro chi prova i codici a caso o crea partite in serie.
+// La chiave è l'impronta dell'indirizzo IP; il contatore vive solo nel limitatore di Cloudflare per un minuto.
+// Senza l'intestazione CF-Connecting-IP (prove locali) il limite non si applica.
+async function troppiTentativi(env, request, limitatore) {
+  const ip = request.headers.get("CF-Connecting-IP");
+  if (!ip || !env[limitatore]) return false;
+  const { success } = await env[limitatore].limit({ key: await hash(ip) });
+  return !success;
+}
+
+function troppi(cors) {
+  return json({ errore: "Troppi tentativi in poco tempo. Aspetta un minuto e riprova." }, 429, { ...(cors ?? {}), "Retry-After": "60" });
 }
 
 // Le origini consentite sono quelle dell'app (GitHub Pages) più, in sviluppo, localhost.

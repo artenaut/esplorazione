@@ -3,7 +3,7 @@
 Come l'app parla con il server durante una partita. Riferimento per la nuova interfaccia a sessioni.
 Decisioni di gioco: `roadmap-server.md` §2–3. Codice: `server/src/index.js` e `server/src/partita.js`.
 
-Stato: passi **3.3–3.9** (creazione, posti, ruoli, mosse, annulla, chiusura, scadenza). Limiti ai tentativi (3.10): in arrivo.
+Stato: passi **3.3–3.10** (creazione, posti, ruoli, mosse, annulla, chiusura, scadenza, limiti ai tentativi).
 
 ---
 
@@ -28,6 +28,18 @@ Stato: passi **3.3–3.9** (creazione, posti, ruoli, mosse, annulla, chiusura, s
 - Errori: `400` dati non validi, `403` origine non consentita, `404` esplorazione inesistente. Il campo `errore` contiene un messaggio pronto da mostrare.
 
 ## 2. Collegarsi
+
+### Controllare il codice (consigliato prima del WebSocket)
+
+`GET /api/partite/LWR-482` → `200 { "codice": "LWR-482", "esplorazione": { "id": "lowrenzia", "nome": "Primo pianeta – Lowrenzia" } }` oppure `404 { "errore": "…" }`.
+
+Un WebSocket rifiutato non dice il motivo al browser: con questo controllo l'app può mostrare subito «codice sbagliato».
+
+### Limiti ai tentativi
+
+Per indirizzo IP: **30 tentativi di ingresso al minuto** (controlli del codice e WebSocket insieme) e **10 partite create al minuto**. Oltre il limite il server risponde `429 { "errore": "Troppi tentativi in poco tempo. Aspetta un minuto e riprova." }`, anche sul WebSocket, prima dell'apertura. L'app deve quindi riconnettersi con calma: per esempio dopo 1, 2, 5 e 10 secondi, poi ogni 30.
+
+### Il WebSocket
 
 WebSocket su `wss://esplorazione.artenaut.workers.dev/api/partite/LWR-482/ws` (il codice si può scrivere anche in minuscolo).
 

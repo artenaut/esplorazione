@@ -20,6 +20,13 @@
   // Senza database_id: wrangler crea il database alla prima pubblicazione e lo collega da solo.
   "d1_databases": [{ "binding": "DB", "database_name": "esplorazione" }],
 
+  // Limiti ai tentativi (passo 3.10), contati per indirizzo IP nella rete Cloudflare.
+  // I contatori sono temporanei e non vengono salvati da noi.
+  "ratelimits": [
+    { "name": "INGRESSI", "namespace_id": "3101", "simple": { "limit": 30, "period": 60 } },
+    { "name": "CREAZIONI", "namespace_id": "3102", "simple": { "limit": 10, "period": 60 } }
+  ],
+
   "vars": {
     // Origini da cui l'app può chiamare il server.
     "ORIGINI_CONSENTITE": "https://artenaut.github.io",
