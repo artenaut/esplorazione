@@ -17,7 +17,7 @@ Legenda: **[deciso]** concordato, da sviluppare · **[da decidere]** idea discus
   - I nomi dei guest non usano aggettivi di genere: vedi `roadmap-classifica.md`, punto 10.
   - L'informativa è già stata adeguata (6/11/2026).
 
-- [ ] **Inserire le regole del gioco di Lowrenzia** nel pulsante «Regole». Sono le regole del gioco vero e proprio, non le istruzioni dell'app. Oggi il campo `rules` contiene solo «Placeholder - ricordati di inserire istruzioni». Serve il testo da Francesco, oppure un link a un regolamento completo (`rulesUrl`).
+- [x] **Inserire le regole del gioco di Lowrenzia** (fatto il 6/11/2026: testo di Francesco adeguato al linguaggio inclusivo, con l'immagine dell'astronauta in alto, campo `rulesImage`). nel pulsante «Regole». Sono le regole del gioco vero e proprio, non le istruzioni dell'app. Oggi il campo `rules` contiene solo «Placeholder - ricordati di inserire istruzioni». Serve il testo da Francesco, oppure un link a un regolamento completo (`rulesUrl`).
 
 - [x] **Caratteri ospitati nel sito, senza Google Fonts** (deciso e fatto il 6/11/2026: file `woff` nella cartella `fonts/`, solo caratteri latini). Scaricare i file dei due caratteri (IM Fell English SC e Alegreya Sans, in formato `woff2`) e metterli nel repository, caricandoli con `@font-face` al posto del link a Google. Così nessun IP dei visitatori viene inviato a Google, e l'informativa non deve citarlo. Va fatto prima di pubblicare la classifica. I file stanno su GitHub Pages insieme all'app: non servono al server Cloudflare.
 - [ ] **Informativa privacy:** il testo è pronto in `informativa-privacy.md` (completato il 6/11/2026). Va collegato all'inserimento del nickname.

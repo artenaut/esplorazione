@@ -16,7 +16,7 @@ Redatto il 6/11/2026. Quando una voce è fatta, si spunta qui e nella roadmap di
 
 ---
 
-## Fase 0 · Fondamenta
+## Fase 0 · Fondamenta ✅ completata il 6/11/2026
 
 Lavori brevi, quasi tutti a carico di Francesco. Vanno fatti **prima di distribuire link o QR code.**
 
@@ -25,7 +25,7 @@ Lavori brevi, quasi tutti a carico di Francesco. Vanno fatti **prima di distribu
 | 0.1 | ✅ Creare l'organizzazione GitHub del club e trasferire il repository (fatto il 6/11/2026: `artenaut`) | Francesco, poi Claude aggiorna i link | — |
 | 0.2 | ✅ Dominio del club: **no** per ora, si resta su `artenaut.github.io/esplorazione` (deciso il 6/11/2026). Si può aggiungere in futuro. | Francesco | 0.1 |
 | 0.3 | ✅ Ospitare i caratteri nel sito, senza Google Fonts (fatto il 6/11/2026) | Claude | — |
-| 0.4 | Inserire le **regole del gioco** di Lowrenzia (testo o link) | Francesco fornisce, Claude inserisce | — |
+| 0.4 | ✅ Inserire le **regole del gioco** di Lowrenzia, con l'immagine dell'astronauta (fatto il 6/11/2026) | Francesco fornisce, Claude inserisce | — |
 
 **Risultato:** l'app attuale ha un indirizzo definitivo, regole complete e nessuna dipendenza da Google.
 

@@ -186,6 +186,7 @@ button,a,label,summary{touch-action:manipulation;-webkit-tap-highlight-color:tra
 .rules-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line)}
 .rules-head h2{min-width:0}
 .rules-body{overflow-y:auto;padding:4px 20px 20px;overscroll-behavior:contain}
+.rules-img{display:block;margin:14px auto 2px;max-height:170px;width:auto;max-width:100%}
 .rules-body h3{font-size:1.15rem;color:var(--torch);margin:18px 0 6px}
 .rules-body p{margin:8px 0;max-width:65ch}
 .rules-body ul{margin:6px 0;padding-left:1.2em;display:flex;flex-direction:column;gap:5px}
@@ -223,7 +224,8 @@ const LOWRENZIA = {
  "id": "lowrenzia",
  "name": "Primo pianeta – Lowrenzia",
  "description": "5 livelli · vie della Forza e della Sapienza",
- "rules": "Placeholder - ricordati di inserire istruzioni",
+ "rules": "## Leader dell'esplorazione\n- Per procedere nell'esplorazione del pianeta bisogna avere il ruolo di **Leader dell'esplorazione**.\n- All'inizio della partita il ruolo non è assegnato. Chi infligge per primo danno da combattimento a una persona avversaria diventa Leader dell'esplorazione.\n- Da quel momento, chiunque infligga danno da combattimento a chi è Leader dell'esplorazione ne prende il ruolo.\n- In una partita c'è un solo Leader dell'esplorazione alla volta. Se più persone reclamano il ruolo nello stesso momento, sceglie chi è Leader dell'esplorazione quando viene assegnato il danno.\n\n## Avanzare nel pianeta\n- Ogni volta che ottieni il ruolo di Leader dell'esplorazione, puoi avanzare di 1 passo nel pianeta.\n- Durante la partita tutte le creature comandante ottengono «{T}: procedi nell'esplorazione del pianeta». Puoi attivare questa abilità anche se la creatura ha debolezza da evocazione, ma solo se in questo turno hai inflitto danno da combattimento a una persona avversaria.\n- Durante la partita tutti i planeswalker comandante ottengono «0: procedi nell'esplorazione del pianeta». Puoi attivare questa abilità solo se in questo turno hai inflitto danno da combattimento a una persona avversaria.",
+ "rulesImage": "img/esploratore.png",
  "levels": [
   {
    "name": "Ingresso",
@@ -817,7 +819,7 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape' && !modal.hidden) 
 /* ---------- regole dell'esplorazione ---------- */
 function rulesHtml(src){
   const lines=String(src||'').split('\n'); let out='', stack=[];
-  const inline=t=>esc(t).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  const inline=t=>esc(t).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\{([A-Z0-9/]{1,3})\}/g,'<span class="sym">$1</span>');
   const closeTo=d=>{ while(stack.length>d){ out+='</li></ul>'; stack.pop(); } };
   for(const raw of lines){
     const m=raw.match(/^(\s*)- (.*)$/);
@@ -839,7 +841,7 @@ function openRules(m){
   if(!m) return;
   document.getElementById('r-title').textContent='Regole dell’esplorazione';
   const body=document.getElementById('r-body');
-  body.innerHTML = m.rules ? rulesHtml(m.rules) : '<p class="hint">Questa esplorazione non ha ancora le regole.</p>';
+  body.innerHTML = (m.rulesImage ? `<img class="rules-img" src="${esc(m.rulesImage)}" alt="Astronauta che esplora con una torcia">` : '') + (m.rules ? rulesHtml(m.rules) : '<p class="hint">Questa esplorazione non ha ancora le regole.</p>');
   if(m.rulesUrl) body.insertAdjacentHTML('beforeend',`<p class="rules-link"><a class="link" href="${esc(m.rulesUrl)}" target="_blank" rel="noopener">Regolamento completo</a></p>`);
   body.scrollTop=0; rulesEl.hidden=false; document.getElementById('r-close').focus();
 }
@@ -856,6 +858,7 @@ function validateModule(m){
   if(typeof m.name!=='string' || !m.name.trim()) return 'L’esplorazione deve avere un "name".';
   if(m.description!=null && typeof m.description!=='string') return 'La "description" deve essere un testo.';
   if(m.rules!=null && typeof m.rules!=='string') return 'Le "rules" devono essere un testo.';
+  if(m.rulesImage!=null && (typeof m.rulesImage!=='string' || !/^(img\/[a-z0-9._-]+\.(png|webp|jpg)|https:\/\/\S+)$/.test(m.rulesImage))) return 'La "rulesImage" deve essere un file in img/ o un indirizzo https://.';
   if(m.rulesUrl!=null && (typeof m.rulesUrl!=='string' || !/^https:\/\/\S+$/.test(m.rulesUrl))) return 'Il "rulesUrl" deve essere un indirizzo che inizia con https://.';
   if(!Array.isArray(m.levels) || m.levels.length<2) return 'Servono almeno 2 livelli in "levels".';
   const ids=new Set();
