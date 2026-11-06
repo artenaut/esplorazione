@@ -8,7 +8,7 @@ Poi:
 L'app viene servita da un piccolo server statico e collegata al server locale con ?server=.
 Esce con codice 1 se una prova fallisce.
 """
-import argparse, functools, http.server, os, re, sys, threading
+import argparse, functools, http.server, os, random, re, sys, threading
 from playwright.sync_api import sync_playwright, expect
 
 RADICE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -57,6 +57,8 @@ def main():
             w = pg.evaluate("[document.documentElement.scrollWidth, window.innerWidth]")
             assert w[0] <= w[1], f"scorrimento orizzontale {w}"
 
+        # nickname nuovo a ogni esecuzione (il database locale li conserva)
+        NICK = f"Alba {random.randint(1000, 9999)}"
         stato = {}
 
         @prova("Schermata iniziale e codice sbagliato")
@@ -80,9 +82,7 @@ def main():
             pg.goto(APP + Q)
             pg.click("text=Crea una partita")
             expect(pg.locator("input[name=mod]")).to_have_count(1)
-            pg.click("#add")
-            for i, n in enumerate(["Alba", "Bruno", "Cleo"]):
-                pg.fill(f"#name-{i}", n)
+            pg.click("[data-numero='3']")
             pg.click("#crea")
             expect(pg.locator(".codice-grande")).to_have_text(re.compile(r"^LWR-\d{3}$"))
             codice = pg.locator(".codice-grande").inner_text()
@@ -91,25 +91,60 @@ def main():
             pg.click("details.master-code summary")
             assert len(pg.locator("#cm").inner_text()) >= 24
             expect(pg.locator(".tab")).to_have_count(3)
-            # il master vede le carte di Alba, attive, con «Stai muovendo per»
-            expect(pg.locator(".per-chi")).to_contain_text("Stai muovendo per Alba")
+            expect(pg.locator(".tab").first).to_contain_text("Posto I")
+            # finché il posto è da scegliere, il master vede la scelta dell'identità al posto delle carte
+            expect(pg.locator(".identita h2")).to_contain_text("Chi gioca nel posto di Posto I")
 
-        @prova("Un telefono entra dal link del QR, sceglie il posto e lo ritrova dopo il ricaricamento")
+        @prova("Un telefono entra dal QR, sceglie il posto, crea il nickname con le due caselle e lo ritrova dopo il ricaricamento")
         def _():
             ctx, pg = telefono()
             stato["alba"] = (ctx, pg)
             pg.goto(APP + Q + f"&partita={stato['codice']}")
             expect(pg.locator(".seat")).to_have_count(3)
             nessuno_scorrimento(pg)
-            pg.locator(".seat", has_text="Alba").click()
-            expect(pg.locator(".tab[aria-selected=true]")).to_contain_text("Alba (tu)")
+            pg.locator(".seat", has_text="Posto I").first.click()
+            expect(pg.locator(".identita h2")).to_have_text("Chi sei?")
+            pg.click("[data-idtab=nuovo]")
+            expect(pg.locator(".disclaimer")).to_contain_text("Non usare il tuo nome vero")
+            assert pg.locator("a[href='informativa.html']").count() >= 1
+            nessuno_scorrimento(pg)
+            pg.fill("#nick", NICK)
+            pg.check("#consenso")
+            pg.click("#nuovo-nick button[type=submit]")
+            expect(pg.locator(".banner")).to_contain_text("entrambe le caselle")
+            pg.check("#eta14"); pg.check("#consenso")
+            pg.fill("#nick", NICK)
+            pg.click("#nuovo-nick button[type=submit]")
+            expect(pg.locator(".tab[aria-selected=true]")).to_contain_text(f"{NICK} (tu)")
+            expect(pg.locator(".id-riga")).to_contain_text("Nickname del club")
             assert "partita=" not in pg.url
             pg.reload()
-            expect(pg.locator(".tab[aria-selected=true]")).to_contain_text("Alba (tu)")
+            expect(pg.locator(".tab[aria-selected=true]")).to_contain_text(f"{NICK} (tu)")
             # dal master il posto risulta occupato
             m = stato["master"][1]
             m.click("#gestisci")
-            expect(m.locator(".seat-row", has_text="Alba")).to_contain_text("Telefono collegato")
+            expect(m.locator(".seat-row", has_text=NICK)).to_contain_text("Telefono collegato")
+
+        @prova("Il master sceglie per chi non ha il telefono: guest con «Un altro nome»; nickname già in gioco rifiutato")
+        def _():
+            m = stato["master"][1]
+            m.locator("[data-tab='1']").click()
+            m.click("#come-guest")
+            expect(m.locator(".tab").nth(1)).to_contain_text("guest")
+            primo = m.locator(".tab").nth(1).locator(".tn").inner_text()
+            m.click("#altro-nome")
+            expect(m.locator(".tab").nth(1).locator(".tn")).not_to_have_text(primo)
+            stato["bruno"] = m.locator(".tab").nth(1).locator(".tn").inner_text().replace(" guest", "").strip()
+            # posto III: il nickname di Alba è già in gioco, quindi non compare nell'elenco
+            m.locator("[data-tab='2']").click()
+            m.click("[data-idtab=elenco]")
+            expect(m.locator(".nick-list")).to_be_visible()
+            assert m.locator(".nick-list [data-nick]", has_text=NICK).count() == 0
+            m.click("#come-guest")
+            expect(m.locator(".tab").nth(2)).to_contain_text("guest")
+            # ora le carte ci sono
+            m.locator("[data-tab='0']").click()
+            expect(m.locator(".per-chi")).to_contain_text(f"Stai muovendo per {NICK}")
 
         @prova("Mossa: il testo si vede solo all'ingresso, su tutti i telefoni che guardano quella scheda")
         def _():
@@ -140,7 +175,7 @@ def main():
             assert pg.locator("[data-pick]").first.is_disabled()
             expect(pg.locator(".panel", has_text="stanze tra cui scegliere")).to_contain_text("muove il master")
             m.locator("[data-tab='1']").click()
-            expect(m.locator(".per-chi")).to_contain_text("Stai muovendo per Bruno")
+            expect(m.locator(".per-chi")).to_contain_text(f"Stai muovendo per {stato['bruno']}")
             m.locator("[data-pick]").first.click()
             m.click("#enter")
             expect(m.locator(".log li").first).to_contain_text("dal master")
@@ -172,20 +207,20 @@ def main():
         def _():
             pg = stato["alba"][1]
             m = stato["master"][1]
-            m.locator(".seat-row", has_text="Alba").locator("[data-libera]").click()
+            m.locator(".seat-row", has_text=NICK).locator("[data-libera]").click()
             m.click("#m-act >> text=Libera il posto")
             expect(pg.locator(".banner")).to_contain_text("liberato il tuo posto")
-            expect(pg.locator(".seat", has_text="Alba")).to_be_enabled()
-            pg.locator(".seat", has_text="Alba").click()
-            expect(pg.locator(".tab[aria-selected=true]")).to_contain_text("Alba (tu)")
+            expect(pg.locator(".seat", has_text=NICK)).to_be_enabled()
+            pg.locator(".seat", has_text=NICK).click()
+            expect(pg.locator(".tab[aria-selected=true]")).to_contain_text(f"{NICK} (tu)")
 
         @prova("Aggiungi e togli esplorator*")
         def _():
             m = stato["master"][1]
-            m.fill("#nuovo-nome", "Dario")
-            m.click("#aggiungi-form button")
+            m.click("#aggiungi-posto")
             expect(m.locator(".tab")).to_have_count(4)
-            m.locator(".seat-row", has_text="Dario").locator("[data-togli]").click()
+            expect(m.locator(".tab").nth(3)).to_contain_text("Posto IV")
+            m.locator(".seat-row", has_text="Posto IV").locator("[data-togli]").click()
             m.click("#m-act >> text=Togli")
             expect(m.locator(".tab")).to_have_count(3)
 
@@ -202,12 +237,14 @@ def main():
             stato["codice"] = nuovo
             # tutti i telefoni vedono il riepilogo della partita chiusa
             expect(pg.locator("#modal")).to_contain_text("Partita chiusa")
-            expect(pg.locator("#modal")).to_contain_text("Alba: 0 cicli completati")
+            expect(pg.locator("#modal")).to_contain_text(f"{NICK}: 0 cicli completati")
+            expect(pg.locator("#modal")).to_contain_text(f"{stato['bruno']} (guest)")
             pg.click("#m-act >> text=Continua")
             m.click("#m-act >> text=Continua")
             expect(pg.locator(".sessione-info")).to_contain_text(nuovo)
-            expect(pg.locator(".tab[aria-selected=true]")).to_contain_text("Alba (tu)")
+            expect(pg.locator(".tab[aria-selected=true]")).to_contain_text(f"{NICK} (tu)")
             expect(pg.locator(".tab").first).to_contain_text("All’ingresso")
+            expect(pg.locator(".tab").nth(1)).to_contain_text(stato["bruno"])
             # il tabellone resta tabellone anche nella nuova partita
             t = stato["tab"][1]
             t.click("#m-act >> text=Continua")
@@ -228,6 +265,17 @@ def main():
             pg.click("#inizio")
             expect(pg.get_by_role("button", name="Crea una partita")).to_be_visible()
             nessuno_scorrimento(pg)
+
+        @prova("Informativa leggibile nell'app")
+        def _():
+            ctx, pg = telefono()
+            pg.goto(APP + "informativa.html")
+            expect(pg.locator("h1")).to_contain_text("Informativa privacy")
+            expect(pg.locator("main")).to_contain_text("La prova del tuo consenso")
+            expect(pg.locator("main")).to_contain_text("almeno 14 anni")
+            assert "Testi brevi" not in pg.inner_text("main")
+            nessuno_scorrimento(pg)
+            ctx.close()
 
         @prova("Nessun errore nella pagina")
         def _():

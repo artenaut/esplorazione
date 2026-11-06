@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Informativa privacy · Registro dell’esplorazione</title>
+<meta name="theme-color" content="#15181d">
+<style>
+@font-face{font-family:"IM Fell English SC";src:url("fonts/im-fell-english-sc-400.woff") format("woff");font-display:swap}
+@font-face{font-family:"Alegreya Sans";src:url("fonts/alegreya-sans-400.woff") format("woff");font-weight:400;font-display:swap}
+@font-face{font-family:"Alegreya Sans";src:url("fonts/alegreya-sans-700.woff") format("woff");font-weight:700;font-display:swap}
+:root{--stone:#15181d;--slab:#1f242b;--line:#39404b;--parch:#ece3cf;--muted:#a69d8b;--torch:#dba24c;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--stone);color:var(--parch);font:16px/1.6 "Alegreya Sans","Segoe UI",system-ui,sans-serif;padding:0 16px 48px}
+main{max-width:720px;margin:0 auto}
+h1,h2,h3{font-family:"IM Fell English SC",Georgia,serif;font-weight:400;line-height:1.2}
+h1{font-size:1.8rem;margin:28px 0 8px}
+h2{font-size:1.3rem;color:var(--muted);margin:0 0 18px}
+h3{font-size:1.15rem;color:var(--torch);margin:26px 0 6px}
+p{margin:8px 0}
+ul{margin:6px 0;padding-left:1.3em}
+li{margin:4px 0}
+strong{color:#fff}
+a{color:var(--parch)}
+.torna{display:inline-block;margin-top:18px;color:var(--muted)}
+</style>
+</head>
+<body>
+<main id="testo"><p>Caricamento dell’informativa…</p></main>
+<script>
+// Il testo è uno solo: docs/informativa-privacy.md (si mostra la parte prima dei «testi brevi»).
+const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const inline = t => esc(t).replace(/\\\*/g, '*').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+  .replace(/\b(www\.garanteprivacy\.it)\b/g, '<a href="https://$1" target="_blank" rel="noopener">$1</a>')
+  .replace(/\b([\w.+-]+@[\w-]+\.[\w.]+)\b/g, '<a href="mailto:$1">$1</a>');
+function md(testo){
+  let out = '', lista = 0, para = [];
+  const chiudiPara = () => { if(para.length){ out += `<p>${inline(para.join(' '))}</p>`; para = []; } };
+  const chiudiLista = (fino = 0) => { while(lista > fino){ out += '</li></ul>'; lista--; } };
+  for(const riga of testo.split('\n')){
+    const t = riga.trimEnd();
+    const h = t.match(/^(#{1,3}) (.*)$/), li = t.match(/^(\s*)- (.*)$/);
+    if(h){ chiudiPara(); chiudiLista(); out += `<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`; }
+    else if(li){
+      chiudiPara();
+      const liv = Math.floor(li[1].length / 2) + 1;
+      if(liv > lista){ while(lista < liv){ out += '<ul><li>'; lista++; } } else { chiudiLista(liv); out += '</li><li>'; }
+      out += inline(li[2]);
+    }
+    else if(!t.trim()){ chiudiPara(); }
+    else if(/^\s+/.test(t) && lista){ chiudiPara(); out += `<p>${inline(t.trim())}</p>`; }
+    else { chiudiLista(); para.push(t.trim()); }
+  }
+  chiudiPara(); chiudiLista();
+  return out;
+}
+fetch('docs/informativa-privacy.md').then(r => { if(!r.ok) throw new Error(r.status); return r.text(); })
+  .then(t => { document.getElementById('testo').innerHTML = md(t.split('\n---\n')[0]) + '<a class="torna" href="./">Torna all’app</a>'; })
+  .catch(() => { document.getElementById('testo').innerHTML = '<p>Non riesco a caricare l’informativa. Riprova più tardi o scrivi a artenautspaceship@gmail.com.</p>'; });
+</script>
+</body>
+</html>

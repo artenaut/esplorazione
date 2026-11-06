@@ -4,44 +4,11 @@ import { evictDurableObject } from "cloudflare:test";
 import { describe, it, expect, beforeAll } from "vitest";
 import { salva } from "../src/esplorazioni.js";
 import { prefissoCodice } from "../src/crea.js";
-
-const BASE = "https://esplorazione.artenaut.workers.dev";
-const APP = "https://artenaut.github.io";
-const chiama = (percorso, init) => exports.default.fetch(new Request(BASE + percorso, init));
-
-const st = (p, n, via = "a") => Array.from({ length: n }, (_, i) => ({ id: p + i, titolo: "Titolo " + p + i, via, testo: "SEGRETO " + p + i }));
-const PIANETA = {
-  formato: 2, id: "lowrenzia", nome: "Pianeta di prova", estrazione: "meno-mostrate",
-  vie: [{ id: "a", nome: "Via A", colore: "#112233" }, { id: "b", nome: "Via B", colore: "#445566" }],
-  ingresso: { nome: "Ingresso", stanze: [...st("IA", 1), ...st("IB", 1, "b")], successivo: "L" },
-  livelli: { L: { nome: "La forgia", stanze: [...st("LA", 3), ...st("LB", 3, "b")], proposte: { a: { a: 2 }, b: { b: 2 } }, successivo: "finale" } },
-  finale: { nome: "La vetta", stanze: [...st("FA", 1), ...st("FB", 1, "b")], proposte: { a: { a: 1 }, b: { b: 1 } } },
-};
+import { PIANETA, APP, chiama, crea, apriWs } from "./aiuto.js";
 
 beforeAll(async () => {
   expect((await salva(env.DB, PIANETA)).errore).toBeUndefined();
 });
-
-async function crea(nomi = ["Alba", "Bruno"], esplorazione = "lowrenzia") {
-  const r = await chiama("/api/partite", { method: "POST", headers: { Origin: APP, "Content-Type": "application/json" }, body: JSON.stringify({ esplorazione, nomi }) });
-  return { status: r.status, corpo: await r.json() };
-}
-
-async function apriWs(codice) {
-  const res = await chiama(`/api/partite/${codice}/ws`, { headers: { Upgrade: "websocket", Origin: APP } });
-  expect(res.status).toBe(101);
-  const ws = res.webSocket, coda = [], attese = [];
-  ws.addEventListener("message", (e) => {
-    const d = typeof e.data === "string" && e.data.startsWith("{") ? JSON.parse(e.data) : e.data;
-    const a = attese.shift(); a ? a(d) : coda.push(d);
-  });
-  ws.accept();
-  const prossimo = () => (coda.length ? Promise.resolve(coda.shift()) : new Promise((r) => attese.push(r)));
-  const manda = (o) => ws.send(JSON.stringify(o));
-  // aspetta il primo messaggio di un certo tipo, scartando gli altri
-  const aspetta = async (tipo) => { for (;;) { const m = await prossimo(); if (m.tipo === tipo) return m; } };
-  return { ws, prossimo, manda, aspetta, coda };
-}
 
 describe("Creazione della partita (3.3)", () => {
   it("prefisso del codice dal nome tecnico del pianeta", () => {
@@ -60,22 +27,21 @@ describe("Creazione della partita (3.3)", () => {
   });
 
   it("rifiuta dati non validi", async () => {
-    expect((await crea(["Solo"])).status).toBe(400);
-    expect((await crea(["A", "B", "C", "D", "E"])).status).toBe(400);
-    expect((await crea(["Alba", "alba"])).corpo.errore).toContain("già qualcun*");
-    expect((await crea(["Alba", " "])).status).toBe(400);
-    expect((await crea(["Alba", "x".repeat(25)])).status).toBe(400);
-    expect((await crea(["Alba", "Bruno"], "non-esiste")).status).toBe(404);
-    const estranea = await chiama("/api/partite", { method: "POST", headers: { Origin: "https://esempio.it" }, body: "{}" });
-    expect(estranea.status).toBe(403);
+    const posta = (corpo, h = {}) => chiama("/api/partite", { method: "POST", headers: { Origin: APP, ...h }, body: JSON.stringify(corpo) });
+    expect((await posta({ esplorazione: "lowrenzia", posti: 1 })).status).toBe(400);
+    expect((await posta({ esplorazione: "lowrenzia", posti: 5 })).status).toBe(400);
+    expect((await posta({ esplorazione: "lowrenzia", posti: "3" })).status).toBe(400);
+    expect((await posta({ esplorazione: "lowrenzia" })).status).toBe(400);
+    expect((await posta({ esplorazione: "non-esiste", posti: 2 })).status).toBe(404);
+    expect((await posta({}, { Origin: "https://esempio.it" })).status).toBe(403);
   });
 
-  it("i nomi vengono ripuliti dagli spazi", async () => {
-    const { corpo } = await crea(["  Alba   Rossi ", "Bruno"]);
+  it("i posti nascono «da scegliere»", async () => {
+    const { corpo } = await crea(["a", "b", "c"], "lowrenzia", { assegna: false });
     const t = await apriWs(corpo.codice);
     t.manda({ tipo: "entra" });
     const b = await t.aspetta("benvenuto");
-    expect(b.stato.posti.map((p) => p.nome)).toEqual(["Alba Rossi", "Bruno"]);
+    expect(b.stato.posti.map((p) => [p.nome, p.identita])).toEqual([["Posto I", null], ["Posto II", null], ["Posto III", null]]);
   });
 });
 
@@ -91,7 +57,7 @@ describe("Ruoli, posti e gettoni (3.4–3.5)", () => {
     expect(testo).not.toContain("La forgia");  // livello non ancora raggiunto
     expect(testo).not.toContain("La vetta");
     const p = b.stato.posti[0];
-    expect(p).toMatchObject({ nome: "Alba", occupato: false, giro: 1, passo: 1, livello: "Ingresso", completato: false, mosse: 0, percorso: [] });
+    expect(p).toMatchObject({ nome: "Alba", identita: { tipo: "nickname", id: expect.any(Number) }, occupato: false, giro: 1, passo: 1, livello: "Ingresso", completato: false, mosse: 0, percorso: [] });
     expect(p.proposte.map((x) => x.id).sort()).toEqual(["IA0", "IB0"]);
     expect(p.proposte[0]).toEqual({ id: expect.any(String), titolo: expect.stringContaining("Titolo"), via: expect.any(String) });
     expect(b.stato.esplorazione.vie).toHaveLength(2);
@@ -179,30 +145,29 @@ describe("Ruoli, posti e gettoni (3.4–3.5)", () => {
     const g = await apriWs(corpo.codice);
     g.manda({ tipo: "entra" }); await g.aspetta("benvenuto");
     g.manda({ tipo: "occupa", posto: 2 }); await g.aspetta("posto");
+    await m.aspetta("stato");
 
-    g.manda({ tipo: "aggiungi", nome: "Dario" });
+    g.manda({ tipo: "aggiungi" });
     expect(await g.aspetta("errore")).toMatchObject({ codice: "ruolo" });
 
-    m.manda({ tipo: "aggiungi", nome: "bruno" });
-    expect((await m.aspetta("errore")).codice).toBe("nome-non-valido");
-    m.manda({ tipo: "aggiungi", nome: "Dario" });
+    m.manda({ tipo: "aggiungi" });
     let s = (await m.aspetta("stato")).stato;
-    expect(s.posti.map((p) => p.nome)).toEqual(["Alba", "Bruno", "Cleo", "Dario"]);
-    expect(s.posti[3]).toMatchObject({ passo: 1, giro: 1, percorso: [] });
-    m.manda({ tipo: "aggiungi", nome: "Elia" });
+    expect(s.posti.map((p) => p.nome)).toEqual(["Alba", "Bruno", "Cleo", "Posto IV"]);
+    expect(s.posti[3]).toMatchObject({ passo: 1, giro: 1, percorso: [], identita: null });
+    m.manda({ tipo: "aggiungi" });
     expect((await m.aspetta("errore")).codice).toBe("troppi");
 
     // togliendo Bruno, Cleo (occupata da g) scala dal posto 2 al posto 1
     m.manda({ tipo: "togli", posto: 1 });
     s = (await m.aspetta("stato")).stato;
-    expect(s.posti.map((p) => p.nome)).toEqual(["Alba", "Cleo", "Dario"]);
+    expect(s.posti.map((p) => p.nome)).toEqual(["Alba", "Cleo", "Posto III"]);
     expect(s.posti[1].occupato).toBe(true);
     m.manda({ tipo: "togli", posto: 2 }); await m.aspetta("stato");
     m.manda({ tipo: "togli", posto: 0 });
     expect((await m.aspetta("errore")).codice).toBe("troppo-pochi");
 
     // g è ancora Cleo, ora al posto 1: togliendo Cleo torna ospite
-    m.manda({ tipo: "aggiungi", nome: "Elia" }); await m.aspetta("stato");
+    m.manda({ tipo: "aggiungi" }); await m.aspetta("stato");
     m.manda({ tipo: "togli", posto: 1 });
     expect(await g.aspetta("liberato")).toMatchObject({ posto: 1 });
   });
@@ -218,7 +183,7 @@ describe("Ruoli, posti e gettoni (3.4–3.5)", () => {
     const { corpo } = await crea();
     const t = await apriWs(corpo.codice);
     t.manda({ tipo: "entra", ruolo: "tabellone" }); await t.aspetta("benvenuto");
-    for (const msg of [{ tipo: "occupa", posto: 0 }, { tipo: "libera", posto: 0 }, { tipo: "aggiungi", nome: "X" }, { tipo: "togli", posto: 0 }]) {
+    for (const msg of [{ tipo: "occupa", posto: 0 }, { tipo: "libera", posto: 0 }, { tipo: "aggiungi" }, { tipo: "togli", posto: 0 }]) {
       t.manda(msg);
       expect((await t.aspetta("errore")).codice).toBe("ruolo");
     }

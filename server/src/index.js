@@ -4,7 +4,8 @@
 
 export { Partita } from "./partita.js";
 export { Limitatore } from "./limitatore.js";
-import { MIN_GIOCATORI, MAX_GIOCATORI, controllaNome } from "./partita.js";
+import { MIN_GIOCATORI, MAX_GIOCATORI } from "./partita.js";
+import { elencoPubblicoNickname } from "./esplorator.js";
 import { nuovaPartita } from "./crea.js";
 import { hash } from "./util.js";
 import { VERSIONE, LIMITI, FINESTRA_LIMITI } from "./costanti.js";
@@ -49,7 +50,13 @@ export default {
         return json(elenco, 200, { ...(cors ?? {}), "Cache-Control": "public, max-age=60" });
       }
 
-      // Creazione di una partita: { esplorazione, nomi } → { codice, codiceMaster, link }
+      // Nickname del club (pubblici: sono gli stessi della classifica).
+      if (url.pathname === "/api/esplorator" && request.method === "GET") {
+        const elenco = await elencoPubblicoNickname(env.DB);
+        return json(elenco, 200, { ...(cors ?? {}), "Cache-Control": "no-store" });
+      }
+
+      // Creazione di una partita: { esplorazione, posti } → { codice, codiceMaster, link }
       if (url.pathname === "/api/partite" && request.method === "POST") {
         if (origine && !cors) return json({ errore: "Origine non consentita." }, 403);
         if (await troppiTentativi(env, request, "CREAZIONI")) return troppi(cors);
@@ -98,22 +105,16 @@ async function creaPartita(request, env, cors) {
   let dati;
   try { dati = JSON.parse(testo); } catch { return json({ errore: "Richiesta non leggibile." }, 400, cors); }
 
-  const nomiGrezzi = Array.isArray(dati?.nomi) ? dati.nomi : [];
-  if (nomiGrezzi.length < MIN_GIOCATORI || nomiGrezzi.length > MAX_GIOCATORI) {
+  const n = dati?.posti;
+  if (!Number.isInteger(n) || n < MIN_GIOCATORI || n > MAX_GIOCATORI) {
     return json({ errore: `Servono da ${MIN_GIOCATORI} a ${MAX_GIOCATORI} esplorator*.` }, 400, cors);
-  }
-  const nomi = [];
-  for (const n of nomiGrezzi) {
-    const c = controllaNome(n, nomi);
-    if (c.errore) return json({ errore: c.errore }, 400, cors);
-    nomi.push(c.nome);
   }
 
   const id = typeof dati.esplorazione === "string" ? dati.esplorazione : "";
   const esplorazione = /^[a-z0-9-]{1,40}$/.test(id) ? await leggi(env.DB, id) : null;
   if (!esplorazione) return json({ errore: "Questa esplorazione non esiste." }, 404, cors);
 
-  const partita = await nuovaPartita(env, esplorazione, nomi);
+  const partita = await nuovaPartita(env, esplorazione, Array(n).fill(null));
   if (!partita) return json({ errore: "Non è stato possibile trovare un codice libero. Riprova." }, 503, cors);
   return json(partita, 201, cors);
 }

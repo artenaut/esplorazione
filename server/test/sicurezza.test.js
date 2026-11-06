@@ -37,7 +37,7 @@ describe("Limiti ai tentativi (3.10)", () => {
     for (let i = 0; i < 12; i++) {
       const r = await chiama("/api/partite", {
         method: "POST", headers: { Origin: APP, "CF-Connecting-IP": "198.51.100.4", "Content-Type": "application/json" },
-        body: JSON.stringify({ esplorazione: "lowrenzia", nomi: ["Alba", "Bruno"] }),
+        body: JSON.stringify({ esplorazione: "lowrenzia", posti: 2 }),
       });
       stati.push(r.status);
     }

@@ -17,6 +17,15 @@ export function preparaSchema(db) {
         caricata   TEXT NOT NULL,          -- data e ora del primo caricamento (UTC)
         aggiornata TEXT NOT NULL           -- data e ora dell'ultima modifica (UTC)
       )`),
+      // nickname del club (fase 4): solo il nickname e la prova del consenso
+      db.prepare(`CREATE TABLE IF NOT EXISTS esplorator (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        nickname    TEXT NOT NULL UNIQUE COLLATE NOCASE,
+        creato      TEXT NOT NULL,         -- data e ora di creazione (UTC)
+        consenso    TEXT NOT NULL,         -- data e ora del consenso alla classifica pubblica (UTC)
+        informativa TEXT NOT NULL,         -- versione dell'informativa accettata
+        eta14       INTEGER NOT NULL       -- 1: ha confermato di avere almeno 14 anni
+      )`),
     ])
     .catch((e) => {
       schemaPronto = null;

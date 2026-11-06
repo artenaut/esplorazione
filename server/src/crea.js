@@ -10,17 +10,17 @@ export function prefissoCodice(id) {
   return (scelte + lettere.slice(1) + "XXX").slice(0, 3);
 }
 
-// Cerca un codice libero e crea la partita. gettoniHash: impronte dei gettoni da assegnare
-// ai posti (stesso ordine dei nomi), per far restare seduti i dispositivi del gruppo.
+// Cerca un codice libero e crea la partita. identita: un elemento per posto (null = da scegliere).
+// gettoniHash: impronte dei gettoni da assegnare ai posti, per far restare seduti i dispositivi del gruppo.
 // Restituisce { codice, codiceMaster, link } oppure null se non trova un codice libero.
-export async function nuovaPartita(env, esplorazione, nomi, gettoniHash = []) {
+export async function nuovaPartita(env, esplorazione, identita, gettoniHash = []) {
   const codiceMaster = casuale();
   const prefisso = prefissoCodice(esplorazione.id);
   for (let tentativo = 0; tentativo < 20; tentativo++) {
     const cifre = 100 + (crypto.getRandomValues(new Uint32Array(1))[0] % 900);
     const codice = `${prefisso}-${cifre}`;
     const stub = env.PARTITA.get(env.PARTITA.idFromName(codice));
-    const esito = await stub.crea({ codice, esplorazione, nomi, codiceMaster, gettoniHash });
+    const esito = await stub.crea({ codice, esplorazione, identita, codiceMaster, gettoniHash });
     if (esito.ok) return { codice, codiceMaster, link: `${env.INDIRIZZO_APP}?partita=${codice}` };
   }
   return null;

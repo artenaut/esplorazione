@@ -2,6 +2,7 @@
 
 import { verificaAccess } from "./accesso.js";
 import { elencoAdmin, leggi, salva, rimuovi } from "./esplorazioni.js";
+import { elencoAdminNickname, rinominaNickname, rimuoviNickname } from "./esplorator.js";
 
 const LIMITE_FILE = 1024 * 1024; // 1 MB: un pianeta è di poche decine di kB
 const RE_ID = /^[a-z0-9-]{1,40}$/;
@@ -30,6 +31,22 @@ export async function gestisciAdmin(request, env, url) {
       if (corpo.errore) return json(corpo, 400);
       const esito = await salva(env.DB, corpo.dati);
       return json(esito, esito.errore ? 422 : 200);
+    }
+  }
+
+  // Moderazione dei nickname (fase 4): elenco, rinomina, cancellazione.
+  if (p === "/admin/api/esplorator" && request.method === "GET") return json(await elencoAdminNickname(env.DB));
+  const nk = p.match(/^\/admin\/api\/esplorator\/(\d{1,9})$/);
+  if (nk) {
+    const id = Number(nk[1]);
+    if (request.method === "PATCH") {
+      const corpo = await leggiJson(request);
+      if (corpo.errore) return json(corpo, 400);
+      const r = await rinominaNickname(env.DB, id, corpo.dati?.nickname);
+      return r.errore ? json({ errore: r.errore }, r.nonTrovato ? 404 : 422) : json(r);
+    }
+    if (request.method === "DELETE") {
+      return (await rimuoviNickname(env.DB, id)) ? json({ ok: true }) : json({ errore: "Nickname non trovato." }, 404);
     }
   }
 
@@ -143,6 +160,12 @@ details.simlv summary{cursor:pointer}
 </section>
 
 <section class="panel">
+  <div><h2>Nickname del club</h2><p class="hint">Creati da chi gioca, con il consenso a comparire in classifica. Puoi rinominare un nickname (per esempio se è un nome vero o è offensivo) o cancellarlo su richiesta. Le partite in corso non cambiano.</p></div>
+  <div class="list" id="nickname"><p class="hint">Caricamento…</p></div>
+  <p class="msg" id="esito-nick" aria-live="polite"></p>
+</section>
+
+<section class="panel">
   <div><h2>Simulatore</h2><p class="hint">Gioca tante partite con scelte casuali e le stesse regole del server, per controllare il bilanciamento di un’esplorazione prima di portarla al tavolo.</p></div>
   <div class="simform">
     <label>Esplorazione<select id="sim-mod" class="field"></select></label>
@@ -200,6 +223,37 @@ document.addEventListener('click', async e => {
   }
 });
 
+async function caricaNickname(){
+  const r = await fetch('/admin/api/esplorator', { headers: H });
+  const el = $('#nickname');
+  if(!r.ok){ el.innerHTML = '<p class="msg err">Elenco non disponibile ('+r.status+').</p>'; return; }
+  const l = await r.json();
+  el.innerHTML = l.length ? l.map(n => \`
+    <div class="item"><div><strong>\${esc(n.nickname)}</strong>
+      <small>creato il \${esc(data(n.creato))} · consenso del \${esc(data(n.consenso))} · informativa \${esc(n.informativa)}\${n.eta14 ? ' · 14 anni confermati' : ''}</small></div>
+      <div class="row"><button class="btn" data-rinomina="\${n.id}" data-nick="\${esc(n.nickname)}">Rinomina</button>
+      <button class="btn danger" data-cancella-nick="\${n.id}" data-nick="\${esc(n.nickname)}">Cancella</button></div></div>\`).join('')
+    : '<p class="hint">Ancora nessun nickname.</p>';
+}
+function esitoNick(t, ok){ const e=$('#esito-nick'); e.textContent=t; e.className='msg '+(ok?'ok':'err'); }
+document.addEventListener('click', async e => {
+  const rn = e.target.closest('[data-rinomina]'), cn = e.target.closest('[data-cancella-nick]');
+  if(rn){
+    const nuovo = prompt('Nuovo nickname per «'+rn.dataset.nick+'»:', rn.dataset.nick);
+    if(!nuovo || nuovo === rn.dataset.nick) return;
+    const r = await fetch('/admin/api/esplorator/'+rn.dataset.rinomina, { method: 'PATCH', headers: { ...H, 'Content-Type': 'application/json' }, body: JSON.stringify({ nickname: nuovo }) });
+    const j = await r.json().catch(() => ({}));
+    esitoNick(r.ok ? '«'+rn.dataset.nick+'» ora si chiama «'+j.nickname+'».' : (j.errore || 'Rinomina non riuscita ('+r.status+').'), r.ok);
+    caricaNickname();
+  }
+  if(cn){
+    if(!confirm('Cancellare «'+cn.dataset.nick+'»? Il nickname e la prova del consenso vengono eliminati.')) return;
+    const r = await fetch('/admin/api/esplorator/'+cn.dataset.cancellaNick, { method: 'DELETE', headers: H });
+    esitoNick(r.ok ? '«'+cn.dataset.nick+'» cancellato.' : 'Cancellazione non riuscita ('+r.status+').', r.ok);
+    caricaNickname();
+  }
+});
+
 $('#scegli').onclick = () => $('#file').click();
 $('#file').onchange = async e => {
   const f = e.target.files[0]; e.target.value = '';
@@ -227,6 +281,7 @@ $('#sim-run').onclick = async () => {
   btn.disabled = false;
 };
 carica();
+caricaNickname();
 </script></body></html>`;
   return new Response(html, {
     headers: {

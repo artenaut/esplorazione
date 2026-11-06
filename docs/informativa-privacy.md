@@ -11,6 +11,7 @@ Per qualsiasi domanda o richiesta puoi scrivere a **artenautspaceship@gmail.com*
 ### 2. Quali dati trattiamo
 - **Il nickname** che scegli.
 - **Le statistiche di gioco** collegate al nickname: partite concluse, pianeti completati, esplorazioni portate a termine, stanze aperte e stanze aperte per ciascuna via.
+- **La prova del tuo consenso:** la data in cui l'hai dato, la versione di questa informativa che hai accettato e la conferma di avere almeno 14 anni. Ci serve per poter dimostrare che il consenso c'è.
 
 Non ti chiediamo nient'altro: niente nome e cognome, niente email, niente telefono, niente data di nascita.
 **Ti consigliamo di non usare il tuo nome vero come nickname**, perché sarà visibile a chiunque.

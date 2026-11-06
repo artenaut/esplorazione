@@ -6,6 +6,8 @@
 //
 // Passi 3.3–3.9: creazione, posti con gettone, ruoli (master, esplorator*, tabellone, ospite),
 // mosse con estrazione sul server, annullamento dell'ultima mossa, chiusura e scadenza automatica.
+// Fase 4: ogni posto nasce «da scegliere»; chi lo occupa (o il master) sceglie un nickname del club,
+// ne crea uno nuovo con il consenso, oppure gioca come guest con un nome generato dal server.
 // Protocollo completo: docs/protocollo-partita.md.
 
 import { DurableObject } from "cloudflare:workers";
@@ -13,8 +15,12 @@ import { compile, drawOffer, nextOfNode } from "../../motore.js";
 import { casuale, hash } from "./util.js";
 import { nuovaPartita } from "./crea.js";
 import { leggi } from "./esplorazioni.js";
+import { leggiNickname, creaNickname, nomeGuest } from "./esplorator.js";
 
-export const MIN_GIOCATORI = 2, MAX_GIOCATORI = 4, MAX_NOME = 24, MAX_REGISTRO = 500;
+export const MIN_GIOCATORI = 2, MAX_GIOCATORI = 4, MAX_REGISTRO = 500;
+// Nuovi nickname creabili in una partita (contro chi ne crea in serie).
+export const MAX_NUOVI_NICKNAME = 8;
+const ROMANI = ["I", "II", "III", "IV"];
 // Scadenza: 6 ore senza attività, e comunque 24 ore dopo la creazione (roadmap-server.md §2).
 export const SENZA_ATTIVITA = 6 * 60 * 60 * 1000, DURATA_MASSIMA = 24 * 60 * 60 * 1000;
 
@@ -33,9 +39,10 @@ export class Partita extends DurableObject {
 
   // ---------- creazione (chiamata dal Worker via RPC) ----------
 
-  // dati = { codice, esplorazione (file completo, già validato), nomi, codiceMaster,
+  // dati = { codice, esplorazione (file completo, già validato), identita (un elemento per posto:
+  //          null = da scegliere, oppure l'identità da riprendere con «stesso gruppo»), codiceMaster,
   //          gettoniHash (facoltativo: impronte dei gettoni dei posti, per «stesso gruppo») }
-  async crea({ codice, esplorazione, nomi, codiceMaster, gettoniHash = [] }) {
+  async crea({ codice, esplorazione, identita, codiceMaster, gettoniHash = [] }) {
     if (await this.carica()) return { occupato: true };
     const m = compile(esplorazione);
     const shown = {};
@@ -48,8 +55,9 @@ export class Partita extends DurableObject {
       esplorazione,
       masterHash: await hash(codiceMaster),
       shown,
-      posti: nomi.map((nome, i) => ({ ...nuovoPosto(m, nome, shown), gettoneHash: gettoniHash[i] ?? null })),
+      posti: identita.map((id, i) => ({ ...nuovoPosto(m, id, shown), gettoneHash: gettoniHash[i] ?? null })),
       log: [],
+      nuoviNickname: 0,
     };
     this.stato = stato;
     await this.ctx.storage.put("stato", stato);
@@ -110,6 +118,7 @@ export class Partita extends DurableObject {
         case "libera": return await this.libera(ws, stato, io, dati);
         case "aggiungi": return await this.aggiungi(ws, stato, io, dati);
         case "togli": return await this.togli(ws, stato, io, dati);
+        case "identita": return await this.identita(ws, stato, io, dati);
         case "mossa": return await this.mossa(ws, stato, io, dati);
         case "annulla": return await this.annulla(ws, stato, io);
         case "chiudi": return await this.chiudi(ws, stato, io, dati);
@@ -164,7 +173,7 @@ export class Partita extends DurableObject {
     }
     const p = stato.posti[posto];
     if (!Number.isInteger(posto) || !p) return errore(ws, "posto-inesistente", "Questo posto non esiste.");
-    if (p.gettoneHash) return errore(ws, "posto-occupato", `Il posto di ${p.nome} è già occupato da un altro dispositivo.`);
+    if (p.gettoneHash) return errore(ws, "posto-occupato", `Il posto di ${nomePosto(p, posto)} è già occupato da un altro dispositivo.`);
     const gettone = casuale();
     p.gettoneHash = await hash(gettone);
     await this.salva(stato, { attivita: true });
@@ -178,7 +187,7 @@ export class Partita extends DurableObject {
     if (io.ruolo !== "master") return errore(ws, "ruolo", "Solo il master può liberare un posto.");
     const p = stato.posti[posto];
     if (!Number.isInteger(posto) || !p) return errore(ws, "posto-inesistente", "Questo posto non esiste.");
-    if (!p.gettoneHash) return errore(ws, "posto-libero", `Il posto di ${p.nome} è già libero.`);
+    if (!p.gettoneHash) return errore(ws, "posto-libero", `Il posto di ${nomePosto(p, posto)} è già libero.`);
     p.gettoneHash = null;
     await this.salva(stato);
     for (const altro of this.ctx.getWebSockets()) {
@@ -191,13 +200,11 @@ export class Partita extends DurableObject {
     this.trasmetti(stato);
   }
 
-  // Il master aggiunge un* esplorator*, che parte dall'ingresso.
-  async aggiungi(ws, stato, io, { nome }) {
+  // Il master aggiunge un posto «da scegliere», che parte dall'ingresso.
+  async aggiungi(ws, stato, io) {
     if (io.ruolo !== "master") return errore(ws, "ruolo", "Solo il master può aggiungere esplorator*.");
     if (stato.posti.length >= MAX_GIOCATORI) return errore(ws, "troppi", `Al massimo ${MAX_GIOCATORI} esplorator* per partita.`);
-    const n = controllaNome(nome, stato.posti.map((p) => p.name));
-    if (n.errore) return errore(ws, "nome-non-valido", n.errore);
-    stato.posti.push(nuovoPosto(this.compilato(stato), n.nome, stato.shown));
+    stato.posti.push(nuovoPosto(this.compilato(stato), null, stato.shown));
     await this.salva(stato, { attivita: true });
     this.trasmetti(stato);
   }
@@ -223,16 +230,62 @@ export class Partita extends DurableObject {
     this.trasmetti(stato);
   }
 
+  // Chi gioca in un posto: { tipo:"identita", posto, scelta } con scelta
+  //   { tipo:"nickname", id }                                  nickname del club dall'elenco
+  //   { tipo:"nuovo", nickname, consenso:true, eta14:true }    nuovo nickname, con il consenso
+  //   { tipo:"guest" }                                         nome buffo scelto dal server (di nuovo: un altro nome)
+  // La può fare il dispositivo seduto in quel posto, oppure il master. Solo prima della prima mossa.
+  async identita(ws, stato, io, { posto, scelta }) {
+    const p = stato.posti[posto];
+    if (!Number.isInteger(posto) || !p) return errore(ws, "posto-inesistente", "Questo posto non esiste.");
+    if (!(io.ruolo === "master" || (io.ruolo === "esplorator" && io.posto === posto))) {
+      return errore(ws, "ruolo", "Chi gioca in un posto lo sceglie il telefono seduto lì, oppure il master.");
+    }
+    if (p.moves > 0) return errore(ws, "identita-bloccata", "Dopo la prima mossa non si può più cambiare chi gioca in questo posto.");
+    const altri = stato.posti.filter((_, i) => i !== posto);
+    let nuova;
+    if (scelta?.tipo === "guest") {
+      nuova = { tipo: "guest", nome: nomeGuest(altri.map((q) => q.name).filter(Boolean), p.identita?.tipo === "guest" ? p.name : null) };
+    } else if (scelta?.tipo === "nickname") {
+      const id = Number(scelta.id);
+      if (!Number.isInteger(id)) return errore(ws, "messaggio-non-valido", "Nickname non valido.");
+      const r = await leggiNickname(this.env.DB, id);
+      if (!r) return errore(ws, "nickname-inesistente", "Questo nickname non esiste più: scegline un altro.");
+      if (altri.some((q) => q.identita?.tipo === "nickname" && q.identita.id === id)) {
+        return errore(ws, "nickname-in-uso", `«${r.nickname}» sta già giocando in questa partita.`);
+      }
+      nuova = { tipo: "nickname", id: r.id, nome: r.nickname };
+    } else if (scelta?.tipo === "nuovo") {
+      if (scelta.eta14 !== true || scelta.consenso !== true) {
+        return errore(ws, "consenso-mancante", "Per comparire in classifica servono entrambe le caselle. Altrimenti puoi giocare come guest.");
+      }
+      if ((stato.nuoviNickname ?? 0) >= MAX_NUOVI_NICKNAME) {
+        return errore(ws, "troppi-nickname", "In questa partita sono già stati creati troppi nickname: chiedi a chi amministra.");
+      }
+      const r = await creaNickname(this.env.DB, scelta.nickname);
+      if (r.errore) return errore(ws, "nickname-non-valido", r.errore);
+      stato.nuoviNickname = (stato.nuoviNickname ?? 0) + 1;
+      nuova = { tipo: "nickname", id: r.id, nome: r.nickname };
+    } else {
+      return errore(ws, "messaggio-non-valido", "Scelta non valida.");
+    }
+    p.identita = nuova;
+    p.name = nuova.nome;
+    await this.salva(stato, { attivita: true });
+    this.trasmetti(stato);
+  }
+
   // Una mossa: entrare in una delle stanze proposte a un* esplorator*.
   // { tipo:"mossa", posto, stanza, versione } — «versione» è quella del posto nello stato da cui parte la mossa.
   async mossa(ws, stato, io, { posto, stanza, versione }) {
     const p = stato.posti[posto];
     if (!Number.isInteger(posto) || !p) return errore(ws, "posto-inesistente", "Questo posto non esiste.");
     if (io.ruolo === "esplorator") {
-      if (io.posto !== posto) return errore(ws, "ruolo", `Puoi muovere solo per te. Per ${p.name} può muovere il master.`);
+      if (io.posto !== posto) return errore(ws, "ruolo", `Puoi muovere solo per te. Per ${nomePosto(p, posto)} può muovere il master.`);
     } else if (io.ruolo !== "master") {
       return errore(ws, "ruolo", "Questo dispositivo non può muovere.");
     }
+    if (!p.identita) return errore(ws, "identita-mancante", "Prima bisogna scegliere chi gioca in questo posto: nickname o guest.");
     // Conflitto sullo stesso personaggio (esplorator* e master insieme): vince la prima mossa arrivata.
     if (versione !== (p.v ?? 0)) {
       return errore(ws, "versione-superata", `${p.name} ha già mosso: ecco la situazione aggiornata.`, { stato: this.vista(stato) });
@@ -311,7 +364,7 @@ export class Partita extends DurableObject {
       const impronte = await Promise.all(gettoni.map((g) => (g ? hash(g) : null)));
       // la nuova partita usa la versione attuale del pianeta; se nel frattempo è stato rimosso, la copia di questa
       const esplorazione = (await leggi(this.env.DB, stato.esplorazione.id).catch(() => null)) ?? stato.esplorazione;
-      nuova = await nuovaPartita(this.env, esplorazione, stato.posti.map((p) => p.name), impronte);
+      nuova = await nuovaPartita(this.env, esplorazione, stato.posti.map((p) => p.identita ?? null), impronte);
       if (!nuova) return errore(ws, "errore-server", "Non è stato possibile creare la nuova partita. Riprova.");
     }
 
@@ -372,10 +425,12 @@ export class Partita extends DurableObject {
         ...(e.regoleLink ? { regoleLink: e.regoleLink } : {}),
         ...(e.regoleImmagine ? { regoleImmagine: e.regoleImmagine } : {}),
       },
-      posti: stato.posti.map((p) => {
+      posti: stato.posti.map((p, i) => {
         const completato = p.node === "ingresso" && p.trail.length > 0;
         return {
-          nome: p.name,
+          nome: nomePosto(p, i),
+          // null = ancora da scegliere; { tipo:"nickname", id } oppure { tipo:"guest" }
+          identita: p.identita ? (p.identita.tipo === "nickname" ? { tipo: "nickname", id: p.identita.id } : { tipo: "guest" }) : null,
           versione: p.v ?? 0,
           occupato: !!p.gettoneHash,
           giro: p.run,
@@ -408,7 +463,11 @@ export class Partita extends DurableObject {
   // ---------- storage ----------
 
   async carica() {
-    this.stato ??= (await this.ctx.storage.get("stato")) ?? null;
+    if (!this.stato) {
+      this.stato = (await this.ctx.storage.get("stato")) ?? null;
+      // partite create prima della fase 4, con i nomi scritti a mano: quei nomi valgono come guest
+      for (const p of this.stato?.posti ?? []) if (p.identita === undefined) p.identita = p.name ? { tipo: "guest", nome: p.name } : null;
+    }
     return this.stato;
   }
 
@@ -430,20 +489,18 @@ export class Partita extends DurableObject {
 
 // Un posto è un* esplorator* con il suo percorso (stessa struttura dell'app) e, se occupato,
 // l'impronta del gettone del dispositivo. Il gettone vero lo conosce solo il dispositivo.
-function nuovoPosto(m, nome, shown) {
+// identita: null (da scegliere) | { tipo:"nickname", id, nome } | { tipo:"guest", nome }
+function nuovoPosto(m, identita, shown) {
   return {
-    name: nome, run: 1, trail: [], node: "ingresso", step: 1, moves: 0, seen: {}, v: 0, cicli: 0, perVia: {},
+    identita: identita ?? null, name: identita?.nome ?? null, run: 1, trail: [], node: "ingresso", step: 1, moves: 0, seen: {}, v: 0, cicli: 0, perVia: {},
     offer: drawOffer(m, "ingresso", null, shown, null),
     gettoneHash: null,
   };
 }
 
-export function controllaNome(nome, esistenti = []) {
-  const n = typeof nome === "string" ? nome.trim().replace(/\s+/g, " ") : "";
-  if (!n) return { errore: "Il nome non può essere vuoto." };
-  if (n.length > MAX_NOME) return { errore: `Il nome può avere al massimo ${MAX_NOME} caratteri.` };
-  if (esistenti.some((e) => e.toLowerCase() === n.toLowerCase())) return { errore: `C’è già qualcun* con il nome «${n}».` };
-  return { nome: n };
+// Nome da mostrare: quello scelto, oppure «Posto II» finché è da scegliere.
+export function nomePosto(p, i) {
+  return p.name ?? `Posto ${ROMANI[i] ?? i + 1}`;
 }
 
 export function scadenza(stato) {
@@ -451,10 +508,16 @@ export function scadenza(stato) {
 }
 
 // Dati per la classifica (fase 5), per ogni esplorator*: cicli completati, stanze aperte, stanze per via.
+// tipo «nickname» (con l'id del nickname) entrerà in classifica; «guest» e i posti mai scelti no.
 export function riepilogoPartita(stato) {
   return {
     esplorazione: stato.esplorazione.id,
-    posti: stato.posti.map((p) => ({ nome: p.name, cicli: p.cicli ?? 0, stanze: p.moves, perVia: { ...(p.perVia ?? {}) } })),
+    posti: stato.posti.map((p, i) => ({
+      nome: nomePosto(p, i),
+      tipo: p.identita?.tipo ?? null,
+      nickname: p.identita?.tipo === "nickname" ? p.identita.id : null,
+      cicli: p.cicli ?? 0, stanze: p.moves, perVia: { ...(p.perVia ?? {}) },
+    })),
   };
 }
 

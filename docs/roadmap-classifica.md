@@ -94,6 +94,12 @@ Riferimento: GDPR e Codice privacy italiano. Analisi del 6/11/2026, da far verif
 ### Chi crea il nickname [deciso il 6/11/2026]
 - **L'esplorator\* stess\*, alla prima partita:** entrando in una sessione sceglie «Nuovo nickname», spunta le caselle e da quel momento lo ritrova nell'elenco. L'admin interviene solo per rinominare o cancellare.
 
+### Decisioni del 6/11/2026 (fase 4)
+- **Chi sceglie:** ognun\* dal proprio telefono, dopo aver preso il posto; per chi non ha il telefono lo fa il master (passando il telefono alla persona per le caselle).
+- **Nessuna protezione del nickname** (niente PIN): vigila il tavolo, l'admin corregge. Lo stesso nickname non può comparire due volte nella stessa partita.
+- **Prova del consenso:** per ogni nickname si salvano data del consenso, versione dell'informativa e conferma dei 14 anni.
+- Regole del nickname: da 3 a 20 caratteri (lettere, numeri, spazi, `. _ - '`), unico senza distinguere maiuscole e minuscole; vietati i nomi riservati e i nomi da guest.
+
 ### Al momento dell'inserimento del nickname
 - **Disclaimer:** «Il nickname sarà visibile a chiunque nella classifica pubblica: non usare il tuo nome vero.»
 - **Casella di consenso** da spuntare: «Acconsento a comparire con questo nickname nella classifica pubblica del club.» Il consenso si può revocare chiedendo la cancellazione.

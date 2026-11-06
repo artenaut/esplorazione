@@ -37,7 +37,10 @@ describe("Chiudi e annulla partita (3.8)", () => {
     expect(fine).toMatchObject({ modo: "chiusa", poi: "fine", nuova: null });
     expect(fine.riepilogo).toEqual({
       esplorazione: "lowrenzia",
-      posti: [{ nome: "Alba", cicli: 1, stanze: 4, perVia: { a: 4 } }, { nome: "Bruno", cicli: 0, stanze: 1, perVia: { b: 1 } }],
+      posti: [
+        { nome: "Alba", tipo: "nickname", nickname: expect.any(Number), cicli: 1, stanze: 4, perVia: { a: 4 } },
+        { nome: "Bruno", tipo: "nickname", nickname: expect.any(Number), cicli: 0, stanze: 1, perVia: { b: 1 } },
+      ],
     });
     expect((await master.aspetta("chiusa")).modo).toBe("chiusa");
 
@@ -53,7 +56,7 @@ describe("Chiudi e annulla partita (3.8)", () => {
     muovi(master, s1, 0); await master.aspetta("mossa");
     master.manda({ tipo: "annulla" }); await master.aspetta("annullata");
     master.manda({ tipo: "chiudi", salva: true, poi: "fine" });
-    expect((await master.aspetta("chiusa")).riepilogo.posti[0]).toEqual({ nome: "Alba", cicli: 0, stanze: 1, perVia: { a: 1 } });
+    expect((await master.aspetta("chiusa")).riepilogo.posti[0]).toMatchObject({ nome: "Alba", cicli: 0, stanze: 1, perVia: { a: 1 } });
   });
 
   it("Annulla partita: nessun riepilogo, dati eliminati", async () => {
@@ -97,7 +100,7 @@ describe("Scadenza automatica (3.9)", () => {
   it("alla creazione c'è l'allarme a 6 ore; le mosse lo spostano, ma mai oltre 24 ore", async () => {
     const { codice, master, stato } = await tavolo(["Alba", "Bruno"], []);
     const i0 = await interno(codice);
-    expect(i0.allarme).toBe(i0.stato.creata + SENZA_ATTIVITA);
+    expect(i0.allarme).toBe(i0.stato.ultimaAttivita + SENZA_ATTIVITA);
     expect(stato.scade).toBe(i0.allarme);
 
     // simulo una partita creata 20 ore fa con l'ultima attività 1 ora fa

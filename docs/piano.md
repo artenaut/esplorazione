@@ -89,11 +89,11 @@ Il blocco più grosso. Si sviluppa e si prova a pezzi.
 
 | # | Attività | Riferimento |
 |---|---|---|
-| 4.1 | **Guest** con nome buffo senza aggettivi di genere, «Un altro nome», nessun dato salvato. | `roadmap-classifica.md` §10 |
-| 4.2 | **Nickname del club** con disclaimer, casella di consenso, casella dei 14 anni e link all'informativa. | `roadmap-classifica.md` §9 |
-| 4.3 | **Informativa** pubblicata nell'app e collegata alla schermata del nickname. | `informativa-privacy.md` |
-| 4.4 | **Moderazione admin:** rinominare e cancellare nickname. | `roadmap-classifica.md` §9 |
-| 4.5 | Far **verificare l'informativa** a un consulente. | `roadmap-classifica.md` §9 |
+| 4.1 | ✅ **Guest** (6/11/2026): nome buffo scelto dal server tra 70 frasi «animale + complemento», senza aggettivi di genere; «Un altro nome»; nessun dato salvato, fuori dalla classifica. | `roadmap-classifica.md` §10 |
+| 4.2 | ✅ **Nickname del club** (6/11/2026): l'esplorator\* lo sceglie dal proprio telefono dopo aver preso il posto (il master per chi non ha il telefono), dall'elenco o creandolo con disclaimer, casella dei 14 anni, casella di consenso e link all'informativa. Si salvano data del consenso, versione dell'informativa e conferma dei 14 anni. Nessun PIN (decisione del 6/11/2026). | `roadmap-classifica.md` §9 |
+| 4.3 | ✅ **Informativa** (6/11/2026) pubblicata nell'app (`informativa.html`, letta da `docs/informativa-privacy.md`), collegata dalla pagina iniziale e dalla creazione del nickname. | `informativa-privacy.md` |
+| 4.4 | ✅ **Moderazione admin** (6/11/2026): elenco con la prova del consenso, rinomina e cancellazione dall'area admin. | `roadmap-classifica.md` §9 |
+| 4.5 | Far **verificare l'informativa** a un consulente (Francesco). Aggiornata il 6/11/2026 con la prova del consenso e il conteggio temporaneo dei tentativi. | `roadmap-classifica.md` §9 |
 
 **Risultato:** si sa chi gioca, con dati minimi e in regola, prima di pubblicare qualsiasi classifica.
 

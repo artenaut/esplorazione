@@ -1,7 +1,8 @@
 // Prove del passo 3.2: esplorazioni in D1, elenco pubblico senza stanze, area /admin dietro Access.
-import { exports } from "cloudflare:workers";
+import { env, exports } from "cloudflare:workers";
 import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import { gestisciAdmin } from "../src/admin.js";
+import { creaNickname } from "../src/esplorator.js";
 
 const BASE = "https://esplorazione.artenaut.workers.dev";
 const TEAM = "artenaut.cloudflareaccess.com";
@@ -124,5 +125,25 @@ describe("Elenco pubblico", () => {
       vie: [{ id: "a", nome: "Via A", breve: "Via A", colore: "#112233" }],
       regole: "## Regole\n- Si gioca.", regoleImmagine: "img/esploratore.png",
     }]);
+  });
+});
+
+describe("Moderazione dei nickname (4.4)", () => {
+  it("elenco con la prova del consenso, rinomina e cancellazione solo da admin", async () => {
+    const { id } = await creaNickname(env.DB, "Mario Rossi");
+    await creaNickname(env.DB, "Altro Nick");
+    expect((await chiama("/admin/api/esplorator")).status).toBe(403);
+    const lista = await (await comeAdmin("/admin/api/esplorator")).json();
+    expect(lista.find((n) => n.id === id)).toMatchObject({ nickname: "Mario Rossi", eta14: 1, informativa: expect.any(String), consenso: expect.any(String) });
+
+    const rinomina = (nuovo) => comeAdmin(`/admin/api/esplorator/${id}`, { method: "PATCH", body: JSON.stringify({ nickname: nuovo }), headers: { "Content-Type": "application/json" } });
+    expect((await rinomina("altro nick")).status).toBe(422);            // esiste già
+    expect((await rinomina("x")).status).toBe(422);                     // troppo corto
+    expect(await (await rinomina("Esploratore Uno")).json()).toEqual({ id, nickname: "Esploratore Uno" });
+    expect((await (await chiama("/api/esplorator")).json()).map((n) => n.nickname)).toContain("Esploratore Uno");
+
+    expect((await comeAdmin(`/admin/api/esplorator/${id}`, { method: "DELETE" })).status).toBe(200);
+    expect((await comeAdmin(`/admin/api/esplorator/${id}`, { method: "DELETE" })).status).toBe(404);
+    expect((await (await chiama("/api/esplorator")).json()).some((n) => n.id === id)).toBe(false);
   });
 });

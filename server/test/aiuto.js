@@ -1,5 +1,6 @@
 // Strumenti comuni alle prove delle partite.
-import { exports } from "cloudflare:workers";
+import { env, exports } from "cloudflare:workers";
+import { creaNickname, elencoPubblicoNickname } from "../src/esplorator.js";
 import { expect } from "vitest";
 
 export const BASE = "https://esplorazione.artenaut.workers.dev";
@@ -15,9 +16,28 @@ export const PIANETA = {
   finale: { nome: "La vetta", stanze: [...st("FA", 1), ...st("FB", 1, "b")], proposte: { a: { a: 1 }, b: { b: 1 } } },
 };
 
-export async function crea(nomi = ["Alba", "Bruno"], esplorazione = "lowrenzia") {
-  const r = await chiama("/api/partite", { method: "POST", headers: { Origin: APP, "Content-Type": "application/json" }, body: JSON.stringify({ esplorazione, nomi }) });
-  return { status: r.status, corpo: await r.json() };
+// Nickname del club per le prove (lo crea se manca).
+export async function nickname(nome) {
+  const r = await creaNickname(env.DB, nome);
+  if (!r.errore) return r.id;
+  return (await elencoPubblicoNickname(env.DB)).find((n) => n.nickname.toLowerCase() === nome.toLowerCase()).id;
+}
+
+// Crea una partita con un posto per nome e assegna a ogni posto il nickname con quel nome.
+export async function crea(nomi = ["Alba", "Bruno"], esplorazione = "lowrenzia", { assegna = true } = {}) {
+  const r = await chiama("/api/partite", { method: "POST", headers: { Origin: APP, "Content-Type": "application/json" }, body: JSON.stringify({ esplorazione, posti: nomi.length }) });
+  const corpo = await r.json();
+  if (r.status === 201 && assegna) {
+    const m = await apriWs(corpo.codice);
+    m.manda({ tipo: "entra", codiceMaster: corpo.codiceMaster });
+    await m.aspetta("benvenuto");
+    for (let i = 0; i < nomi.length; i++) {
+      m.manda({ tipo: "identita", posto: i, scelta: { tipo: "nickname", id: await nickname(nomi[i]) } });
+      await m.aspetta("stato");
+    }
+    m.ws.close();
+  }
+  return { status: r.status, corpo };
 }
 
 export async function apriWs(codice) {

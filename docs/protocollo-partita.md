@@ -3,7 +3,7 @@
 Come l'app parla con il server durante una partita. Riferimento per la nuova interfaccia a sessioni.
 Decisioni di gioco: `roadmap-server.md` §2–3. Codice: `server/src/index.js` e `server/src/partita.js`.
 
-Stato: passi **3.3–3.10** (creazione, posti, ruoli, mosse, annulla, chiusura, scadenza, limiti ai tentativi).
+Stato: passi **3.3–3.10** e **fase 4** (identità dei posti: nickname del club, nuovo nickname con consenso, guest).
 
 ---
 
@@ -12,10 +12,10 @@ Stato: passi **3.3–3.10** (creazione, posti, ruoli, mosse, annulla, chiusura, 
 `POST https://esplorazione.artenaut.workers.dev/api/partite`
 
 ```json
-{ "esplorazione": "lowrenzia", "nomi": ["Alba", "Bruno", "Cleo"] }
+{ "esplorazione": "lowrenzia", "posti": 3 }
 ```
 
-- Da 2 a 4 nomi, massimo 24 caratteri ciascuno, tutti diversi (senza distinguere maiuscole e minuscole). Gli spazi in più vengono tolti.
+- Da 2 a 4 posti. Ogni posto nasce **«da scegliere»** (nome provvisorio «Posto I», «Posto II»…): chi gioca lo sceglie dopo, dal proprio telefono (§3bis).
 - Risposta `201`:
 
 ```json
@@ -70,10 +70,22 @@ Risposta: `{ "tipo": "benvenuto", "ruolo": "esplorator", "posto": 1, "stato": { 
 | Messaggio | Effetto |
 |---|---|
 | `{ "tipo": "libera", "posto": 1 }` | Il gettone di quel posto smette di valere. Il dispositivo riceve `{ "tipo": "liberato" }` e torna ospite. |
-| `{ "tipo": "aggiungi", "nome": "Dario" }` | Nuov\* esplorator\* all'ingresso (massimo 4). |
+| `{ "tipo": "aggiungi" }` | Un posto in più, «da scegliere», all'ingresso (massimo 4). |
 | `{ "tipo": "togli", "posto": 1 }` | Toglie l'esplorator\* (minimo 2). I posti successivi scalano di uno; il dispositivo tolto riceve `liberato`. |
 
 Il server controlla il ruolo di ogni azione. Chi non ha il ruolo giusto riceve `{ "tipo": "errore", "codice": "ruolo" }`.
+
+## 3bis. Chi gioca in un posto (fase 4)
+
+`{ "tipo": "identita", "posto": 0, "scelta": … }` — la manda il telefono seduto in quel posto, oppure il master (per chi non ha il telefono). Si può cambiare **solo finché quel posto non ha fatto la prima mossa**; prima della scelta il posto non può muovere (`identita-mancante`).
+
+| `scelta` | Effetto |
+|---|---|
+| `{ "tipo": "nickname", "id": 12 }` | Nickname del club, preso da `GET /api/esplorator` (`[{ "id", "nickname" }]`, pubblico come la classifica). Lo stesso nickname non può stare in due posti della stessa partita. |
+| `{ "tipo": "nuovo", "nickname": "Zia Pina", "eta14": true, "consenso": true }` | Crea un nickname del club. Servono **entrambe** le caselle. Il server salva solo nickname, data del consenso, versione dell'informativa e conferma dei 14 anni. Da 3 a 20 caratteri: lettere, numeri, spazi e `. _ - '`; unico senza distinguere maiuscole e minuscole. Al massimo 8 nuovi nickname per partita. |
+| `{ "tipo": "guest" }` | Nome buffo scelto **dal server** («Gallina in incognito»…), diverso dagli altri della partita. Mandarlo di nuovo dà **un altro nome**. Il nome non si può scrivere a mano. |
+
+Il master che crea un nickname per chi non ha il telefono deve passare il telefono alla persona: le due caselle valgono come sua dichiarazione.
 
 ## 4. Mosse e annulla
 
@@ -120,12 +132,13 @@ La conferma («Sei sicur\* di…?») la chiede l'app prima di mandare il messagg
 
 ```json
 { "tipo": "chiusa", "modo": "chiusa", "poi": "stesso-gruppo",
-  "riepilogo": { "esplorazione": "lowrenzia", "posti": [ { "nome": "Alba", "cicli": 1, "stanze": 5, "perVia": { "forza": 3, "neutrale": 2 } } ] },
+  "riepilogo": { "esplorazione": "lowrenzia", "posti": [ { "nome": "Alba", "tipo": "nickname", "nickname": 12, "cicli": 1, "stanze": 5, "perVia": { "forza": 3, "neutrale": 2 } } ] },
   "nuova": { "codice": "LWR-731", "link": "…", "posto": 0, "gettone": "…" } }
 ```
 
 - `modo`: `"chiusa"`, `"annullata"` oppure `"scaduta"`.
-- `riepilogo` c'è solo con «Chiudi partita». In questa fase **non viene salvato da nessuna parte**: è la struttura dei dati che la fase 5 salverà in classifica.
+- `riepilogo` c'è solo con «Chiudi partita». In questa fase **non viene salvato da nessuna parte**: è la struttura dei dati che la fase 5 salverà in classifica. Ogni posto ha `tipo` (`"nickname"`, `"guest"` o `null` se mai scelto) e `nickname` (l'id, solo per i nickname): in classifica entreranno solo i nickname.
+- Con lo stesso gruppo i posti mantengono la loro identità (nickname o nome del guest).
 - `nuova` c'è solo con `"stesso-gruppo"`. Tutti ricevono `codice` e `link`. Il master riceve anche il nuovo `codiceMaster`, e ogni telefono seduto il nuovo `gettone` per lo stesso posto: si rientra con `entra` senza riscegliere il posto. Chi non era collegat\* in quel momento trova il proprio posto libero.
 - Subito dopo il server chiude le connessioni (codice 4000) ed **elimina tutti i dati** della partita. Il codice corto torna libero.
 
@@ -148,7 +161,7 @@ Dopo ogni modifica il server manda a tutti i dispositivi lo stesso messaggio `{ 
   "esplorazione": { "id": "lowrenzia", "nome": "…", "descrizione": "…", "vie": [ { "id": "forza", "nome": "…", "breve": "…", "colore": "#c95a40" } ], "regole": "…", "regoleImmagine": "img/esploratore.png" },
   "posti": [
     {
-      "nome": "Alba", "versione": 4, "occupato": true, "giro": 1, "passo": 3, "livello": "", "completato": false, "mosse": 2,
+      "nome": "Alba", "identita": { "tipo": "nickname", "id": 12 }, "versione": 4, "occupato": true, "giro": 1, "passo": 3, "livello": "", "completato": false, "mosse": 2,
       "percorso": [ { "id": "L1-F", "titolo": "Al Diavolo le mappe", "via": "forza" } ],
       "proposte":  [ { "id": "L3-F2", "titolo": "In preda alla furia!", "via": "forza" } ]
     }
@@ -176,6 +189,8 @@ Dopo ogni modifica il server manda a tutti i dispositivi lo stesso messaggio `{ 
 | `ruolo` | Azione non permessa a questo dispositivo. |
 | `posto-inesistente`, `posto-occupato`, `posto-libero` | Problemi con il posto indicato. |
 | `nome-non-valido`, `troppi`, `troppo-pochi` | Aggiunta o rimozione di esplorator\* non valida. |
+| `identita-mancante`, `identita-bloccata` | Posto ancora da scegliere / identità non più modificabile dopo la prima mossa. |
+| `nickname-in-uso`, `nickname-inesistente`, `nickname-non-valido`, `consenso-mancante`, `troppi-nickname` | Problemi nella scelta o creazione del nickname: il messaggio dice cosa fare. |
 | `versione-superata` | Qualcun altro ha già mosso quel personaggio: il messaggio porta lo `stato` aggiornato. |
 | `stanza-non-proposta` | La stanza non è tra le proposte (porta lo `stato`). |
 | `niente-da-annullare` | Non c'è una mossa annullabile. |
