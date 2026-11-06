@@ -11,21 +11,21 @@
   "send_metrics": false,
 
   // Una partita = un Durable Object «Partita» con SQLite (piano gratuito).
+  // Limitatore: conta in memoria i tentativi recenti di un indirizzo (passo 3.10), nulla salvato.
   "durable_objects": {
-    "bindings": [{ "name": "PARTITA", "class_name": "Partita" }]
+    "bindings": [
+      { "name": "PARTITA", "class_name": "Partita" },
+      { "name": "LIMITATORE", "class_name": "Limitatore" }
+    ]
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Partita"] }],
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["Partita"] },
+    { "tag": "v2", "new_sqlite_classes": ["Limitatore"] }
+  ],
 
   // Dati permanenti (esplorazioni; più avanti nickname, partite concluse, stagioni).
   // Senza database_id: wrangler crea il database alla prima pubblicazione e lo collega da solo.
   "d1_databases": [{ "binding": "DB", "database_name": "esplorazione" }],
-
-  // Limiti ai tentativi (passo 3.10), contati per indirizzo IP nella rete Cloudflare.
-  // I contatori sono temporanei e non vengono salvati da noi.
-  "ratelimits": [
-    { "name": "INGRESSI", "namespace_id": "3101", "simple": { "limit": 30, "period": 60 } },
-    { "name": "CREAZIONI", "namespace_id": "3102", "simple": { "limit": 10, "period": 60 } }
-  ],
 
   "vars": {
     // Origini da cui l'app può chiamare il server.

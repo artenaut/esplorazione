@@ -3,6 +3,7 @@
 // e l'area /admin protetta da Cloudflare Access.
 
 export { Partita } from "./partita.js";
+export { Limitatore } from "./limitatore.js";
 import { MIN_GIOCATORI, MAX_GIOCATORI, controllaNome } from "./partita.js";
 import { nuovaPartita } from "./crea.js";
 import { hash } from "./util.js";
@@ -38,13 +39,10 @@ export default {
         return json({ ok: true, versione: VERSIONE }, 200, cors);
       }
 
-      // DIAGNOSI TEMPORANEA del limitatore (da rimuovere subito dopo la verifica)
+      // DIAGNOSI TEMPORANEA del Limitatore con chiave fissa (da rimuovere subito dopo la verifica)
       if (url.pathname === "/api/diagnosi-limite") {
-        const ip = request.headers.get("CF-Connecting-IP");
-        const chiave = ip ? (await hash(ip)).slice(0, 8) : null;
-        let esito = null;
-        if (env.INGRESSI) esito = await env.INGRESSI.limit({ key: "diagnosi-chiave-fissa" });
-        return json({ limitatore: !!env.INGRESSI, tipo: typeof env.INGRESSI?.limit, chiave, esito, colo: request.cf?.colo ?? null });
+        const ok = await env.LIMITATORE.get(env.LIMITATORE.idFromName("diagnosi-fissa")).conta(30, FINESTRA_LIMITI);
+        return json({ diagnosi: 2, ammesso: ok });
       }
 
       // Area admin, protetta da Cloudflare Access (e verificata anche qui).
@@ -128,13 +126,15 @@ async function creaPartita(request, env, cors) {
 }
 
 // Limite ai tentativi per indirizzo (passo 3.10): contro chi prova i codici a caso o crea partite in serie.
-// La chiave è l'impronta dell'indirizzo IP; il contatore vive solo nel limitatore di Cloudflare per un minuto.
+// La chiave è l'impronta dell'indirizzo IP; il conteggio vive solo nella memoria del Limitatore per un minuto.
 // Senza l'intestazione CF-Connecting-IP (prove locali) il limite non si applica.
-async function troppiTentativi(env, request, limitatore) {
+export const LIMITI = { INGRESSI: 30, CREAZIONI: 10 }, FINESTRA_LIMITI = 60 * 1000;
+async function troppiTentativi(env, request, tipo) {
   const ip = request.headers.get("CF-Connecting-IP");
-  if (!ip || !env[limitatore]) return false;
-  const { success } = await env[limitatore].limit({ key: await hash(ip) });
-  return !success;
+  if (!ip || !env.LIMITATORE) return false;
+  const chiave = `${tipo}:${await hash(ip)}`;
+  const ammesso = await env.LIMITATORE.get(env.LIMITATORE.idFromName(chiave)).conta(LIMITI[tipo], FINESTRA_LIMITI);
+  return !ammesso;
 }
 
 function troppi(cors) {
