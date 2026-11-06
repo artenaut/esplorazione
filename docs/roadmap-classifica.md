@@ -115,7 +115,7 @@ Poche righe, in linguaggio semplice, comprensibile anche ai ragazzi:
 ### Altro
 - **Niente banner cookie:** l'app salva nel browser solo dati tecnici strettamente necessari (partita e posto del giocatore). Va mantenuto così, quindi niente strumenti di analisi delle visite.
 - **Niente Google Fonts** [deciso]: i caratteri vengono ospitati nel sito stesso, così l'IP dei visitatori non arriva a Google. Vedi `roadmap-app.md`, punto 0.
-- **Modello di informativa:** `informativa-privacy.md`, da completare con i dati dell'associazione.
+- **Informativa:** `informativa-privacy.md`. Titolare Artenaut\*, contatto artenautspaceship@gmail.com.
 
 ## 10. Guest [deciso il 6/11/2026]
 

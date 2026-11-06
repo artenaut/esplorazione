@@ -1,18 +1,12 @@
 # Informativa privacy · Classifica di Artenaut* Magic Exploration Companion
 
-> **Modello da completare.** Sostituire i campi tra parentesi quadre con i dati reali dell'associazione.
-> Bozza redatta il 6/11/2026 sulla base dell'art. 13 del GDPR (Regolamento UE 2016/679) e del Codice privacy italiano.
-> Non è una consulenza legale: farla verificare a un consulente prima di pubblicarla.
-
----
-
 ## Informativa sul trattamento dei dati personali
 
 Ti spieghiamo in modo semplice quali dati raccogliamo quando inserisci un nickname per la classifica, perché lo facciamo e quali diritti hai.
 
 ### 1. Chi tratta i tuoi dati
-Il titolare del trattamento è **[NOME DELL'ASSOCIAZIONE]**, con sede in [INDIRIZZO], codice fiscale [CODICE FISCALE].
-Per qualsiasi domanda o richiesta puoi scrivere a **[EMAIL DI CONTATTO]**.
+Il titolare del trattamento è **Artenaut\***.
+Per qualsiasi domanda o richiesta puoi scrivere a **artenautspaceship@gmail.com**.
 
 ### 2. Quali dati trattiamo
 - **Il nickname** che scegli.
@@ -32,15 +26,15 @@ Per inserire un nickname in classifica devi avere **almeno 14 anni** (art. 2-qui
 
 ### 5. Chi può vedere i dati
 - **Chiunque** visiti la pagina della classifica vede il nickname e le statistiche di gioco.
-- L'**amministratore** dell'associazione può modificare o cancellare i dati, per esempio per correggere errori o su tua richiesta.
+- L'**amministratore** di Artenaut\* può modificare o cancellare i dati, per esempio per correggere errori o su tua richiesta.
 - Per far funzionare il servizio ci appoggiamo a due fornitori, che trattano i dati per nostro conto:
   - **Cloudflare, Inc.**, che ospita il server delle partite e della classifica;
   - **GitHub, Inc.**, che ospita il sito dell'app.
 
-  Come ogni sito, questi fornitori registrano nei loro log tecnici l'**indirizzo IP** di chi visita le pagine, per motivi di sicurezza e funzionamento. Hanno sede negli Stati Uniti: il trasferimento dei dati avviene sulla base delle garanzie previste dal GDPR [VERIFICARE: es. Data Privacy Framework UE-USA o clausole contrattuali standard].
+  Come ogni sito, questi fornitori registrano nei loro log tecnici l'**indirizzo IP** di chi visita le pagine, per motivi di sicurezza e funzionamento. Hanno sede negli Stati Uniti: il trasferimento dei dati avviene sulla base delle garanzie previste dal GDPR, come il Data Privacy Framework UE-USA o le clausole contrattuali standard.
 
 ### 6. Per quanto tempo conserviamo i dati
-Conserviamo nickname e statistiche **finché non ne chiedi la cancellazione**, o fino alla chiusura del servizio [OPPURE: per [N] stagioni dalla tua ultima partita].
+Conserviamo nickname e statistiche **finché non ne chiedi la cancellazione**, o fino alla chiusura del servizio.
 Le stagioni concluse restano consultabili come archivio. Se chiedi la cancellazione, nelle stagioni archiviate il tuo nickname viene sostituito da «Giocatore rimosso».
 
 ### 7. Moderazione dei nickname
@@ -50,7 +44,7 @@ Se un nickname corrisponde a un nome reale o è offensivo, l'amministratore può
 L'app salva nel browser del tuo dispositivo solo le informazioni tecniche necessarie a farla funzionare, come la partita in corso e il posto del giocatore. Non usiamo cookie di profilazione né strumenti di analisi delle visite.
 
 ### 9. I tuoi diritti
-Puoi in qualsiasi momento, scrivendo a **[EMAIL DI CONTATTO]**:
+Puoi in qualsiasi momento, scrivendo a **artenautspaceship@gmail.com**:
 - sapere quali dati abbiamo su di te (accesso);
 - correggerli (rettifica), per esempio cambiare nickname;
 - farli cancellare (cancellazione);
@@ -62,7 +56,7 @@ Se ritieni che i tuoi dati siano trattati in modo non corretto, puoi presentare 
 ### 10. Aggiornamenti
 Questa informativa può essere aggiornata. La versione in vigore è sempre quella pubblicata nell'app.
 
-Ultimo aggiornamento: [DATA]
+Ultimo aggiornamento: 6 novembre 2026
 
 ---
 
@@ -73,7 +67,7 @@ Ultimo aggiornamento: [DATA]
 
 **Caselle da spuntare** (entrambe obbligatorie per entrare in classifica)
 > ☐ Ho almeno 14 anni.
-> ☐ Acconsento a comparire con questo nickname nella classifica pubblica del club. [Leggi l'informativa]
+> ☐ Acconsento a comparire con questo nickname nella classifica pubblica del club. Leggi l'informativa
 
 **Alternativa**
 > Preferisci non comparire in classifica? Gioca come guest.
