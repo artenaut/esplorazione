@@ -1,0 +1,27 @@
+// Configurazione del Worker «esplorazione» (fase 3 del piano).
+// Pubblicato da Cloudflare Workers Builds a ogni push su `main`, con cartella radice `server/`.
+// Indirizzo: https://esplorazione.artenaut.workers.dev
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "esplorazione",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-15",
+  "workers_dev": true,
+  "preview_urls": false,
+  "send_metrics": false,
+
+  // Una partita = un Durable Object «Partita» con SQLite (piano gratuito).
+  "durable_objects": {
+    "bindings": [{ "name": "PARTITA", "class_name": "Partita" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Partita"] }],
+
+  // Origini da cui l'app può chiamare il server.
+  "vars": {
+    "ORIGINI_CONSENTITE": "https://artenaut.github.io"
+  },
+
+  // Registri nel pannello Cloudflare: solo i messaggi scritti dal codice (errori),
+  // non i dettagli di ogni richiesta, per non conservare indirizzi IP o altri dati.
+  "observability": { "enabled": true, "logs": { "invocation_logs": false } }
+}

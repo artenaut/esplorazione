@@ -128,6 +128,14 @@ Entrambi chiedono prima una conferma. Poi chiedono come proseguire:
 ### Finché il server non c'è
 - Con l'app attuale e le esplorazioni incorporate, la password nella pagina resta sufficiente come «anti-pasticcio».
 
+## 3bis. Architettura del server [deciso il 6/11/2026]
+
+- **Durable Object `Partita`,** uno per sessione, con WebSocket Hibernation API e SQLite. Contiene lo stato della partita, i contatori «meno mostrate», i posti, i gettoni e l'ultima mossa annullabile. La scadenza usa gli allarmi del Durable Object.
+- **Dati permanenti su D1:** esplorazioni con i testi delle stanze, e nelle fasi successive nickname, partite concluse e stagioni. Limiti gratuiti ricontrollati il 6/11/2026: 5 milioni di righe lette e 100.000 scritte al giorno, 5 GB in tutto, fino a 10 database. Superato un limite giornaliero, le query falliscono fino alle 00:00 UTC.
+- **`motore.js`:** la logica di gioco (controllo del formato, estrazioni, livello successivo) sta in un modulo condiviso tra app e server.
+- **Codice del server nella cartella `server/`** del repository, pubblicato da Workers Builds a ogni push su `main`.
+- **Testi di Lowrenzia:** sono già pubblici nella cronologia del repository, che deve restare pubblico per GitHub Pages. **Si accetta** (opzione 1): l'app non li contiene più, la cronologia non viene riscritta, e il file del pianeta non entra nel repository ma si carica dall'area admin. I pianeti futuri nascono solo sul server.
+
 ## 4. Classifica del club [deciso il 6/11/2026]
 
 **Regole di calcolo e visualizzazione: vedi `roadmap-classifica.md`.** Qui restano solo gli aspetti lato server.

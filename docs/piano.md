@@ -42,7 +42,7 @@ Tutto quello che migliora il gioco senza server. È la versione stabile da usare
 | 1.3 | ✅ **Convertire Lowrenzia** al formato v2, senza cambiare come si gioca. | `roadmap-app.md` §2 |
 | 1.4 | ✅ **Validazione al caricamento** nell'area admin: ogni percorso arriva al finale, pool sufficienti, id unici. | `roadmap-app.md` §2 |
 | 1.5 | ✅ **Simulatore** «Simula 1.000 partite» nell'area admin. | `roadmap-app.md` §3 |
-| 1.6 | Prova al tavolo e correzioni. **Rimandata:** si fa appena possibile, in parallelo alla fase 2. | — |
+| 1.6 | Prova al tavolo e correzioni. **Unita alla 3.11** (deciso il 6/11/2026): non c'è tempo per una prova separata, si prova tutto insieme nella sessione di test dedicata. | — |
 
 **Risultato:** si possono scrivere e bilanciare nuovi pianeti con logiche diverse, e le stanze ruotano bene.
 
@@ -67,7 +67,7 @@ Il blocco più grosso. Si sviluppa e si prova a pezzi.
 
 | # | Attività | Riferimento |
 |---|---|---|
-| 3.1 | **Worker + Durable Object** per partita, con WebSocket Hibernation API. | `roadmap-server.md` §1 |
+| 3.1 | **Worker + Durable Object** per partita, con WebSocket Hibernation API. *Codice in `server/` con 8 prove automatiche (6/11/2026); manca il collegamento di Workers Builds.* | `roadmap-server.md` §1 |
 | 3.2 | **Esplorazioni sul server:** i testi delle stanze escono dall'app e stanno solo lì. L'area admin le carica tramite Access. | `roadmap-server.md` §3 |
 | 3.3 | **Creazione della partita:** codice corto, QR code, codice master. | `roadmap-server.md` §2 |
 | 3.4 | **Posti e dispositivi:** gettone del posto, rientro automatico, liberare un posto, posti senza dispositivo. | `roadmap-server.md` §2 |
@@ -77,7 +77,7 @@ Il blocco più grosso. Si sviluppa e si prova a pezzi.
 | 3.8 | **Chiudi partita / Annulla partita** al posto di Ricomincia, con scelta tra nuovo gruppo e stesso gruppo. | `roadmap-server.md` §2 |
 | 3.9 | **Scadenza automatica:** 6 ore senza attività, 24 ore al massimo. | `roadmap-server.md` §2 |
 | 3.10 | **Sicurezza:** il server valida ogni mossa e ogni ruolo, limite ai tentativi sul codice corto. | `roadmap-server.md` §3 |
-| 3.11 | Prova al tavolo con più telefoni e correzioni. | — |
+| 3.11 | Prova al tavolo con più telefoni e correzioni, **insieme alla prova della fase 1 (1.6)**, nella sessione di test dedicata. | — |
 
 **Risultato:** ognuno gioca dal proprio telefono, le stanze restano davvero nascoste. In questa fase «Chiudi partita» chiude e basta: i dati per la classifica arrivano nella fase 5.
 

@@ -35,7 +35,7 @@ Decisioni della fase 2 da tenere presenti:
 
 ---
 
-## 3. Proposta di architettura (da confermare)
+## 3. Architettura (confermata da Francesco il 6/11/2026, con D1)
 
 ### Struttura del repository
 ```
@@ -91,7 +91,7 @@ Dopo ogni passo: prove automatiche, voce spuntata in `docs/piano.md` e nella roa
 
 ## 5. Cose da non dimenticare
 
-- La **prova al tavolo della fase 1 (1.6)** è ancora da fare: chiedere a Francesco se ha osservazioni.
+- La **prova al tavolo della fase 1 (1.6)** si fa insieme alla 3.11, nella sessione di test dedicata (deciso il 6/11/2026).
 - La **regola del linguaggio inclusivo** vale anche per i messaggi d'errore del server mostrati nell'app.
 - **Classifica (fase 5):** alla chiusura della partita vanno salvati cicli completati, stanze aperte e stanze per via. Conviene prevedere già la struttura dei dati nella fase 3, anche se il salvataggio si attiva in fase 5.
 - **Nessun dato personale** nel repository, nei documenti e nei commit.
