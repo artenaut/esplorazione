@@ -23,7 +23,7 @@ Lavori brevi, quasi tutti a carico di Francesco. Vanno fatti **prima di distribu
 | # | Attività | Chi | Dipende da |
 |---|---|---|---|
 | 0.1 | ✅ Creare l'organizzazione GitHub del club e trasferire il repository (fatto il 6/11/2026: `artenaut`) | Francesco, poi Claude aggiorna i link | — |
-| 0.2 | Decidere se usare un **dominio del club** (es. `esplorazione.artenaut.it`) e collegarlo a GitHub Pages | Francesco | 0.1 |
+| 0.2 | ✅ Dominio del club: **no** per ora, si resta su `artenaut.github.io/esplorazione` (deciso il 6/11/2026). Si può aggiungere in futuro. | Francesco | 0.1 |
 | 0.3 | ✅ Ospitare i caratteri nel sito, senza Google Fonts (fatto il 6/11/2026) | Claude | — |
 | 0.4 | Inserire le **regole del gioco** di Lowrenzia (testo o link) | Francesco fornisce, Claude inserisce | — |
 
@@ -126,7 +126,6 @@ Da chiudere entro la fase indicata.
 
 | Decisione | Entro | Riferimento |
 |---|---|---|
-| Dominio del club sì o no | Fase 0 | `roadmap-app.md` §0 |
 | Confermare Cloudflare | Fase 2 | `roadmap-server.md` §1 |
 | L'app su un solo dispositivo resta disponibile come modalità «offline» anche dopo il server, o viene sostituita dalle sessioni? | Fase 2 | — |
 | Chi crea il nickname: l'esplorator\* stessa alla prima partita (con consenso), oppure l'admin su richiesta? | Fase 2 | `roadmap-classifica.md` §9 |
