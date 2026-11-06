@@ -8,3 +8,4 @@ Online su https://meatsculptor.github.io/esplorazione/
 
 - [App (lato client)](docs/roadmap-app.md)
 - [Server e sessioni condivise](docs/roadmap-server.md)
+- [Classifica](docs/roadmap-classifica.md)

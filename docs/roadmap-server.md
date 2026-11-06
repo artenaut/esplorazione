@@ -118,14 +118,15 @@ Entrambi chiedono prima una conferma. Poi chiedono come proseguire:
 ### Finché il server non c'è
 - Con l'app attuale e le esplorazioni incorporate, la password nella pagina resta sufficiente come «anti-pasticcio».
 
-## 4. Classifica del club [da decidere]
+## 4. Classifica del club [deciso il 6/11/2026]
+
+**Regole di calcolo e visualizzazione: vedi `roadmap-classifica.md`.** Qui restano solo gli aspetti lato server.
 
 - Si appoggia allo stesso stato condiviso delle sessioni.
-- **Entrano in classifica solo le partite concluse con «Chiudi partita».** Le partite annullate o scadute non lasciano traccia. (Deciso il 6/11/2026.)
+- **Entrano in classifica solo le partite concluse con «Chiudi partita»** del master. Le partite annullate o scadute non lasciano traccia.
 - **Identità dei giocatori:** un elenco gestito dall'admin, da cui scegliere il nome a inizio partita, più l'opzione «ospite», che non entra in classifica. Niente account con login.
-- **Cosa vale punti,** da decidere: esplorazioni completate, profondità, punti per livello con bonus per giro, media per partita, vittoria della partita (chiesta a fine partita).
-- Classifiche separate **per esplorazione e per stagione**.
-- **Partite valide:** basta che il master prema «Chiudi partita». L'admin non deve confermare nulla: può solo modificare o eliminare a mano i singoli dati salvati, per correggere errori. (Deciso il 6/11/2026.)
+- **Admin:** modifica o elimina a mano i singoli dati salvati. Non conferma le partite.
+- **Dati da salvare alla chiusura,** per ogni giocatore e per ogni pianeta: cicli completati, stanze aperte e stanze aperte per via o categoria. Da questi si calcolano tutte le classifiche.
 - **Privacy:** soprannomi o nomi di battesimo e un avviso ai partecipanti.
 
 ## 5. Statistiche per l'autore [idea]

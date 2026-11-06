@@ -67,7 +67,7 @@ Si può fare già nella versione attuale con un solo dispositivo. I contatori vi
 - Limiti: vale solo su quel dispositivo, si perde cancellando i dati del browser, e il giocatore è riconosciuto dal nome scritto.
 - La versione per tutto il club dipende dal server: vedi `roadmap-server.md`.
 - Se si fa, valgono le stesse regole delle sessioni condivise: pulsanti «Chiudi partita» (salva) e «Annulla partita» (non salva) al posto di «Ricomincia», ed entrano in classifica solo le partite concluse. Vedi `roadmap-server.md`, «Chiusura della partita».
-- Va prima deciso **cosa vale punti:** esplorazioni completate, profondità raggiunta, punti per livello, media per partita, vittoria della partita, classifiche per esplorazione o per stagione.
+- Regole di calcolo e visualizzazione decise: vedi `roadmap-classifica.md`. La versione locale userebbe le stesse regole.
 
 ## 5. Proposte non ancora decise
 
