@@ -136,6 +136,12 @@ Entrambi chiedono prima una conferma. Poi chiedono come proseguire:
 - **Codice del server nella cartella `server/`** del repository, pubblicato da Workers Builds a ogni push su `main`. ✅ Collegato e funzionante dal 6/11/2026 (passo 3.1).
 - **Testi di Lowrenzia:** sono già pubblici nella cronologia del repository, che deve restare pubblico per GitHub Pages. **Si accetta** (opzione 1): l'app non li contiene più, la cronologia non viene riscritta, e il file del pianeta non entra nel repository ma si carica dall'area admin. I pianeti futuri nascono solo sul server.
 
+### Passo 3.2 completato il 6/11/2026
+- **D1** `esplorazione`, creato automaticamente da wrangler alla prima pubblicazione; la tabella `esplorazioni` la crea il Worker alla prima richiesta.
+- **Elenco pubblico** `GET /api/esplorazioni`: id, nome, descrizione, vie e regole. Mai stanze, titoli o testi. Cache di 60 secondi.
+- **Area `/admin`:** applicazione Access self-hosted «Esplorazione · admin» sul percorso `esplorazione.artenaut.workers.dev/admin`, policy «Solo admin» (solo l'email di Francesco). Il Worker verifica firma, emittente, AUD e scadenza del token; le modifiche richiedono anche l'intestazione `X-Richiesta: admin` (CSRF). Funzioni: elenco, lettura completa, caricamento con `validateModule`, rimozione.
+- **Lowrenzia** caricata da Francesco dall'area admin. La versione sul server può differire da quella in `index.html` (deciso il 6/11/2026: le modifiche ai testi si fanno solo sul server; l'app attuale resta com'è finché non viene sostituita dall'interfaccia a sessioni).
+
 ## 4. Classifica del club [deciso il 6/11/2026]
 
 **Regole di calcolo e visualizzazione: vedi `roadmap-classifica.md`.** Qui restano solo gli aspetti lato server.

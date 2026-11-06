@@ -69,7 +69,7 @@ Il blocco più grosso. Si sviluppa e si prova a pezzi.
 |---|---|---|
 | 3.1 | ✅ **Worker + Durable Object** per partita, con WebSocket Hibernation API. Fatto il 6/11/2026: codice in `server/`, 8 prove automatiche, pubblicato da Workers Builds e verificato in produzione con due dispositivi. | `roadmap-server.md` §1 |
 | 3.1b | ✅ **`motore.js`:** logica di gioco estratta da `index.html` in un modulo condiviso tra app e server, senza cambiare il comportamento (6/11/2026). Prove automatiche dell'app ora nel repository (`test/prova-app.py`). | `roadmap-server.md` §3bis |
-| 3.2 | **Esplorazioni sul server:** i testi delle stanze escono dall'app e stanno solo lì. L'area admin le carica tramite Access. | `roadmap-server.md` §3 |
+| 3.2 | ✅ **Esplorazioni sul server** (6/11/2026): database D1 `esplorazione`, `GET /api/esplorazioni` senza stanze, area `/admin` dietro l'applicazione Access «Esplorazione · admin» con verifica del token nel Worker. Lowrenzia caricata dall'area admin. I testi restano anche in `index.html` finché la nuova interfaccia a sessioni non sostituisce l'app attuale (passo «Nuova interfaccia»). | `roadmap-server.md` §3 |
 | 3.3 | **Creazione della partita:** codice corto, QR code, codice master. | `roadmap-server.md` §2 |
 | 3.4 | **Posti e dispositivi:** gettone del posto, rientro automatico, liberare un posto, posti senza dispositivo. | `roadmap-server.md` §2 |
 | 3.5 | **Ruoli:** master (anche tabellone), esplorator\*, tabellone separato opzionale. | `roadmap-server.md` §2 |
