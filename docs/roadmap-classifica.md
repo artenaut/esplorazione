@@ -21,8 +21,8 @@ Legenda: **[deciso]** concordato · **[da confermare]** proposta, manca un sì �
 | **Esplorazioni portate a termine** | Il numero di **cicli completati**, in tutte le partite e su tutti i pianeti. Un ciclo è completato quando il giocatore entra in una stanza finale. |
 | **Stanze aperte** | Il numero totale di stanze in cui il giocatore è entrato. |
 
-- [da confermare] Le **stanze dell'ingresso** contano come stanze aperte, perché il giocatore ci entra. La proposta è di contarle.
-- [da confermare] Le stanze aperte in un ciclo rimasto a metà alla chiusura della partita **contano** comunque come stanze aperte, ma non come esplorazione portata a termine.
+- Le **stanze dell'ingresso** contano come stanze aperte, perché il giocatore ci entra.
+- Le stanze aperte in un ciclo rimasto a metà alla chiusura della partita **contano** come stanze aperte, ma non come esplorazione portata a termine.
 
 ## 3. Classifica generale [deciso]
 
@@ -49,7 +49,7 @@ Una classifica per ogni pianeta, cioè per ogni esplorazione (es. Lowrenzia).
 - **Statistiche peculiari del pianeta,** mostrate ma **senza effetto sulla classifica.**
   - Per Lowrenzia: stanze della Forza visitate, stanze della Sapienza visitate, stanze neutrali visitate.
   - Sono definite dall'**esplorazione**, non dall'app. Le vie e le categorie vengono già dal file dell'esplorazione (vedi `roadmap-app.md`, formato v2), quindi le colonne si generano da lì, e un pianeta con altre vie avrà altre colonne.
-  - [da confermare] Se l'esplorazione cambia (stanze aggiunte o rimosse), i dati restano legati all'id del pianeta e delle stanze.
+  - Se l'esplorazione cambia (stanze aggiunte o rimosse), i dati restano legati all'id del pianeta e delle stanze.
 
 ## 5. Visualizzazione [deciso]
 
@@ -58,8 +58,25 @@ Una classifica per ogni pianeta, cioè per ogni esplorazione (es. Lowrenzia).
 - **Riordinare non cambia la classifica:** la colonna «Posizione» mostra sempre la posizione ufficiale, calcolata come ai punti 3 e 4.
 - Un'opzione «Torna alla classifica» ripristina l'ordine ufficiale.
 
-## 6. Da decidere
+## 6. Stagioni [deciso il 6/11/2026]
 
-- **Stagioni:** la classifica va divisa in stagioni (es. una per anno o per semestre), da azzerare periodicamente, oppure è unica e cumulativa? Nella roadmap del server l'admin ha già la possibilità di azzerare le stagioni.
-- **Giocatori senza partite:** compaiono in classifica con zero, oppure solo dopo la prima partita conclusa? La proposta è la seconda.
-- **Dove si vede la classifica:** una pagina pubblica dell'app (consultabile da tutti, anche fuori dal club) oppure solo dall'app al tavolo?
+- Le classifiche sono **divise in stagioni.** Ogni partita conclusa conta nella stagione in corso.
+- **La stagione si chiude a mano, dall'admin,** quando vuole. Non c'è una durata fissa. Alla chiusura se ne apre subito una nuova, che parte da zero per tutti.
+- Ogni stagione ha classifica generale e classifiche dei pianeti, calcolate con le regole dei punti 3 e 4.
+- [da confermare] Le **stagioni concluse restano consultabili** come archivio: si sceglie la stagione da un elenco, e di default si vede quella in corso.
+- [da confermare] Una stagione ha un nome assegnato dall'admin (es. «Stagione 1», «Inverno 2026»).
+
+## 7. Chi entra in classifica [deciso il 6/11/2026]
+
+- Un giocatore entra nella classifica di una stagione **appena partecipa a una partita conclusa** con «Chiudi partita».
+- Ci entra **anche se ha tutti i punteggi a zero:** per esempio se ha aperto stanze senza completare cicli, o se ha partecipato senza aprire nessuna stanza.
+- Chi non ha partite concluse nella stagione non compare.
+- Nella classifica di un pianeta compare chi ha partecipato ad almeno una partita conclusa **su quel pianeta.**
+
+## 8. Classifica pubblica [deciso il 6/11/2026]
+
+- La classifica è **consultabile pubblicamente,** senza login, da una pagina dell'app con un indirizzo fisso, da condividere o da mettere in un QR code al club.
+- Si vede **in sola lettura**: stagione in corso, archivio delle stagioni, generale e pianeti, riordino per colonna.
+- Modifiche ai dati, elenco dei giocatori e chiusura delle stagioni restano nell'area admin, protetta da Cloudflare Access.
+- Il server espone solo i **totali per giocatore**, non i dettagli delle partite né i testi delle stanze.
+- **Privacy:** visto che è pubblica, in classifica compaiono soprannomi o nomi di battesimo, e i giocatori vanno avvisati. Un giocatore può chiedere all'admin di togliere o rinominare il proprio nome.

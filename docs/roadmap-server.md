@@ -99,7 +99,7 @@ Entrambi chiedono prima una conferma. Poi chiedono come proseguire:
   - caricare, modificare, rimuovere **e leggere** le esplorazioni (i testi delle stanze stanno solo sul server);
   - gestire l'elenco dei giocatori del club;
   - **modificare o eliminare a mano i singoli dati salvati** delle partite concluse, cioè le singole partite e i singoli risultati in classifica;
-  - azzerare le stagioni.
+  - chiudere la stagione in corso e aprirne una nuova.
 - La schermata con password nella pagina può restare come comodità, ma non è più la protezione.
 
 ### Il server non si fida dei dispositivi
@@ -128,6 +128,8 @@ Entrambi chiedono prima una conferma. Poi chiedono come proseguire:
 - **Admin:** modifica o elimina a mano i singoli dati salvati. Non conferma le partite.
 - **Dati da salvare alla chiusura,** per ogni giocatore e per ogni pianeta: cicli completati, stanze aperte e stanze aperte per via o categoria. Da questi si calcolano tutte le classifiche.
 - **Privacy:** soprannomi o nomi di battesimo e un avviso ai partecipanti.
+- **Classifica pubblica:** una lettura in sola lettura dei totali per stagione, fuori da Cloudflare Access. I risultati possono stare in cache per qualche minuto, così le visite non pesano sul limite giornaliero di richieste.
+- **Stagioni:** ogni partita conclusa viene salvata con la stagione in corso. La chiusura della stagione è un'operazione admin.
 
 ## 5. Statistiche per l'autore [idea]
 
