@@ -14,6 +14,7 @@ Committente e unico amministratore: **Francesco**, per il club **Artenaut\***. S
 | **Piano di lavoro a fasi** | `docs/piano.md` ← **partire sempre da qui** |
 | Decisioni dettagliate | `docs/roadmap-app.md`, `docs/roadmap-server.md`, `docs/roadmap-classifica.md` |
 | Formato dei pianeti | `docs/formato-esplorazione.md` (formato 2) |
+| Protocollo app ↔ server | `docs/protocollo-partita.md` (creazione, WebSocket, ruoli, stato, errori) |
 | Informativa privacy | `docs/informativa-privacy.md` |
 
 L'app è **`index.html`** (CSS e interfaccia inline, script come modulo ES) più **`motore.js`**, `fonts/` (caratteri ospitati nel sito, niente Google Fonts) e `img/` (immagine delle regole).

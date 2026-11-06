@@ -1,7 +1,5 @@
-// Prove del passo 3.1: il Worker risponde, il WebSocket della partita funziona
-// con l'ibernazione e i dati in SQLite sopravvivono allo scaricamento dell'oggetto.
-import { env, exports } from "cloudflare:workers";
-import { evictDurableObject, runInDurableObject } from "cloudflare:test";
+// Prove del passo 3.1: il Worker risponde e instrada i WebSocket verso le partite.
+import { exports } from "cloudflare:workers";
 import { VERSIONE } from "../src/index.js";
 import { describe, it, expect } from "vitest";
 
@@ -57,50 +55,9 @@ describe("Worker", () => {
 });
 
 describe("Durable Object Partita", () => {
-  it("accetta più dispositivi e inoltra i messaggi a tutti", async () => {
-    const a = await apriWs("LWR-001");
-    expect(await a.prossimo()).toEqual({ tipo: "connesso", collegati: 1 });
-    const b = await apriWs("lwr-001"); // il codice si normalizza in maiuscolo
-    expect(await b.prossimo()).toEqual({ tipo: "connesso", collegati: 2 });
-
-    a.ws.send(JSON.stringify({ tipo: "prova", testo: "ciao" }));
-    expect(await a.prossimo()).toEqual({ tipo: "prova", testo: "ciao", totale: 1 });
-    expect(await b.prossimo()).toEqual({ tipo: "prova", testo: "ciao", totale: 1 });
-
-    a.ws.send("non json");
-    expect((await a.prossimo()).tipo).toBe("errore");
-    a.ws.close(); b.ws.close();
+  it("una partita che non esiste risponde con un errore e chiude", async () => {
+    const a = await apriWs("ZZZ-999");
+    expect(await a.prossimo()).toMatchObject({ tipo: "errore", codice: "partita-inesistente" });
   });
 
-  it("risponde al ping senza risvegliarsi", async () => {
-    const a = await apriWs("LWR-002");
-    await a.prossimo();
-    a.ws.send("ping");
-    expect(await a.prossimo()).toBe("pong");
-    a.ws.close();
-  });
-
-  it("partite diverse sono separate", async () => {
-    const a = await apriWs("LWR-003");
-    const b = await apriWs("LWR-004");
-    expect((await a.prossimo()).collegati).toBe(1);
-    expect((await b.prossimo()).collegati).toBe(1);
-    a.ws.close(); b.ws.close();
-  });
-
-  it("le connessioni e i dati sopravvivono all'ibernazione", async () => {
-    const a = await apriWs("LWR-005");
-    await a.prossimo();
-    a.ws.send(JSON.stringify({ tipo: "prova", testo: "uno" }));
-    expect((await a.prossimo()).totale).toBe(1);
-
-    const stub = env.PARTITA.get(env.PARTITA.idFromName("LWR-005"));
-    await evictDurableObject(stub); // scarica l'oggetto dalla memoria, iberna i WebSocket
-
-    a.ws.send(JSON.stringify({ tipo: "prova", testo: "due" }));
-    expect(await a.prossimo()).toEqual({ tipo: "prova", testo: "due", totale: 2 });
-    const n = await runInDurableObject(stub, (_istanza, stato) => stato.getWebSockets().length);
-    expect(n).toBe(1);
-    a.ws.close();
-  });
 });

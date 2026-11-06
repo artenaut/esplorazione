@@ -24,4 +24,7 @@ Ogni push su `main` costruisce e pubblica il Worker.
 |---|---|
 | `GET /` | Pagina di prova: «server online». |
 | `GET /api/stato` | Stato e versione del server. |
-| `GET /api/partite/:codice/ws` | WebSocket della partita (codice tipo `LWR-482`). |
+| `GET /api/esplorazioni` | Elenco pubblico dei pianeti, senza stanze. |
+| `POST /api/partite` | Crea una partita. |
+| `GET /api/partite/:codice/ws` | WebSocket della partita (codice tipo `LWR-482`). Protocollo: `../docs/protocollo-partita.md`. |
+| `/admin` | Area admin, dietro Cloudflare Access. |

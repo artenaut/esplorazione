@@ -23,6 +23,8 @@
   "vars": {
     // Origini da cui l'app può chiamare il server.
     "ORIGINI_CONSENTITE": "https://artenaut.github.io",
+    // Indirizzo dell'app, usato per il link (e il QR) delle partite.
+    "INDIRIZZO_APP": "https://artenaut.github.io/esplorazione/",
     // Cloudflare Access per l'area /admin: dominio del team e «Application Audience (AUD) Tag»
     // dell'applicazione Access «Esplorazione · admin» (percorso /admin). Se l'AUD è vuoto, l'area admin risponde «non configurata».
     "ACCESS_TEAM": "artenaut.cloudflareaccess.com",
