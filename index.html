@@ -93,14 +93,14 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center}
 .tab .ts{font-size:.85rem;color:var(--muted);display:flex;gap:6px;align-items:center;font-variant-numeric:tabular-nums}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--pc,var(--line));flex:none}
 
-.p-forza{--pc:var(--forza)} .p-sapienza{--pc:var(--sapienza)} .p-neutrale{--pc:var(--neutrale)}
+/* i colori delle vie (.p-<via>) vengono dal file dell'esplorazione */
 .badge{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;text-transform:uppercase;letter-spacing:.1em;color:var(--pc);border:1px solid color-mix(in srgb,var(--pc) 55%,transparent);border-radius:999px;padding:2px 9px;white-space:nowrap}
 .badge::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--pc)}
 
 /* track */
 .sec-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px 12px}
-.track{display:grid;grid-template-columns:repeat(var(--n,6),minmax(0,1fr));gap:6px}
-.slot{border:1px solid var(--line);border-radius:8px;padding:8px;min-height:78px;display:flex;flex-direction:column;gap:4px;background:var(--stone);text-align:left;min-width:0}
+.track{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}
+.slot{flex:0 0 clamp(68px,17%,140px);border:1px solid var(--line);border-radius:8px;padding:8px;min-height:78px;display:flex;flex-direction:column;gap:4px;background:var(--stone);text-align:left;min-width:0}
 .slot .lv{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
 .slot .rt{font-size:.88rem;line-height:1.25;overflow-wrap:anywhere}
 .slot.done{border-color:color-mix(in srgb,var(--pc) 60%,var(--line));background:color-mix(in srgb,var(--pc) 12%,var(--stone))}
@@ -212,154 +212,168 @@ button,a,label,summary{touch-action:manipulation;-webkit-tap-highlight-color:tra
 <div class="modal" id="modal" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="m-title"><h2 id="m-title"></h2><p id="m-body"></p><div class="mact" id="m-act"></div></div></div>
 
 <script>
-const PATHS = {
-  forza:    { label:'Via della Forza',    short:'Forza',    letter:'F' },
-  sapienza: { label:'Via della Sapienza', short:'Sapienza', letter:'S' },
-  neutrale: { label:'Neutrale',           short:'Neutrale', letter:'N' }
-};
 const ROMAN = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
 
-/* ---------- Esplorazione 1: Primo pianeta – Lowrenzia ---------- */
+/* ---------- Esplorazione 1: Primo pianeta – Lowrenzia (formato 2) ---------- */
 const LOWRENZIA = {
+ "formato": 2,
  "id": "lowrenzia",
- "name": "Primo pianeta – Lowrenzia",
- "description": "5 livelli · vie della Forza e della Sapienza",
+ "nome": "Primo pianeta – Lowrenzia",
+ "descrizione": "Vie della Forza e della Sapienza",
  "estrazione": "meno-mostrate",
- "rules": "## Leader dell'esplorazione\n- Per procedere nell'esplorazione del pianeta bisogna avere il ruolo di **Leader dell'esplorazione**.\n- All'inizio della partita il ruolo non è assegnato. Chi infligge per primo danno da combattimento a un* avversari* diventa Leader dell'esplorazione.\n- Da quel momento, chiunque infligga danno da combattimento a chi è Leader dell'esplorazione ne prende il ruolo.\n- In una partita c'è un solo Leader dell'esplorazione alla volta. Se più persone reclamano il ruolo nello stesso momento, chi attualmente è Leader dell'esplorazione quando viene assegnato il danno sceglie a chi andrà il ruolo.\n\n## Avanzare nel pianeta\n- Ogni volta che ottieni il ruolo di Leader dell'esplorazione, puoi avanzare di 1 passo nel pianeta.\n- Durante la partita tutte le creature comandante ottengono «{T}: procedi nell'esplorazione del pianeta». Puoi attivare questa abilità anche se la creatura ha debolezza da evocazione, ma solo se in questo turno hai inflitto danno da combattimento a un* avversari*.\n- Durante la partita tutti i planeswalker comandante ottengono «0: procedi nell'esplorazione del pianeta». Puoi attivare questa abilità solo se in questo turno hai inflitto danno da combattimento a un* avversari*.",
- "rulesImage": "img/esploratore.png",
- "levels": [
+ "regoleImmagine": "img/esploratore.png",
+ "regole": "## Leader dell'esplorazione\n- Per procedere nell'esplorazione del pianeta bisogna avere il ruolo di **Leader dell'esplorazione**.\n- All'inizio della partita il ruolo non è assegnato. Chi infligge per primo danno da combattimento a un* avversari* diventa Leader dell'esplorazione.\n- Da quel momento, chiunque infligga danno da combattimento a chi è Leader dell'esplorazione ne prende il ruolo.\n- In una partita c'è un solo Leader dell'esplorazione alla volta. Se più persone reclamano il ruolo nello stesso momento, chi attualmente è Leader dell'esplorazione quando viene assegnato il danno sceglie a chi andrà il ruolo.\n\n## Avanzare nel pianeta\n- Ogni volta che ottieni il ruolo di Leader dell'esplorazione, puoi avanzare di 1 passo nel pianeta.\n- Durante la partita tutte le creature comandante ottengono «{T}: procedi nell'esplorazione del pianeta». Puoi attivare questa abilità anche se la creatura ha debolezza da evocazione, ma solo se in questo turno hai inflitto danno da combattimento a un* avversari*.\n- Durante la partita tutti i planeswalker comandante ottengono «0: procedi nell'esplorazione del pianeta». Puoi attivare questa abilità solo se in questo turno hai inflitto danno da combattimento a un* avversari*.",
+ "vie": [
   {
-   "name": "Ingresso",
-   "kind": "all",
-   "rooms": [
-    {
-     "id": "L1-S",
-     "title": "Consulti la mappa",
-     "path": "sapienza",
-     "content": "Profetizza 1"
-    },
-    {
-     "id": "L1-F",
-     "title": "Al Diavolo le mappe",
-     "path": "forza",
-     "content": "Sorveglia 1"
-    }
-   ]
+   "id": "forza",
+   "nome": "Via della Forza",
+   "breve": "Forza",
+   "colore": "#c95a40"
   },
   {
-   "name": "Livello 2",
-   "kind": "random",
-   "rooms": [
+   "id": "sapienza",
+   "nome": "Via della Sapienza",
+   "breve": "Sapienza",
+   "colore": "#5b8fd0"
+  },
+  {
+   "id": "neutrale",
+   "nome": "Neutrale",
+   "breve": "Neutrale",
+   "colore": "#94a07f"
+  }
+ ],
+ "ingresso": {
+  "nome": "Ingresso",
+  "stanze": [
+   {
+    "id": "L1-S",
+    "titolo": "Consulti la mappa",
+    "via": "sapienza",
+    "testo": "Profetizza 1"
+   },
+   {
+    "id": "L1-F",
+    "titolo": "Al Diavolo le mappe",
+    "via": "forza",
+    "testo": "Sorveglia 1"
+   }
+  ],
+  "successivo": "L2"
+ },
+ "livelli": {
+  "L2": {
+   "stanze": [
     {
      "id": "L2-F1",
-     "title": "Butta via ciò che ti rallenta",
-     "path": "forza",
-     "content": "Sacrifica fino ad una creatura o un artefatto che controlli. Se lo fai pesca due carte"
+     "titolo": "Butta via ciò che ti rallenta",
+     "via": "forza",
+     "testo": "Sacrifica fino ad una creatura o un artefatto che controlli. Se lo fai pesca due carte"
     },
     {
      "id": "L2-F2",
-     "title": "Sfondi la porta bloccata",
-     "path": "forza",
-     "content": "Distruggi fino ad un artefatto bersaglio"
+     "titolo": "Sfondi la porta bloccata",
+     "via": "forza",
+     "testo": "Distruggi fino ad un artefatto bersaglio"
     },
     {
      "id": "L2-F3",
-     "title": "Rompi il sigillo maledetto",
-     "path": "forza",
-     "content": "Distruggi fino ad un incantesimo bersaglio"
+     "titolo": "Rompi il sigillo maledetto",
+     "via": "forza",
+     "testo": "Distruggi fino ad un incantesimo bersaglio"
     },
     {
      "id": "L2-F4",
-     "title": "Indossi l'equipaggiamento",
-     "path": "forza",
-     "content": "Fino ad una creatura bersaglio che controlli complotta"
+     "titolo": "Indossi l'equipaggiamento",
+     "via": "forza",
+     "testo": "Fino ad una creatura bersaglio che controlli complotta"
     },
     {
      "id": "L2-F5",
-     "title": "Cerchi aiutanti",
-     "path": "forza",
-     "content": "Assolda"
+     "titolo": "Cerchi aiutanti",
+     "via": "forza",
+     "testo": "Assolda"
     },
     {
      "id": "L2-F6",
-     "title": "Elimini il guardiano",
-     "path": "forza",
-     "content": "Scegli fino ad una creatura bersaglio. Gli infliggi 3 danni"
+     "titolo": "Elimini il guardiano",
+     "via": "forza",
+     "testo": "Scegli fino ad una creatura bersaglio. Gli infliggi 3 danni"
     },
     {
      "id": "L2-S1",
-     "title": "Visiti il giardino botanico",
-     "path": "sapienza",
-     "content": "Passa in rassegna il tuo grimorio per una carta terra base, mettila sul campo di battaglia TAPpata, poi rimescola"
+     "titolo": "Visiti il giardino botanico",
+     "via": "sapienza",
+     "testo": "Passa in rassegna il tuo grimorio per una carta terra base, mettila sul campo di battaglia TAPpata, poi rimescola"
     },
     {
      "id": "L2-S2",
-     "title": "Soppesi le possibilità",
-     "path": "sapienza",
-     "content": "Pesca tre carte, poi metti due carte dalla tua mano in cima al tuo grimorio in qualsiasi ordine"
+     "titolo": "Soppesi le possibilità",
+     "via": "sapienza",
+     "testo": "Pesca tre carte, poi metti due carte dalla tua mano in cima al tuo grimorio in qualsiasi ordine"
     },
     {
      "id": "L2-S3",
-     "title": "Ti immergi nei tuoi pensieri",
-     "path": "sapienza",
-     "content": "Guarda le prime tre carte del tuo grimorio, poi rimettile a posto in qualsiasi ordine. Puoi rimescolare. Pesca una carta"
+     "titolo": "Ti immergi nei tuoi pensieri",
+     "via": "sapienza",
+     "testo": "Guarda le prime tre carte del tuo grimorio, poi rimettile a posto in qualsiasi ordine. Puoi rimescolare. Pesca una carta"
     },
     {
      "id": "L2-S4",
-     "title": "Frughi ovunque",
-     "path": "sapienza",
-     "content": "Pesca due carte, poi scarti due carte"
+     "titolo": "Frughi ovunque",
+     "via": "sapienza",
+     "testo": "Pesca due carte, poi scarti due carte"
     },
     {
      "id": "L2-S5",
-     "title": "Dai degna sepoltura allo scheletro",
-     "path": "sapienza",
-     "content": "Esilia fino ad una carta bersaglio da un cimitero"
+     "titolo": "Dai degna sepoltura allo scheletro",
+     "via": "sapienza",
+     "testo": "Esilia fino ad una carta bersaglio da un cimitero"
     },
     {
      "id": "L2-S6",
-     "title": "Cerchi riparo tra le ombre",
-     "path": "sapienza",
-     "content": "Fino ad una creatura bersaglio che controlli scompare"
+     "titolo": "Cerchi riparo tra le ombre",
+     "via": "sapienza",
+     "testo": "Fino ad una creatura bersaglio che controlli scompare"
     },
     {
      "id": "L2-N1",
-     "title": "Entri nell'antica tomba",
-     "path": "neutrale",
-     "content": "Fino alla fine del tuo prossimo turno una terra bersaglio ottiene {T}: Aggiungi {C}{C}. Questa terra ti infligge 2 danni"
+     "titolo": "Entri nell'antica tomba",
+     "via": "neutrale",
+     "testo": "Fino alla fine del tuo prossimo turno una terra bersaglio ottiene {T}: Aggiungi {C}{C}. Questa terra ti infligge 2 danni"
     },
     {
      "id": "L2-N2",
-     "title": "Annoti la mappa",
-     "path": "neutrale",
-     "content": "Fino ad una creatura bersaglio esplora"
+     "titolo": "Annoti la mappa",
+     "via": "neutrale",
+     "testo": "Fino ad una creatura bersaglio esplora"
     },
     {
      "id": "L2-N3",
-     "title": "Cerchi delle tracce",
-     "path": "neutrale",
-     "content": "Crea una pedina artefatto Indizio"
+     "titolo": "Cerchi delle tracce",
+     "via": "neutrale",
+     "testo": "Crea una pedina artefatto Indizio"
     },
     {
      "id": "L2-N4",
-     "title": "Ti fermi a fare merenda",
-     "path": "neutrale",
-     "content": "Crea una pedina artefatto Cibo"
+     "titolo": "Ti fermi a fare merenda",
+     "via": "neutrale",
+     "testo": "Crea una pedina artefatto Cibo"
     },
     {
      "id": "L2-N5",
-     "title": "Frughi nella borsa",
-     "path": "neutrale",
-     "content": "Crea una pedina artefatto Tesoro"
+     "titolo": "Frughi nella borsa",
+     "via": "neutrale",
+     "testo": "Crea una pedina artefatto Tesoro"
     },
     {
      "id": "L2-N6",
-     "title": "Scavi una buca",
-     "path": "neutrale",
-     "content": "Crea una pedina artefatto Lander"
+     "titolo": "Scavi una buca",
+     "via": "neutrale",
+     "testo": "Crea una pedina artefatto Lander"
     }
    ],
-   "offer": {
+   "proposte": {
     "forza": {
      "forza": 2,
      "neutrale": 1
@@ -373,122 +387,121 @@ const LOWRENZIA = {
      "sapienza": 1,
      "neutrale": 1
     }
-   }
+   },
+   "successivo": "L3"
   },
-  {
-   "name": "Livello 3",
-   "kind": "random",
-   "rooms": [
+  "L3": {
+   "stanze": [
     {
      "id": "L3-F1",
-     "title": "Attacchi con fervore divino",
-     "path": "forza",
-     "content": "Scegli fino ad una creatura o Planeswalker bersaglio. Gli infliggi 3 danni. Guadagni 3 punti vita"
+     "titolo": "Attacchi con fervore divino",
+     "via": "forza",
+     "testo": "Scegli fino ad una creatura o Planeswalker bersaglio. Gli infliggi 3 danni. Guadagni 3 punti vita"
     },
     {
      "id": "L3-F2",
-     "title": "In preda alla furia!",
-     "path": "forza",
-     "content": "Scegli fino ad una creatura bersaglio. Sospetta quella creatura"
+     "titolo": "In preda alla furia!",
+     "via": "forza",
+     "testo": "Scegli fino ad una creatura bersaglio. Sospetta quella creatura"
     },
     {
      "id": "L3-F3",
-     "title": "Hai i pugni nelle mani",
-     "path": "forza",
-     "content": "Metti 2 segnalini +1/+1 su fino ad una creatura bersaglio"
+     "titolo": "Hai i pugni nelle mani",
+     "via": "forza",
+     "testo": "Metti 2 segnalini +1/+1 su fino ad una creatura bersaglio"
     },
     {
      "id": "L3-F4",
-     "title": "Eliminare le possibilità avverse",
-     "path": "forza",
-     "content": "Un avversario bersaglio rivela la sua mano. Scegli una carta non terra, non creatura da quella mano. Quel giocatore scarta quella carta"
+     "titolo": "Eliminare le possibilità avverse",
+     "via": "forza",
+     "testo": "Un avversario bersaglio rivela la sua mano. Scegli una carta non terra, non creatura da quella mano. Quel giocatore scarta quella carta"
     },
     {
      "id": "L3-F5",
-     "title": "Che scorra il sangue",
-     "path": "forza",
-     "content": "Ogni giocatore sacrifica una creatura"
+     "titolo": "Che scorra il sangue",
+     "via": "forza",
+     "testo": "Ogni giocatore sacrifica una creatura"
     },
     {
      "id": "L3-F6",
-     "title": "Fai tremare la terra",
-     "path": "forza",
-     "content": "Ogni giocatore sceglie e scarta una carta"
+     "titolo": "Fai tremare la terra",
+     "via": "forza",
+     "testo": "Ogni giocatore sceglie e scarta una carta"
     },
     {
      "id": "L3-S1",
-     "title": "Pianifichi il viaggio",
-     "path": "sapienza",
-     "content": "Passa in rassegna il tuo grimorio per una carta Pianura, Isola, Palude o Montagna, mettila sul campo di battaglia TAPpata, poi rimescola"
+     "titolo": "Pianifichi il viaggio",
+     "via": "sapienza",
+     "testo": "Passa in rassegna il tuo grimorio per una carta Pianura, Isola, Palude o Montagna, mettila sul campo di battaglia TAPpata, poi rimescola"
     },
     {
      "id": "L3-S2",
-     "title": "Cerchi sopravvissuti",
-     "path": "sapienza",
-     "content": "Riprendi in mano fino ad una carta creatura bersaglio dal tuo cimitero"
+     "titolo": "Cerchi sopravvissuti",
+     "via": "sapienza",
+     "testo": "Riprendi in mano fino ad una carta creatura bersaglio dal tuo cimitero"
     },
     {
      "id": "L3-S3",
-     "title": "Ti riorganizzi",
-     "path": "sapienza",
-     "content": "Se un avversario ha più punti vita di te, guadagni 4 punti vita. Se un avversario controlla più creature di te, crei due pedine creatura Umano 1/1 bianche. Se un avversario ha più carte in mano di te, peschi una carta"
+     "titolo": "Ti riorganizzi",
+     "via": "sapienza",
+     "testo": "Se un avversario ha più punti vita di te, guadagni 4 punti vita. Se un avversario controlla più creature di te, crei due pedine creatura Umano 1/1 bianche. Se un avversario ha più carte in mano di te, peschi una carta"
     },
     {
      "id": "L3-S4",
-     "title": "Riorganizzi il tuo inventario",
-     "path": "sapienza",
-     "content": "Esilia due artefatti, creature e/o terre bersaglio che controlli, poi rimetti quelle carte sul campo di battaglia sotto il tuo controllo"
+     "titolo": "Riorganizzi il tuo inventario",
+     "via": "sapienza",
+     "testo": "Esilia due artefatti, creature e/o terre bersaglio che controlli, poi rimetti quelle carte sul campo di battaglia sotto il tuo controllo"
     },
     {
      "id": "L3-S5",
-     "title": "Intoni una controevocazione",
-     "path": "sapienza",
-     "content": "Fai tornare fino ad una creatura bersaglio in mano al suo proprietario"
+     "titolo": "Intoni una controevocazione",
+     "via": "sapienza",
+     "testo": "Fai tornare fino ad una creatura bersaglio in mano al suo proprietario"
     },
     {
      "id": "L3-S6",
-     "title": "Avvelena la zuppa dell'accampamento",
-     "path": "sapienza",
-     "content": "TAPpa fino a una creatura bersaglio e metti due segnalini stordimento su di essa"
+     "titolo": "Avvelena la zuppa dell'accampamento",
+     "via": "sapienza",
+     "testo": "TAPpa fino a una creatura bersaglio e metti due segnalini stordimento su di essa"
     },
     {
      "id": "L3-N1",
-     "title": "Racconti una storia di eroi",
-     "path": "neutrale",
-     "content": "Crea una pedina Ruolo Giovane Eroe assegnata a fino a una creatura bersaglio che controlli"
+     "titolo": "Racconti una storia di eroi",
+     "via": "neutrale",
+     "testo": "Crea una pedina Ruolo Giovane Eroe assegnata a fino a una creatura bersaglio che controlli"
     },
     {
      "id": "L3-N2",
-     "title": "Racconti una storia di streghe",
-     "path": "neutrale",
-     "content": "Crea una pedina Ruolo Perfido assegnata a fino a una creatura bersaglio che controlli"
+     "titolo": "Racconti una storia di streghe",
+     "via": "neutrale",
+     "testo": "Crea una pedina Ruolo Perfido assegnata a fino a una creatura bersaglio che controlli"
     },
     {
      "id": "L3-N3",
-     "title": "Racconti una storia maledetta",
-     "path": "neutrale",
-     "content": "Crea una pedina Ruolo Maledetto assegnata a fino a una creatura bersaglio"
+     "titolo": "Racconti una storia maledetta",
+     "via": "neutrale",
+     "testo": "Crea una pedina Ruolo Maledetto assegnata a fino a una creatura bersaglio"
     },
     {
      "id": "L3-N4",
-     "title": "Racconti una storia di mostri",
-     "path": "neutrale",
-     "content": "Crea una pedina Ruolo Mostro assegnata a fino a una creatura bersaglio che controlli"
+     "titolo": "Racconti una storia di mostri",
+     "via": "neutrale",
+     "testo": "Crea una pedina Ruolo Mostro assegnata a fino a una creatura bersaglio che controlli"
     },
     {
      "id": "L3-N5",
-     "title": "Racconti una storia di principesse",
-     "path": "neutrale",
-     "content": "Crea una pedina Ruolo Regale assegnata a fino a una creatura bersaglio che controlli"
+     "titolo": "Racconti una storia di principesse",
+     "via": "neutrale",
+     "testo": "Crea una pedina Ruolo Regale assegnata a fino a una creatura bersaglio che controlli"
     },
     {
      "id": "L3-N6",
-     "title": "Racconti una storia di magia",
-     "path": "neutrale",
-     "content": "Crea una pedina Ruolo Stregone assegnata a fino a una creatura bersaglio che controlli"
+     "titolo": "Racconti una storia di magia",
+     "via": "neutrale",
+     "testo": "Crea una pedina Ruolo Stregone assegnata a fino a una creatura bersaglio che controlli"
     }
    ],
-   "offer": {
+   "proposte": {
     "forza": {
      "forza": 2,
      "neutrale": 1
@@ -502,122 +515,121 @@ const LOWRENZIA = {
      "sapienza": 1,
      "neutrale": 1
     }
-   }
+   },
+   "successivo": "L4"
   },
-  {
-   "name": "Livello 4",
-   "kind": "random",
-   "rooms": [
+  "L4": {
+   "stanze": [
     {
      "id": "L4-F1",
-     "title": "Attivi la fonderia",
-     "path": "forza",
-     "content": "Crea una pedina artefatto Golem 2/2 con {1}{T}: Crea una copia di questa creatura"
+     "titolo": "Attivi la fonderia",
+     "via": "forza",
+     "testo": "Crea una pedina artefatto Golem 2/2 con {1}{T}: Crea una copia di questa creatura"
     },
     {
      "id": "L4-F2",
-     "title": "Chiedi consiglio al vampiro",
-     "path": "forza",
-     "content": "Passa in rassegna il tuo grimorio per una carta, poi rimescola e metti quella carta in cima. Perdi 2 punti vita"
+     "titolo": "Chiedi consiglio al vampiro",
+     "via": "forza",
+     "testo": "Passa in rassegna il tuo grimorio per una carta, poi rimescola e metti quella carta in cima. Perdi 2 punti vita"
     },
     {
      "id": "L4-F3",
-     "title": "Hai l'hobby della necromanzia?",
-     "path": "forza",
-     "content": "Metti sul campo di battaglia sotto il tuo controllo una carta creatura bersaglio da un cimitero. Perdi punti vita pari al suo valore di mana"
+     "titolo": "Hai l'hobby della necromanzia?",
+     "via": "forza",
+     "testo": "Metti sul campo di battaglia sotto il tuo controllo una carta creatura bersaglio da un cimitero. Perdi punti vita pari al suo valore di mana"
     },
     {
      "id": "L4-F4",
-     "title": "Radi al suolo l'edificio",
-     "path": "forza",
-     "content": "Distruggi una terra bersaglio"
+     "titolo": "Radi al suolo l'edificio",
+     "via": "forza",
+     "testo": "Distruggi una terra bersaglio"
     },
     {
      "id": "L4-F5",
-     "title": "Rubi l'antico vaso",
-     "path": "forza",
-     "content": "Prendi il controllo di un artefatto bersaglio"
+     "titolo": "Rubi l'antico vaso",
+     "via": "forza",
+     "testo": "Prendi il controllo di un artefatto bersaglio"
     },
     {
      "id": "L4-F6",
-     "title": "Scateni il caos",
-     "path": "forza",
-     "content": "Il proprietario di un permanente bersaglio lo rimescola nel suo grimorio, poi rivela la prima carta del suo grimorio. Se è una carta permanente, la mette sul campo di battaglia, altrimenti può scegliere di mettere la carta nel suo cimitero."
+     "titolo": "Scateni il caos",
+     "via": "forza",
+     "testo": "Il proprietario di un permanente bersaglio lo rimescola nel suo grimorio, poi rivela la prima carta del suo grimorio. Se è una carta permanente, la mette sul campo di battaglia, altrimenti può scegliere di mettere la carta nel suo cimitero."
     },
     {
      "id": "L4-S1",
-     "title": "Entri nella biblioteca ristica",
-     "path": "sapienza",
-     "content": "Fino alla fine del tuo prossimo turno ogniqualvolta un avversario lancia una magia, puoi pescare una carta a meno che quel giocatore non paghi {1}"
+     "titolo": "Entri nella biblioteca ristica",
+     "via": "sapienza",
+     "testo": "Fino alla fine del tuo prossimo turno ogniqualvolta un avversario lancia una magia, puoi pescare una carta a meno che quel giocatore non paghi {1}"
     },
     {
      "id": "L4-S2",
-     "title": "Entri nella stanza degli specchi infranti",
-     "path": "sapienza",
-     "content": "Esilia un permanente non terra bersaglio. Ogni giocatore diverso dal suo controllore crea una pedina che è una copia di quel permanente"
+     "titolo": "Entri nella stanza degli specchi infranti",
+     "via": "sapienza",
+     "testo": "Esilia un permanente non terra bersaglio. Ogni giocatore diverso dal suo controllore crea una pedina che è una copia di quel permanente"
     },
     {
      "id": "L4-S3",
-     "title": "Predichi la pace",
-     "path": "sapienza",
-     "content": "Esilia una creatura bersaglio. Il suo controllore guadagna punti vita pari alla sua forza"
+     "titolo": "Predichi la pace",
+     "via": "sapienza",
+     "testo": "Esilia una creatura bersaglio. Il suo controllore guadagna punti vita pari alla sua forza"
     },
     {
      "id": "L4-S4",
-     "title": "Chiedi consiglio all'artigiano",
-     "path": "sapienza",
-     "content": "Passa in rassegna il tuo grimorio per una carta artefatto o incantesimo, rivelala, poi rimescola e metti quella carta in cima"
+     "titolo": "Chiedi consiglio all'artigiano",
+     "via": "sapienza",
+     "testo": "Passa in rassegna il tuo grimorio per una carta artefatto o incantesimo, rivelala, poi rimescola e metti quella carta in cima"
     },
     {
      "id": "L4-S5",
-     "title": "Chiedi consiglio alla terra",
-     "path": "sapienza",
-     "content": "Passa in rassegna il tuo grimorio per una carta creatura, rivelala, poi rimescola e metti quella carta in cima"
+     "titolo": "Chiedi consiglio alla terra",
+     "via": "sapienza",
+     "testo": "Passa in rassegna il tuo grimorio per una carta creatura, rivelala, poi rimescola e metti quella carta in cima"
     },
     {
      "id": "L4-S6",
-     "title": "Chiedi consiglio al mago",
-     "path": "sapienza",
-     "content": "Passa in rassegna il tuo grimorio per una carta istantaneo o stregoneria, rivelala, poi rimescola e metti quella carta in cima"
+     "titolo": "Chiedi consiglio al mago",
+     "via": "sapienza",
+     "testo": "Passa in rassegna il tuo grimorio per una carta istantaneo o stregoneria, rivelala, poi rimescola e metti quella carta in cima"
     },
     {
      "id": "L4-N1",
-     "title": "Attivi l'antico artefatto",
-     "path": "neutrale",
-     "content": "Crea una pedina artefatto Anello solare con {T}: Aggiungi {C}{C}"
+     "titolo": "Attivi l'antico artefatto",
+     "via": "neutrale",
+     "testo": "Crea una pedina artefatto Anello solare con {T}: Aggiungi {C}{C}"
     },
     {
      "id": "L4-N2",
-     "title": "Imiti i bassorilievi",
-     "path": "neutrale",
-     "content": "Crea una pedina che è una copia di un permanente bersaglio"
+     "titolo": "Imiti i bassorilievi",
+     "via": "neutrale",
+     "testo": "Crea una pedina che è una copia di un permanente bersaglio"
     },
     {
      "id": "L4-N3",
-     "title": "Spartisci equamente le scorte",
-     "path": "neutrale",
-     "content": "Ogni giocatore riprende il controllo dei permanenti che possiede"
+     "titolo": "Spartisci equamente le scorte",
+     "via": "neutrale",
+     "testo": "Ogni giocatore riprende il controllo dei permanenti che possiede"
     },
     {
      "id": "L4-N4",
-     "title": "Ti prepari allo scontro",
-     "path": "neutrale",
-     "content": "Puoi aggiungere il tuo comandante alla tua mano da qualsiasi zona si trovi"
+     "titolo": "Ti prepari allo scontro",
+     "via": "neutrale",
+     "testo": "Puoi aggiungere il tuo comandante alla tua mano da qualsiasi zona si trovi"
     },
     {
      "id": "L4-N5",
-     "title": "Alzi lo scudo",
-     "path": "neutrale",
-     "content": "Fino al tuo prossimo turno hai antimalocchio e tutti gli effetti che si applicano ad ogni avversario e/o ad ogni giocatore non si risolvono su di te."
+     "titolo": "Alzi lo scudo",
+     "via": "neutrale",
+     "testo": "Fino al tuo prossimo turno hai antimalocchio e tutti gli effetti che si applicano ad ogni avversario e/o ad ogni giocatore non si risolvono su di te."
     },
     {
      "id": "L4-N6",
-     "title": "Trovi la corona del re",
-     "path": "neutrale",
-     "content": "Diventi il monarca"
+     "titolo": "Trovi la corona del re",
+     "via": "neutrale",
+     "testo": "Diventi il monarca"
     }
    ],
-   "offer": {
+   "proposte": {
     "forza": {
      "forza": 2,
      "neutrale": 1
@@ -631,100 +643,240 @@ const LOWRENZIA = {
      "sapienza": 1,
      "neutrale": 1
     }
+   },
+   "successivo": "finale"
+  }
+ },
+ "finale": {
+  "nome": "Finale",
+  "stanze": [
+   {
+    "id": "L5-F1",
+    "titolo": "Guardi il mondo bruciare",
+    "via": "forza",
+    "testo": "Fino ad una creatura e/o Planeswalker bersaglio ottiene indistruttibile fino alla fine del turno. Infliggi 20 danni a tutte le creature e a tutti i Planeswalker"
+   },
+   {
+    "id": "L5-F2",
+    "titolo": "Incalzi il nemico in ritirata",
+    "via": "forza",
+    "testo": "Stappa tutte le creature. Dopo questa fase c'è una nuova fase di combattimento."
+   },
+   {
+    "id": "L5-F3",
+    "titolo": "Ottieni l'ascensione del guerriero",
+    "via": "forza",
+    "testo": "Fino ad una creatura bersaglio ottiene 1 segnalino +1/+1, 1 segnalino volare, 1 segnalino legame vitale, 1 segnalino attacco improvviso, 1 segnalino cautela e 1 segnalino tocco letale"
+   },
+   {
+    "id": "L5-S1",
+    "titolo": "Prevedi il futuro",
+    "via": "sapienza",
+    "testo": "Guarda le prime 3 carte del tuo grimorio. Puoi giocare una magia tra di esse senza pagare il suo costo di mana. Metti le carte che non hai giocato in fondo al tuo grimorio"
+   },
+   {
+    "id": "L5-S2",
+    "titolo": "Aspetti l'arrivo dell'eletto",
+    "via": "sapienza",
+    "testo": "Rivela carte dalla cima del tuo mazzo fino a quando non trovi una carta creatura. Mettila in campo sotto il tuo controllo con 2 segnalini +1/+1. Ottiene Anti-malocchio fino all'inizio del tuo prossimo turno"
+   },
+   {
+    "id": "L5-S3",
+    "titolo": "Trovi il tomo dell'arcimago",
+    "via": "sapienza",
+    "testo": "Pesca fino ad avere 7 carte in mano. Non hai limite di carte in mano per il resto della partita"
+   },
+   {
+    "id": "L5-N1",
+    "titolo": "Purifichi le tombe",
+    "via": "neutrale",
+    "testo": "Esilia tutti i cimiteri. Crea una copia di una delle carte creature esiliate in questo modo"
+   },
+   {
+    "id": "L5-N2",
+    "titolo": "Attiva l'antica fabbrica di mostri",
+    "via": "neutrale",
+    "testo": "Paga X punti vita e crea una pedina artefatto Processore con {4}{T}: Crea una pedina artefatto incolore X/X"
+   },
+   {
+    "id": "L5-N3",
+    "titolo": "Attiva il risonatore di vibrazioni",
+    "via": "neutrale",
+    "testo": "Crea una pedina artefatto Panarmonico con Se un artefatto o una creatura che entra fa innescare un'abilità innescata di un permanente che controlli, quell'abilità si innesca una volta in più"
    }
-  },
-  {
-   "name": "Finale",
-   "kind": "random",
-   "rooms": [
-    {
-     "id": "L5-F1",
-     "title": "Guardi il mondo bruciare",
-     "path": "forza",
-     "content": "Fino ad una creatura e/o Planeswalker bersaglio ottiene indistruttibile fino alla fine del turno. Infliggi 20 danni a tutte le creature e a tutti i Planeswalker"
-    },
-    {
-     "id": "L5-F2",
-     "title": "Incalzi il nemico in ritirata",
-     "path": "forza",
-     "content": "Stappa tutte le creature. Dopo questa fase c'è una nuova fase di combattimento."
-    },
-    {
-     "id": "L5-F3",
-     "title": "Ottieni l'ascensione del guerriero",
-     "path": "forza",
-     "content": "Fino ad una creatura bersaglio ottiene 1 segnalino +1/+1, 1 segnalino volare, 1 segnalino legame vitale, 1 segnalino attacco improvviso, 1 segnalino cautela e 1 segnalino tocco letale"
-    },
-    {
-     "id": "L5-S1",
-     "title": "Prevedi il futuro",
-     "path": "sapienza",
-     "content": "Guarda le prime 3 carte del tuo grimorio. Puoi giocare una magia tra di esse senza pagare il suo costo di mana. Metti le carte che non hai giocato in fondo al tuo grimorio"
-    },
-    {
-     "id": "L5-S2",
-     "title": "Aspetti l'arrivo dell'eletto",
-     "path": "sapienza",
-     "content": "Rivela carte dalla cima del tuo mazzo fino a quando non trovi una carta creatura. Mettila in campo sotto il tuo controllo con 2 segnalini +1/+1. Ottiene Anti-malocchio fino all'inizio del tuo prossimo turno"
-    },
-    {
-     "id": "L5-S3",
-     "title": "Trovi il tomo dell'arcimago",
-     "path": "sapienza",
-     "content": "Pesca fino ad avere 7 carte in mano. Non hai limite di carte in mano per il resto della partita"
-    },
-    {
-     "id": "L5-N1",
-     "title": "Purifichi le tombe",
-     "path": "neutrale",
-     "content": "Esilia tutti i cimiteri. Crea una copia di una delle carte creature esiliate in questo modo"
-    },
-    {
-     "id": "L5-N2",
-     "title": "Attiva l'antica fabbrica di mostri",
-     "path": "neutrale",
-     "content": "Paga X punti vita e crea una pedina artefatto Processore con {4}{T}: Crea una pedina artefatto incolore X/X"
-    },
-    {
-     "id": "L5-N3",
-     "title": "Attiva il risonatore di vibrazioni",
-     "path": "neutrale",
-     "content": "Crea una pedina artefatto Panarmonico con Se un artefatto o una creatura che entra fa innescare un'abilità innescata di un permanente che controlli, quell'abilità si innesca una volta in più"
-    }
-   ],
-   "offer": {
-    "forza": {
-     "forza": 1
-    },
-    "sapienza": {
-     "sapienza": 1
-    },
-    "neutrale": {
-     "neutrale": 1
-    }
+  ],
+  "proposte": {
+   "forza": {
+    "forza": 1
+   },
+   "sapienza": {
+    "sapienza": 1
+   },
+   "neutrale": {
+    "neutrale": 1
    }
   }
- ]
+ }
 };
+
+/* ---------- formato 2: controllo e preparazione ----------
+   Scheletro fisso: ingresso → livelli → finale → ingresso.
+   Il file decide vie, stanze, proposte e livello successivo. */
+const RE_ID = /^[a-z0-9-]{1,40}$/, RE_KEY = /^[A-Za-z0-9_-]{1,30}$/, RE_COL = /^#[0-9a-fA-F]{6}$/;
+const isObj = x => !!x && typeof x==='object' && !Array.isArray(x);
+const isStr = x => typeof x==='string' && x.trim()!=='';
+const has = (o,k) => Object.prototype.hasOwnProperty.call(o,k);
+
+function validateModule(m, opts){
+  opts = opts || {};
+  if(!isObj(m)) return 'Il file non contiene un oggetto JSON.';
+  if(m.formato!==2) return 'Il file deve indicare "formato": 2. I file nel formato precedente vanno convertiti.';
+  if(typeof m.id!=='string' || !RE_ID.test(m.id)) return 'L’"id" dell’esplorazione deve contenere solo lettere minuscole, numeri e trattini.';
+  if(!isStr(m.nome)) return 'L’esplorazione deve avere un "nome".';
+  if(m.descrizione!=null && typeof m.descrizione!=='string') return 'La "descrizione" deve essere un testo.';
+  if(m.estrazione!=null && !['casuale','meno-mostrate'].includes(m.estrazione)) return 'L’"estrazione" deve essere "casuale" oppure "meno-mostrate".';
+  if(m.regole!=null && typeof m.regole!=='string') return 'Le "regole" devono essere un testo.';
+  if(m.regoleLink!=null && (typeof m.regoleLink!=='string' || !/^https:\/\/\S+$/.test(m.regoleLink))) return 'Il "regoleLink" deve essere un indirizzo che inizia con https://.';
+  if(m.regoleImmagine!=null && (typeof m.regoleImmagine!=='string' || !/^(img\/[a-z0-9._-]+\.(png|webp|jpg)|https:\/\/\S+)$/.test(m.regoleImmagine))) return 'La "regoleImmagine" deve essere un file in img/ o un indirizzo https://.';
+
+  // vie
+  if(!Array.isArray(m.vie) || !m.vie.length || m.vie.length>8) return 'Servono da 1 a 8 vie in "vie".';
+  const vie = new Set();
+  for(const v of m.vie){
+    if(!isObj(v) || typeof v.id!=='string' || !RE_ID.test(v.id)) return 'Ogni via deve avere un "id" con sole lettere minuscole, numeri e trattini.';
+    if(vie.has(v.id)) return `La via «${v.id}» è ripetuta.`;
+    if(!isStr(v.nome)) return `La via «${v.id}» deve avere un "nome".`;
+    if(v.breve!=null && !isStr(v.breve)) return `Il "breve" della via «${v.id}» deve essere un testo.`;
+    if(typeof v.colore!=='string' || !RE_COL.test(v.colore)) return `Il "colore" della via «${v.id}» deve essere un colore come #c95a40.`;
+    vie.add(v.id);
+  }
+
+  // livelli
+  if(!isObj(m.ingresso)) return 'Manca l’"ingresso".';
+  if(!isObj(m.finale)) return 'Manca il "finale".';
+  if(m.livelli!=null && !isObj(m.livelli)) return 'I "livelli" devono essere un oggetto con un nome tecnico per ogni livello.';
+  const livelli = m.livelli || {};
+  for(const k of Object.keys(livelli)){
+    if(!RE_KEY.test(k) || k==='ingresso' || k==='finale') return `Il nome tecnico di livello «${k}» non è valido: usa lettere, numeri, trattini e non usare «ingresso» o «finale».`;
+  }
+  const nodes = { ingresso:m.ingresso, ...livelli, finale:m.finale };
+  const label = k => k==='ingresso' ? 'nell’ingresso' : k==='finale' ? 'nel finale' : `nel livello «${k}»`;
+  const roomIds = new Set();
+  for(const [k,n] of Object.entries(nodes)){
+    if(!isObj(n)) return `Il livello «${k}» non è valido.`;
+    if(n.nome!=null && !isStr(n.nome)) return `Il "nome" ${label(k)} deve essere un testo.`;
+    if(!Array.isArray(n.stanze) || !n.stanze.length) return `Non ci sono stanze ${label(k)}.`;
+    for(const r of n.stanze){
+      if(!isObj(r) || !isStr(r.id) || !isStr(r.titolo)) return `C’è una stanza senza "id" o "titolo" ${label(k)}.`;
+      if(!vie.has(r.via)) return `La stanza «${r.id}» usa la via «${r.via}», che non esiste in "vie".`;
+      if(r.testo!=null && typeof r.testo!=='string') return `Il "testo" della stanza «${r.id}» deve essere un testo.`;
+      if(roomIds.has(r.id)) return `L’id di stanza «${r.id}» è ripetuto: ogni stanza deve avere un id unico.`;
+      roomIds.add(r.id);
+    }
+    if(k!=='ingresso'){
+      if(!isObj(n.proposte)) return `Mancano le "proposte" ${label(k)}.`;
+      for(const [da,regola] of Object.entries(n.proposte)){
+        if(!vie.has(da)) return `Le "proposte" ${label(k)} citano la via «${da}», che non esiste.`;
+        if(!isObj(regola)) return `La regola delle proposte ${label(k)} dopo la via «${da}» non è valida.`;
+        let tot=0;
+        for(const [via,num] of Object.entries(regola)){
+          if(!vie.has(via)) return `Le "proposte" ${label(k)} citano la via «${via}», che non esiste.`;
+          if(!Number.isInteger(num) || num<0 || num>20) return `Nelle "proposte" ${label(k)} il numero per la via «${via}» deve essere un intero tra 0 e 20.`;
+          const disp = n.stanze.filter(r=>r.via===via).length;
+          if(num>disp) return `Le "proposte" ${label(k)} chiedono ${num} stanze della via «${via}», ma ce ne sono solo ${disp}. Aggiungi stanze o riduci il numero.`;
+          tot+=num;
+        }
+        if(!tot) return `Le "proposte" ${label(k)} dopo la via «${da}» non propongono nessuna stanza.`;
+      }
+    }
+    if(k!=='finale'){
+      const nx = n.successivo;
+      const ok = t => t==='finale' || has(livelli,t);
+      if(typeof nx==='string'){ if(!ok(nx)) return `Il "successivo" ${label(k)} punta a «${nx}», che non esiste.`; }
+      else if(isObj(nx)){
+        for(const [via,t] of Object.entries(nx)){
+          if(!vie.has(via)) return `Il "successivo" ${label(k)} cita la via «${via}», che non esiste.`;
+          if(typeof t!=='string' || !ok(t)) return `Il "successivo" ${label(k)} per la via «${via}» punta a «${t}», che non esiste.`;
+        }
+      } else return `Manca il "successivo" ${label(k)}.`;
+    }
+  }
+
+  // percorsi: ogni strada deve arrivare al finale, senza giri a vuoto
+  const nextOf = (k,via) => { const nx=nodes[k].successivo; return typeof nx==='string' ? nx : nx[via]; };
+  const reached = new Set(['ingresso']);
+  let err = null;
+  const walk = (k, via, stack) => {
+    if(err) return;
+    if(stack.includes(k)){ err = `C’è un percorso che torna al livello «${k}» prima di arrivare al finale.`; return; }
+    reached.add(k);
+    const regola = nodes[k].proposte[via];
+    if(!regola){ err = `${label(k).replace(/^./,c=>c.toUpperCase())} si può arrivare dopo una stanza della via «${via}», ma le "proposte" non dicono cosa mostrare in quel caso.`; return; }
+    if(k==='finale') return;
+    for(const [w,num] of Object.entries(regola)){
+      if(!num) continue;
+      const t = nextOf(k,w);
+      if(!t){ err = `Il "successivo" ${label(k)} non dice dove si va dopo una stanza della via «${w}».`; return; }
+      walk(t, w, stack.concat(k));
+    }
+  };
+  for(const via of new Set(m.ingresso.stanze.map(r=>r.via))){
+    const t = nextOf('ingresso', via);
+    if(!t){ err = `Il "successivo" nell’ingresso non dice dove si va dopo una stanza della via «${via}».`; break; }
+    walk(t, via, ['ingresso']);
+    if(err) break;
+  }
+  if(err) return err;
+  for(const k of Object.keys(livelli)) if(!reached.has(k)) return `Il livello «${k}» non si raggiunge da nessun percorso.`;
+  if(!reached.has('finale')) return 'Nessun percorso arriva al finale.';
+
+  if(!opts.builtin && builtins.some(b=>b.id===m.id)) return `L’id «${m.id}» è già usato da un’esplorazione inclusa nell’app.`;
+  return null;
+}
+
+/* Versione interna, comoda per l'app */
+function compile(src){
+  const paths = {}; src.vie.forEach(v=>paths[v.id]={ label:v.nome, short:v.breve||v.nome, color:v.colore });
+  const conv = r => ({ id:r.id, title:r.titolo, path:r.via, content:r.testo||'' });
+  const nodes = {};
+  const add = (key, n, kind) => nodes[key] = { key, name:n.nome||'', kind, rooms:n.stanze.map(conv), offer:n.proposte||null, next:key==='finale'?'ingresso':n.successivo };
+  add('ingresso', src.ingresso, 'all');
+  for(const [k,n] of Object.entries(src.livelli||{})) add(k, n, 'random');
+  add('finale', src.finale, 'random');
+  const roomMap = {}; let roomCount = 0;
+  for(const n of Object.values(nodes)) for(const r of n.rooms){ roomMap[r.id] = { room:r, node:n.key }; roomCount++; }
+  return { id:src.id, name:src.nome, description:src.descrizione||'', estrazione:src.estrazione||'casuale',
+    rules:src.regole||'', rulesUrl:src.regoleLink||'', rulesImage:src.regoleImmagine||'',
+    paths, nodes, roomMap, roomCount, levelCount:Object.keys(nodes).length, src };
+}
 
 /* ---------- storage ---------- */
 const store = {
   get(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } },
   set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
-let custom = store.get('dungeon.modules') || [];
 const builtins = [LOWRENZIA];
-const allModules = () => [...builtins, ...custom];
+// le esplorazioni caricate da file nel formato precedente non sono più valide: si scartano
+let custom = (store.get('dungeon.modules') || []).filter(m=>!validateModule(m));
+const _compiled = {};
+function getCompiled(src){ return _compiled[src.id] && _compiled[src.id].src===src ? _compiled[src.id] : (_compiled[src.id]=compile(src)); }
+const allModules = () => [...builtins, ...custom].map(getCompiled);
 
 let S = store.get('dungeon.state') || { phase:'setup', names:['',''], moduleId:'lowrenzia', players:[], active:0, log:[], history:[] };
+// partita salvata con la versione precedente: si torna alla schermata iniziale, tenendo i nomi
+if(S.phase==='game' && (S.players||[]).some(p=>!p.node)){ S.phase='setup'; S.players=[]; S.history=[]; S.log=[]; }
 let UI = { selected:null, view:null, justMoved:false, err:'' };
 const save = () => store.set('dungeon.state', S);
 
-let _mapCache = {};
 function mod(){ return allModules().find(m=>m.id===S.moduleId); }
-function roomInfo(id){
-  const m = mod(); if(!_mapCache[m.id]){ const map={}; m.levels.forEach((lv,li)=>lv.rooms.forEach(r=>map[r.id]={room:r,li})); _mapCache[m.id]=map; }
-  return _mapCache[m.id][id];
+function roomInfo(id){ return mod().roomMap[id]; }
+
+/* colori delle vie dell'esplorazione */
+function applyPathColors(){
+  let el = document.getElementById('path-colors');
+  if(!el){ el = document.createElement('style'); el.id='path-colors'; document.head.appendChild(el); }
+  const css = allModules().flatMap(m=>Object.entries(m.paths).map(([id,p])=>`.p-${id}{--pc:${p.color}}`));
+  el.textContent = [...new Set(css)].join('\n');
 }
 
 /* ---------- utility ---------- */
@@ -734,8 +886,8 @@ const esc = s => String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','
 const rich = s => esc(s).replace(/\n/g,'<br>').replace(/\{([A-Z0-9/]{1,3})\}/g,'<span class="sym">$1</span>');
 function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 const sample = (a,n) => shuffle(a).slice(0,n);
-const badge = p => `<span class="badge p-${esc(p)}">${esc(PATHS[p]?.short||p)}</span>`;
-function levelLabel(li){ const m=mod(); const lv=m.levels[li]; const base=`Livello ${li+1}`; return lv.name && lv.name!==base ? `${base} · ${lv.name}` : base; }
+const badge = p => `<span class="badge p-${esc(p)}">${esc(mod()?.paths[p]?.short||p)}</span>`;
+const stepLabel = (step, nodeKey) => { const n=mod().nodes[nodeKey]; return n && n.name ? `Passo ${step} · ${n.name}` : `Passo ${step}`; };
 
 /* ---------- regole ---------- */
 /* Estrazione delle stanze proposte.
@@ -744,26 +896,27 @@ function levelLabel(li){ const m=mod(); const lv=m.levels[li]; const base=`Livel
    "casuale": estrazione semplice. Le stanze contano come mostrate appena compaiono tra le proposte. */
 function pickRooms(pool, n, player){
   const m = mod();
-  if((m.estrazione||'casuale')!=='meno-mostrate') return sample(pool, n);
+  if(m.estrazione!=='meno-mostrate') return sample(pool, n);
   const shown = S.shown || {}, seen = (player && player.seen) || {};
   return pool
     .map(r=>({ r, k1: shown[r.id]||0, k2: seen[r.id]?1:0, k3: Math.random() }))
     .sort((a,b)=> a.k1-b.k1 || a.k2-b.k2 || a.k3-b.k3)
     .slice(0, n).map(x=>x.r);
 }
-function genOffer(li, prevPath, player){
-  const lv = mod().levels[li];
-  if(lv.kind==='all') return lv.rooms.map(r=>r.id);
-  const rule = (lv.offer && lv.offer[prevPath]) || {forza:1,sapienza:1,neutrale:1};
+function genOffer(nodeKey, prevPath, player){
+  const node = mod().nodes[nodeKey];
+  if(node.kind==='all') return node.rooms.map(r=>r.id);
+  const rule = node.offer[prevPath] || {};
   let out=[];
-  for(const [p,n] of Object.entries(rule)) out = out.concat(pickRooms(lv.rooms.filter(r=>r.path===p), n, player).map(r=>r.id));
-  // conta come «mostrate» solo le stanze estratte (non quelle fisse dell'ingresso)
+  for(const [p,n] of Object.entries(rule)) out = out.concat(pickRooms(node.rooms.filter(r=>r.path===p), n, player).map(r=>r.id));
+  // contano come «mostrate» solo le stanze estratte (non quelle fisse dell'ingresso)
   S.shown = S.shown || {};
   if(player) player.seen = player.seen || {};
   for(const id of out){ S.shown[id]=(S.shown[id]||0)+1; if(player) player.seen[id]=1; }
   return shuffle(out);
 }
-function newPlayer(name){ return { name, run:1, trail:[], nextLevel:0, offer:genOffer(0,null,null), moves:0, seen:{} }; }
+function nextNode(nodeKey, path){ const nx = mod().nodes[nodeKey].next; return typeof nx==='string' ? nx : nx[path]; }
+function newPlayer(name){ return { name, run:1, trail:[], node:'ingresso', step:1, offer:genOffer('ingresso',null,null), moves:0, seen:{} }; }
 
 function startGame(names){
   S.shown = {}; // nuova sessione: contatori azzerati
@@ -777,14 +930,14 @@ function enterRoom(){
   const p = S.players[S.active], id = UI.selected;
   if(!id || !p.offer.includes(id)) return;
   snapshot();
-  const li = p.nextLevel;
-  if(li===0 && p.trail.length){ p.run++; p.trail=[]; }
+  if(p.node==='ingresso' && p.trail.length){ p.run++; p.trail=[]; }
   p.trail.push(id); p.moves++;
   const info = roomInfo(id);
-  const next = (li+1) % mod().levels.length;
-  p.nextLevel = next;
+  const next = nextNode(p.node, info.room.path);
+  S.log.unshift({ player:p.name, room:info.room.title, path:info.room.path, step:p.trail.length, run:p.run });
+  p.node = next;
+  p.step = next==='ingresso' ? 1 : p.trail.length+1;
   p.offer = genOffer(next, info.room.path, p);
-  S.log.unshift({ player:p.name, room:info.room.title, path:info.room.path, level:li+1, run:p.run });
   UI.selected=null; UI.view=id; UI.justMoved=true;
   save(); render();
   const room=document.querySelector('.room');
@@ -819,7 +972,6 @@ function askReset(){
       {label:'Stesso gruppo', cls:'primary', fn:()=> startGame(S.players.map(p=>p.name)) }
     ]});
 }
-
 /* ---------- modal ---------- */
 const modal = document.getElementById('modal');
 function ask({title, body, actions}){
@@ -870,45 +1022,13 @@ rulesEl.addEventListener('click', e=>{ if(e.target===rulesEl) closeRules(); });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && !rulesEl.hidden) closeRules(); });
 
 /* ---------- import moduli ---------- */
-const isPath = p => typeof p==='string' && Object.prototype.hasOwnProperty.call(PATHS,p);
-function validateModule(m){
-  if(!m || typeof m!=='object') return 'Il file non contiene un oggetto JSON.';
-  if(typeof m.id!=='string' || !/^[a-z0-9-]{1,40}$/.test(m.id)) return 'L’"id" dell’esplorazione deve contenere solo lettere minuscole, numeri e trattini.';
-  if(typeof m.name!=='string' || !m.name.trim()) return 'L’esplorazione deve avere un "name".';
-  if(m.description!=null && typeof m.description!=='string') return 'La "description" deve essere un testo.';
-  if(m.rules!=null && typeof m.rules!=='string') return 'Le "rules" devono essere un testo.';
-  if(m.estrazione!=null && !['casuale','meno-mostrate'].includes(m.estrazione)) return 'L’"estrazione" deve essere "casuale" oppure "meno-mostrate".';
-  if(m.rulesImage!=null && (typeof m.rulesImage!=='string' || !/^(img\/[a-z0-9._-]+\.(png|webp|jpg)|https:\/\/\S+)$/.test(m.rulesImage))) return 'La "rulesImage" deve essere un file in img/ o un indirizzo https://.';
-  if(m.rulesUrl!=null && (typeof m.rulesUrl!=='string' || !/^https:\/\/\S+$/.test(m.rulesUrl))) return 'Il "rulesUrl" deve essere un indirizzo che inizia con https://.';
-  if(!Array.isArray(m.levels) || m.levels.length<2) return 'Servono almeno 2 livelli in "levels".';
-  const ids=new Set();
-  for(const [i,lv] of m.levels.entries()){
-    if(!Array.isArray(lv.rooms) || !lv.rooms.length) return `Il livello ${i+1} non ha stanze.`;
-    if(!['all','random'].includes(lv.kind)) return `Il livello ${i+1} deve avere "kind" uguale a "all" o "random".`;
-    if(lv.kind==='random'){
-      if(!lv.offer || typeof lv.offer!=='object' || Array.isArray(lv.offer)) return `Il livello ${i+1} è "random" ma non ha "offer".`;
-      for(const [from,rule] of Object.entries(lv.offer)){
-        if(!isPath(from) || !rule || typeof rule!=='object' || Array.isArray(rule)) return `Regola "offer" non valida nel livello ${i+1}.`;
-        for(const [p,n] of Object.entries(rule)) if(!isPath(p) || !Number.isInteger(n) || n<0 || n>20) return `Nel livello ${i+1} la regola "offer" contiene un valore non valido (${p}: ${n}).`;
-      }
-    }
-    for(const r of lv.rooms){
-      if(typeof r.id!=='string' || !r.id.trim() || typeof r.title!=='string' || !r.title.trim() || !isPath(r.path)) return `Stanza non valida nel livello ${i+1}: servono id, title e path (forza, sapienza o neutrale).`;
-      if(r.content!=null && typeof r.content!=='string') return `Il testo della stanza «${r.id}» deve essere una stringa.`;
-      if(ids.has(r.id)) return `L’id «${r.id}» è ripetuto: ogni stanza deve essere unica.`;
-      ids.add(r.id);
-    }
-  }
-  if(builtins.some(b=>b.id===m.id)) return `L’id «${m.id}» è già usato da un modulo incluso.`;
-  return null;
-}
 function importFile(file){
   const fr = new FileReader();
   fr.onload = () => {
     let m; try{ m = JSON.parse(fr.result); }catch(e){ UI.err='Il file non è un JSON valido.'; render(); return; }
     const err = validateModule(m); if(err){ UI.err=err; render(); return; }
-    custom = custom.filter(c=>c.id!==m.id).concat([m]); delete _mapCache[m.id];
-    store.set('dungeon.modules', custom); UI.err=''; UI.ok=`Esplorazione «${m.name}» caricata: ora si può scegliere a inizio partita.`; save(); render();
+    custom = custom.filter(c=>c.id!==m.id).concat([m]);
+    store.set('dungeon.modules', custom); UI.err=''; UI.ok=`Esplorazione «${m.nome}» caricata: ora si può scegliere a inizio partita.`; save(); render();
   };
   fr.readAsText(file);
 }
@@ -916,6 +1036,7 @@ function importFile(file){
 /* ---------- render ---------- */
 const app = document.getElementById('app');
 function render(){
+  applyPathColors();
   if(location.hash==='#admin') return adminOk ? renderAdmin() : renderLogin();
   if(S.phase==='game' && !mod()){ S.phase='setup'; }
   S.phase==='game' ? renderGame() : renderSetup();
@@ -942,7 +1063,7 @@ function renderSetup(){
     <div><h2>Esplorazione</h2><p class="hint">L’esplorazione da affrontare in questa partita.</p></div>
     <div class="mods">${allModules().map(m=>`
       <label class="mod"><input type="radio" name="mod" id="mod-${esc(m.id)}" value="${esc(m.id)}" ${m.id===S.moduleId?'checked':''}>
-        <span class="meta"><strong>${esc(m.name)}</strong><small>${esc(m.description||`${m.levels.length} livelli`)}</small></span>
+        <span class="meta"><strong>${esc(m.name)}</strong><small>${esc(m.description)}</small></span>
       </label>`).join('')}
     </div>
   </section>
@@ -990,42 +1111,21 @@ function renderAdmin(){
     <div><h2>Esplorazioni caricate</h2><p class="hint">Sono quelle che si possono scegliere a inizio partita.</p></div>
     <div class="mods">${allModules().map(m=>`
       <div class="mod"><span class="meta"><strong>${esc(m.name)}</strong>
-        <small>${esc(m.description||'')} · ${m.levels.length} livelli · ${m.levels.reduce((a,l)=>a+l.rooms.length,0)} stanze${builtins.includes(m)?' · incluso nell’app':''}</small></span>
+        <small>${m.description?esc(m.description)+' · ':''}${m.levelCount} livelli · ${m.roomCount} stanze${builtins.includes(m.src)?' · inclusa nell’app':''}</small></span>
         <div class="row"><button class="btn ghost" data-copy="${esc(m.id)}">Copia JSON</button>
-        ${builtins.includes(m)?'':`<button class="btn danger" data-delmod="${esc(m.id)}">Rimuovi</button>`}</div>
+        ${builtins.includes(m.src)?'':`<button class="btn danger" data-delmod="${esc(m.id)}">Rimuovi</button>`}</div>
       </div>`).join('')}
     </div>
     <p class="hint" id="copy-msg" aria-live="polite"></p>
   </section>
   <section class="panel">
-    <div><h2>Carica una nuova esplorazione</h2><p class="hint">File JSON con livelli e stanze. «Copia JSON» su un’esplorazione esistente ti dà un modello da cui partire.</p></div>
+    <div><h2>Carica una nuova esplorazione</h2><p class="hint">File JSON nel formato 2, con vie, livelli e stanze. «Copia JSON» su un’esplorazione esistente ti dà un modello da cui partire. Il file viene controllato al caricamento: se qualcosa non torna, ti dice cosa correggere.</p></div>
     <div class="row"><button class="btn primary" id="imp">Scegli file…</button><input type="file" id="file" accept=".json,application/json" hidden></div>
     ${UI.err?`<p class="err">${esc(UI.err)}</p>`:''}
     ${UI.ok?`<p class="okmsg">${esc(UI.ok)}</p>`:''}
-    <details class="fmt"><summary>Formato del file (JSON)</summary>
-<pre>{
-  "id": "cripta-nera", "name": "La cripta nera",
-  "description": "testo breve",
-  "levels": [
-    { "name": "Ingresso", "kind": "all",
-      "rooms": [ { "id": "A1", "title": "Via della Forza", "path": "forza", "content": "…" } ] },
-    { "name": "Livello 2", "kind": "random",
-      "offer": { "forza": {"forza":2,"neutrale":1},
-                 "sapienza": {"sapienza":2,"neutrale":1},
-                 "neutrale": {"forza":1,"sapienza":1,"neutrale":1} },
-      "rooms": [ … ] }
-  ]
-}
-"all" mostra tutte le stanze del livello; "random" estrae le stanze
-secondo "offer", in base alla via della stanza scelta prima.
-Ogni "id" di stanza deve essere unico in tutta l’esplorazione.
-
-Facoltativo: "estrazione", "meno-mostrate" (prima le stanze viste meno
-volte nella partita) oppure "casuale" (predefinito).
-
-Facoltativi: "rules", il testo delle regole (righe con "## " per i
-titoli, "- " per gli elenchi, **testo** per il grassetto), e "rulesUrl",
-un link https a un regolamento completo.</pre></details>
+    <details class="fmt"><summary>Formato del file</summary>
+<p class="hint">Campi principali: "formato": 2, "id", "nome", "vie" (id, nome, breve, colore), "ingresso" (stanze e successivo), "livelli" (stanze, proposte, successivo), "finale" (stanze e proposte). Ogni stanza ha id, titolo, via e testo. Facoltativi: "descrizione", "estrazione" ("meno-mostrate" o "casuale"), "regole", "regoleLink", "regoleImmagine".</p>
+<p class="hint"><a class="link" href="https://github.com/artenaut/esplorazione/blob/main/docs/formato-esplorazione.md" target="_blank" rel="noopener">Guida completa al formato, con esempi</a></p></details>
   </section>
   <form class="panel" id="pwform">
     <div><h2>Cambia password</h2><p class="hint">La password vale per questo browser.</p></div>
@@ -1046,7 +1146,7 @@ un link https a un regolamento completo.</pre></details>
       }}]});
   });
   app.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{
-    const m = allModules().find(x=>x.id===b.dataset.copy), txt = JSON.stringify(m,null,2), msg=document.getElementById('copy-msg');
+    const m = allModules().find(x=>x.id===b.dataset.copy), txt = JSON.stringify(m.src,null,2), msg=document.getElementById('copy-msg');
     navigator.clipboard.writeText(txt).then(()=>{ msg.textContent=`JSON di «${m.name}» copiato negli appunti.`; })
       .catch(()=>{ msg.innerHTML=`Copia non riuscita: seleziona il testo qui sotto.<textarea class="field mono" rows="8" readonly>${esc(txt)}</textarea>`; msg.querySelector('textarea').select(); });
   });
@@ -1077,30 +1177,28 @@ function bindSetup(){
 }
 
 function renderGame(){
-  const m = mod(), n = m.levels.length, P = S.players, p = P[S.active];
-  const finished = p.nextLevel===0 && p.trail.length>0;
+  const m = mod(), P = S.players, p = P[S.active];
+  const finished = p.node==='ingresso' && p.trail.length>0;   // ha appena chiuso un giro
   const viewId = p.trail[p.trail.length-1];
   const view = viewId ? roomInfo(viewId) : null;
   const showText = UI.justMoved && UI.view===viewId; // il testo si vede solo subito dopo l'ingresso
 
   const tabs = P.map((q,i)=>{
     const cur = q.trail.length ? roomInfo(q.trail[q.trail.length-1]) : null;
-    const where = cur ? `Liv. ${cur.li+1}/${n}` : 'All’ingresso';
+    const qDone = q.node==='ingresso' && q.trail.length>0;
+    const where = !cur ? 'All’ingresso' : qDone ? 'Esplorazione completata' : `Passo ${q.trail.length}`;
     return `<button class="tab ${cur?'p-'+cur.room.path:''}" role="tab" aria-selected="${i===S.active}" data-tab="${i}">
       <span class="tn">${esc(q.name)}</span><span class="ts"><span class="dot"></span>${where} · giro ${q.run}</span></button>`;
   }).join('');
 
-  const slots = m.levels.map((lv,li)=>{
-    const id = p.trail[li];
-    if(id){ const r=roomInfo(id).room;
-      return `<div class="slot done p-${r.path} ${id===viewId?'viewing':''}"><span class="lv">Liv. ${li+1}</span><span class="rt">${esc(r.title)}</span></div>`; }
-    const isNext = li===p.nextLevel && !finished;
-    return `<div class="slot ${isNext?'next':'empty'}"><span class="lv">Liv. ${li+1}</span><span class="rt">${isNext?'Prossima<span class="slot-long"> mossa</span>':esc(lv.name||'—')}</span></div>`;
-  }).join('');
+  // solo i passi fatti e il prossimo: la lunghezza totale del percorso resta nascosta
+  let slots = p.trail.map((id,i)=>{ const r=roomInfo(id).room;
+    return `<div class="slot done p-${r.path} ${id===viewId?'viewing':''}"><span class="lv">Passo ${i+1}</span><span class="rt">${esc(r.title)}</span></div>`; }).join('');
+  if(!finished) slots += `<div class="slot next"><span class="lv">Passo ${p.step}</span><span class="rt">Prossima<span class="slot-long"> mossa</span></span></div>`;
 
   const roomHtml = view ? `
     <section class="room p-${view.room.path} ${showText?'reveal':''}" aria-live="polite">
-      <div class="row"><span class="eyebrow">${esc(levelLabel(view.li))}</span>${badge(view.room.path)}</div>
+      <div class="row"><span class="eyebrow">${esc(stepLabel(p.trail.length, view.node))}</span>${badge(view.room.path)}</div>
       <h3>${esc(view.room.title)}</h3>
       ${showText?`<p class="content">${rich(view.room.content||'')}</p>`:`<p class="content hint">Stanza attuale di ${esc(p.name)}. L’effetto si legge solo al momento dell’ingresso.</p>`}
     </section>` : `
@@ -1112,7 +1210,7 @@ function renderGame(){
 
   const offerHtml = `
     <section class="panel">
-      <div class="sec-head"><h2>Prossima mossa · ${esc(levelLabel(p.nextLevel))}</h2><span class="hint">${p.offer.length} ${p.offer.length===1?'stanza disponibile':'stanze tra cui scegliere'}</span></div>
+      <div class="sec-head"><h2>Prossima mossa · ${esc(stepLabel(p.step, p.node))}</h2><span class="hint">${p.offer.length} ${p.offer.length===1?'stanza disponibile':'stanze tra cui scegliere'}</span></div>
       ${finished?`<p class="note">${esc(p.name)} ha completato l’esplorazione. La prossima mossa riporta all’ingresso e apre il giro ${p.run+1}.</p>`:''}
       <div class="cards">${p.offer.map(id=>{ const r=roomInfo(id).room;
         return `<button class="card p-${r.path}" aria-pressed="${UI.selected===id}" data-pick="${esc(id)}"><span class="ct">${esc(r.title)}</span>${badge(r.path)}</button>`; }).join('')}</div>
@@ -1121,8 +1219,8 @@ function renderGame(){
     </section>`;
 
   const logHtml = `
-    <details class="log panel" ${S.log.length?'':''}><summary>Registro delle mosse (${S.log.length})</summary>
-      ${S.log.length?`<ol>${S.log.slice(0,60).map((e,i)=>`<li><span class="n">${S.log.length-i}.</span><span class="who">${esc(e.player)}</span><span>${esc(e.room)}</span>${badge(e.path)}<span class="hint">liv. ${e.level} · giro ${e.run}</span></li>`).join('')}</ol>`:'<p class="hint" style="margin-top:10px">Nessuna mossa ancora.</p>'}
+    <details class="log panel"><summary>Registro delle mosse (${S.log.length})</summary>
+      ${S.log.length?`<ol>${S.log.slice(0,60).map((e,i)=>`<li><span class="n">${S.log.length-i}.</span><span class="who">${esc(e.player)}</span><span>${esc(e.room)}</span>${badge(e.path)}<span class="hint">passo ${e.step ?? e.level} · giro ${e.run}</span></li>`).join('')}</ol>`:'<p class="hint" style="margin-top:10px">Nessuna mossa ancora.</p>'}
     </details>`;
 
   app.innerHTML = `
@@ -1133,7 +1231,7 @@ function renderGame(){
   <nav class="tabs" role="tablist" aria-label="Esplorator*">${tabs}</nav>
   <section class="panel">
     <div class="sec-head"><h2>Percorso di ${esc(p.name)}</h2><span class="hint">Giro ${p.run} · ${p.moves} ${p.moves===1?'mossa':'mosse'} in totale</span></div>
-    <div class="track" style="--n:${n}">${slots}</div>
+    <div class="track">${slots}</div>
   </section>
   ${roomHtml}
   ${offerHtml}
@@ -1149,6 +1247,7 @@ function renderGame(){
 
 render();
 </script>
+
 
 </body>
 </html>

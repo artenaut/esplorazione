@@ -51,7 +51,9 @@ Si può fare già nella versione attuale con un solo dispositivo. I contatori vi
 - La regola è rigida, non un'estrazione pesata.
 - La regola è una proprietà dell'esplorazione: `estrazione: "meno-mostrate" | "casuale"`. Lowrenzia usa «meno-mostrate».
 
-## 2. Formato dell'esplorazione v2 [deciso]
+## 2. Formato dell'esplorazione v2 ✅ fatto il 6/11/2026
+
+Guida completa: `formato-esplorazione.md`. Lowrenzia convertita. Decisioni finali: **niente ripiego** (se una via ha meno stanze di quelle richieste, il file viene rifiutato e va corretto) e **lunghezza totale del percorso sempre nascosta** (si mostra solo il passo attuale). Verificato con prove automatiche su Lowrenzia, su un pianeta non simmetrico di prova e su 7 tipi di file errati.
 
 ### Fissato dall'app, uguale per tutte le esplorazioni
 - Lo scheletro **ingresso → sviluppo → finale → ritorno all'ingresso** (nuovo giro).

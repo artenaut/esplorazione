@@ -1,7 +1,7 @@
-# Formato delle esplorazioni · versione 2 (proposta)
+# Formato delle esplorazioni · versione 2
 
 Come si descrive un pianeta, cioè un'esplorazione, perché l'app lo possa giocare.
-È la proposta per il punto 1.2 del piano: **da confermare prima dello sviluppo.**
+Confermato e in uso dal 6/11/2026 (punti 1.2–1.4 del piano).
 
 ---
 
@@ -32,7 +32,6 @@ Le stanze si possono continuare a scrivere nel foglio di calcolo: la conversione
 | `nome` | sì | Il nome che si vede (es. «Primo pianeta – Lowrenzia»). |
 | `descrizione` | no | Una riga sotto il nome, nella scelta dell'esplorazione. |
 | `estrazione` | no | `"meno-mostrate"` oppure `"casuale"` (predefinito). |
-| `ripiego` | no | Cosa fare se una via non ha abbastanza stanze da proporre: `"altre-vie"` (completa pescando dalle altre vie del livello) oppure `"meno-stanze"` (propone meno stanze). Predefinito: `"altre-vie"`. |
 | `regole` | no | Testo delle regole del gioco: righe con `## ` per i titoli, `- ` per gli elenchi, `**grassetto**`, simboli come `{T}`. |
 | `regoleLink` | no | Link `https://` a un regolamento completo. |
 | `regoleImmagine` | no | Immagine in cima alle regole (es. `img/esploratore.png`). |
@@ -73,7 +72,7 @@ Le vie diventano anche le colonne delle statistiche del pianeta in classifica.
 
 | Campo | Significato |
 |---|---|
-| `nome` | Es. «Livello 2». |
+| `nome` | Facoltativo. Se c'è, compare accanto al numero del passo (es. «Passo 3 · La forgia»). |
 | `stanze` | Il pool di stanze del livello. |
 | `proposte` | **Quante stanze proporre di ogni via, in base alla via della stanza scelta prima.** Es. dopo una stanza della Forza: `{"forza": 2, "neutrale": 1}`. |
 | `successivo` | Il livello dopo questo: un nome tecnico per tutti, uno per via, oppure `"finale"`. |
@@ -93,7 +92,7 @@ Lo stesso Lowrenzia di oggi, riscritto nel nuovo formato. Per brevità c'è una 
   "formato": 2,
   "id": "lowrenzia",
   "nome": "Primo pianeta – Lowrenzia",
-  "descrizione": "5 livelli · vie della Forza e della Sapienza",
+  "descrizione": "Vie della Forza e della Sapienza",
   "estrazione": "meno-mostrate",
   "regoleImmagine": "img/esploratore.png",
   "regole": "## Leader dell'esplorazione\n- Per procedere nell'esplorazione del pianeta bisogna …",
@@ -115,7 +114,6 @@ Lo stesso Lowrenzia di oggi, riscritto nel nuovo formato. Per brevità c'è una 
 
   "livelli": {
     "L2": {
-      "nome": "Livello 2",
       "stanze": [
         { "id": "L2-F1", "titolo": "…", "via": "forza", "testo": "…" }
       ],
@@ -126,8 +124,8 @@ Lo stesso Lowrenzia di oggi, riscritto nel nuovo formato. Per brevità c'è una 
       },
       "successivo": "L3"
     },
-    "L3": { "nome": "Livello 3", "stanze": [ … ], "proposte": { … }, "successivo": "L4" },
-    "L4": { "nome": "Livello 4", "stanze": [ … ], "proposte": { … }, "successivo": "finale" }
+    "L3": { "stanze": [ … ], "proposte": { … }, "successivo": "L4" },
+    "L4": { "stanze": [ … ], "proposte": { … }, "successivo": "finale" }
   },
 
   "finale": {
@@ -196,7 +194,8 @@ L'area admin rifiuta il file, spiegando cosa correggere, se:
 - un `successivo` punta a un livello che non esiste;
 - un percorso non arriva mai al finale, oppure torna su un livello già attraversato prima del finale;
 - un livello può essere raggiunto dopo una via per cui non ha una regola in `proposte`;
-- una regola chiede più stanze di una via di quante ce ne siano, e `ripiego` non lo consente.
+- una regola chiede più stanze di una via di quante ce ne siano: **il pianeta deve avere le stanze che servono**, altrimenti va corretto il file;
+- un livello non si raggiunge da nessun percorso.
 
 Il simulatore (punto 1.5) farà poi i controlli statistici.
 
@@ -205,5 +204,5 @@ Il simulatore (punto 1.5) farà poi i controlli statistici.
 ## Cosa cambia per chi gioca
 
 - **Niente,** per Lowrenzia: si gioca esattamente come oggi.
-- Nei pianeti con percorsi di lunghezza diversa, la barra del percorso mostra **i passi fatti e il prossimo**, non più un numero fisso di caselle. La scheda di chi gioca mostra «Passo 3» al posto di «Liv. 3/5».
+- **In tutti i pianeti la lunghezza totale del percorso resta nascosta:** la barra mostra solo i passi fatti e il prossimo, e la scheda di chi gioca dice «Passo 3» (o «Esplorazione completata» dopo il finale).
 - Le esplorazioni caricate da file nel vecchio formato non funzioneranno più e vanno ricaricate nel nuovo. Lowrenzia la converto io.
