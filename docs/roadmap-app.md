@@ -13,6 +13,14 @@ Legenda: **[deciso]** concordato, da sviluppare · **[da decidere]** idea discus
 
 - [ ] **Caratteri ospitati nel sito, senza Google Fonts** (deciso il 6/11/2026). Scaricare i file dei due caratteri (IM Fell English SC e Alegreya Sans, in formato `woff2`) e metterli nel repository, caricandoli con `@font-face` al posto del link a Google. Così nessun IP dei visitatori viene inviato a Google, e l'informativa non deve citarlo. Va fatto prima di pubblicare la classifica. I file stanno su GitHub Pages insieme all'app: non servono al server Cloudflare.
 - [ ] **Informativa privacy:** il testo è pronto in `informativa-privacy.md` (completato il 6/11/2026). Va collegato all'inserimento del nickname.
+- [ ] **Spostare il repository in un'organizzazione GitHub del club** (es. `artenaut`), al posto dell'account personale di Francesco. Va fatto **prima di distribuire link o QR code**.
+  1. Francesco crea l'organizzazione da github.com/organizations/plan (piano Free) e ne resta amministratore. Altri membri del club si possono aggiungere con ruoli diversi, senza condividere password.
+  2. Repository → Settings → General → Danger Zone → **Transfer ownership** verso l'organizzazione. Codice, cronologia, roadmap e impostazioni seguono il repository, e i link al vecchio repository vengono reindirizzati.
+  3. Controllare che GitHub Pages sia ancora attivo (Settings → Pages, branch `main`, cartella principale).
+  4. Dare a Claude l'accesso all'organizzazione dalla pagina di installazione dell'app GitHub di Claude.
+  5. Aggiornare README, roadmap e link con il nuovo indirizzo.
+  - **Attenzione:** l'indirizzo del sito cambia (es. da `meatsculptor.github.io/esplorazione` a `artenaut.github.io/esplorazione`) e GitHub **non reindirizza** il vecchio indirizzo di Pages. Per il browser è un sito nuovo, quindi si perdono partita in corso, esplorazioni caricate a mano e password admin cambiata (torna `dungeon`).
+  - [da decidere] Un **dominio del club** (es. `esplorazione.artenaut.it`) collegato a Pages renderebbe l'indirizzo stabile per sempre, anche cambiando repository o hosting.
 
 ## 1. Estrazione «meno mostrate» [deciso] · priorità alta
 

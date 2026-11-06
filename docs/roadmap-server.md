@@ -18,6 +18,8 @@ Legenda: **[deciso]** concordato · **[orientamento]** preferenza emersa, da con
 
 I limiti dei piani sono quelli rilevati a novembre 2026: vanno ricontrollati al momento della scelta.
 
+- **Account del club:** l'account Cloudflare va intestato al club (Artenaut\*, artenautspaceship@gmail.com), non a una persona, come il repository nell'organizzazione GitHub (vedi `roadmap-app.md`, punto 0).
+
 ### Stima del carico su Cloudflare (indicativa)
 - Una serata: 4 telefoni più 1 tablet, circa 3 ore, circa 100 mosse. Risultato: **~150 richieste**, contro 100.000 al giorno.
 - Ogni connessione WebSocket vale 1 richiesta, più 1 per il Worker. I messaggi in arrivo contano 1 richiesta ogni 20. I messaggi in uscita e i ping sono gratuiti.
