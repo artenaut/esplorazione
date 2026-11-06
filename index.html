@@ -785,11 +785,11 @@ function askUndo(){
     }} ]});
 }
 function askReset(){
-  ask({ title:'Ricominciare la partita?', body:'Tutti i progressi dell’esplorazione andranno persi.',
+  ask({ title:'Ricominciare la partita?', body:'I progressi dell’esplorazione andranno persi.',
     actions:[
       {label:'Indietro', cls:'ghost'},
-      {label:'Nuovi giocatori', cls:'danger', fn:()=>{ S.phase='setup'; S.names=['','']; S.players=[]; S.history=[]; S.log=[]; save(); render(); }},
-      {label:'Stessi giocatori', cls:'primary', fn:()=> startGame(S.players.map(p=>p.name)) }
+      {label:'Nuovo gruppo', cls:'danger', fn:()=>{ S.phase='setup'; S.names=['','']; S.players=[]; S.history=[]; S.log=[]; save(); render(); }},
+      {label:'Stesso gruppo', cls:'primary', fn:()=> startGame(S.players.map(p=>p.name)) }
     ]});
 }
 
@@ -879,7 +879,7 @@ function importFile(file){
     let m; try{ m = JSON.parse(fr.result); }catch(e){ UI.err='Il file non è un JSON valido.'; render(); return; }
     const err = validateModule(m); if(err){ UI.err=err; render(); return; }
     custom = custom.filter(c=>c.id!==m.id).concat([m]); delete _mapCache[m.id];
-    store.set('dungeon.modules', custom); UI.err=''; UI.ok=`«${m.name}» caricato: ora è selezionabile dai giocatori.`; save(); render();
+    store.set('dungeon.modules', custom); UI.err=''; UI.ok=`Esplorazione «${m.name}» caricata: ora si può scegliere a inizio partita.`; save(); render();
   };
   fr.readAsText(file);
 }
@@ -900,14 +900,14 @@ function renderSetup(){
   app.innerHTML = `
   <header class="top">${brand('Artenaut* Magic Exploration Companion','Registro dell’esplorazione')}<div class="actions"><button class="btn" id="rules-btn">Regole</button></div></header>
   <section class="panel">
-    <div><h2>Giocatori</h2><p class="hint">Da 2 a 4 avventurieri. Ognuno si muove da solo durante l’esplorazione.</p></div>
+    <div><h2>Esplorator*</h2><p class="hint">Da 2 a 4 persone. Ogni esplorator* si muove per conto suo durante l’esplorazione.</p></div>
     <div class="names">${nm.map((n,i)=>`
       <div class="name-row"><span class="num">${ROMAN[i]}</span>
-        <input id="name-${i}" data-i="${i}" value="${esc(n)}" placeholder="Nome del giocatore ${i+1}" maxlength="24" autocomplete="off">
-        ${nm.length>2?`<button class="btn ghost" data-rm="${i}" aria-label="Rimuovi giocatore ${i+1}">Rimuovi</button>`:''}
+        <input id="name-${i}" data-i="${i}" value="${esc(n)}" placeholder="Esplorator* ${i+1}" maxlength="24" autocomplete="off">
+        ${nm.length>2?`<button class="btn ghost" data-rm="${i}" aria-label="Rimuovi esplorator* ${i+1}">Rimuovi</button>`:''}
       </div>`).join('')}
     </div>
-    ${nm.length<4?`<div><button class="btn" id="add">Aggiungi giocatore</button></div>`:''}
+    ${nm.length<4?`<div><button class="btn" id="add">Aggiungi esplorator*</button></div>`:''}
   </section>
   <section class="panel">
     <div><h2>Esplorazione</h2><p class="hint">L’esplorazione da affrontare in questa partita.</p></div>
@@ -919,7 +919,7 @@ function renderSetup(){
   </section>
   <div><button class="btn primary big" id="start">Inizia la partita</button></div>
   <p class="err" id="start-err" hidden></p>
-  <footer class="foot"><a href="#admin" class="link">Area amministratore</a></footer>`;
+  <footer class="foot"><a href="#admin" class="link">Area admin</a></footer>`;
   bindSetup();
 }
 
@@ -936,7 +936,7 @@ function setAdmin(v){ adminOk=v; try{ v?sessionStorage.setItem('dungeon.admin','
 
 function renderLogin(){
   app.innerHTML = `
-  <header class="top">${brand('Area amministratore','Registro dell’esplorazione')}</header>
+  <header class="top">${brand('Area admin','Registro dell’esplorazione')}</header>
   <form class="panel narrow" id="login">
     <div><h2>Accesso</h2><p class="hint">Inserisci la password per gestire le esplorazioni.</p></div>
     <input type="password" id="pw" class="field" autocomplete="current-password" placeholder="Password" required>
@@ -954,11 +954,11 @@ function renderLogin(){
 function renderAdmin(){
   app.innerHTML = `
   <header class="top">
-    ${brand('Area amministratore','Gestione esplorazioni')}
+    ${brand('Area admin','Gestione esplorazioni')}
     <div class="actions"><a href="#" class="btn">Torna alla partita</a><button class="btn ghost" id="logout">Esci</button></div>
   </header>
   <section class="panel">
-    <div><h2>Esplorazioni caricate</h2><p class="hint">Sono quelli che i giocatori possono scegliere a inizio partita.</p></div>
+    <div><h2>Esplorazioni caricate</h2><p class="hint">Sono quelle che si possono scegliere a inizio partita.</p></div>
     <div class="mods">${allModules().map(m=>`
       <div class="mod"><span class="meta"><strong>${esc(m.name)}</strong>
         <small>${esc(m.description||'')} · ${m.levels.length} livelli · ${m.levels.reduce((a,l)=>a+l.rooms.length,0)} stanze${builtins.includes(m)?' · incluso nell’app':''}</small></span>
@@ -1006,11 +1006,11 @@ un link https a un regolamento completo.</pre></details>
   document.getElementById('logout').onclick=()=>{ setAdmin(false); location.hash=''; render(); };
   app.querySelectorAll('[data-delmod]').forEach(b=>b.onclick=()=>{
     const m = allModules().find(x=>x.id===b.dataset.delmod);
-    ask({ title:`Rimuovere «${m.name}»?`, body:'I giocatori non potranno più sceglierlo. Una partita in corso con questa esplorazione verrà chiusa.',
+    ask({ title:`Rimuovere «${m.name}»?`, body:'Non si potrà più scegliere a inizio partita. Una partita in corso con questa esplorazione verrà chiusa.',
       actions:[{label:'Indietro',cls:'ghost'},{label:'Rimuovi',cls:'primary',fn:()=>{
         custom=custom.filter(c=>c.id!==m.id); store.set('dungeon.modules',custom);
         if(S.moduleId===m.id){ S.moduleId=builtins[0].id; if(S.phase==='game'){ S.phase='setup'; S.players=[]; S.history=[]; S.log=[]; } }
-        UI.ok=`«${m.name}» rimosso.`; UI.err=''; save(); render();
+        UI.ok=`Esplorazione «${m.name}» rimossa.`; UI.err=''; save(); render();
       }}]});
   });
   app.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{
@@ -1037,8 +1037,8 @@ function bindSetup(){
   document.getElementById('start').onclick=()=>{
     const names=S.names.map(n=>n.trim()); const errEl=document.getElementById('start-err');
     let msg='';
-    if(names.some(n=>!n)) msg='Inserisci il nome di ogni giocatore, oppure rimuovi le righe vuote.';
-    else if(new Set(names.map(n=>n.toLowerCase())).size!==names.length) msg='Due giocatori hanno lo stesso nome: rendili distinguibili.';
+    if(names.some(n=>!n)) msg='Inserisci il nome di ogni esplorator*, oppure rimuovi le righe vuote.';
+    else if(new Set(names.map(n=>n.toLowerCase())).size!==names.length) msg='Due nomi sono uguali: rendili distinguibili.';
     if(msg){ errEl.textContent=msg; errEl.hidden=false; return; }
     startGame(names);
   };
@@ -1098,7 +1098,7 @@ function renderGame(){
     ${brand(m.name,'Registro dell’esplorazione')}
     <div class="actions three"><button class="btn" id="rules-btn">Regole</button><button class="btn" id="undo" ${S.history.length?'':'disabled'}>Annulla<span class="long"> ultima mossa</span></button><button class="btn danger" id="reset">Ricomincia</button></div>
   </header>
-  <nav class="tabs" role="tablist" aria-label="Giocatori">${tabs}</nav>
+  <nav class="tabs" role="tablist" aria-label="Esplorator*">${tabs}</nav>
   <section class="panel">
     <div class="sec-head"><h2>Percorso di ${esc(p.name)}</h2><span class="hint">Giro ${p.run} · ${p.moves} ${p.moves===1?'mossa':'mosse'} in totale</span></div>
     <div class="track" style="--n:${n}">${slots}</div>

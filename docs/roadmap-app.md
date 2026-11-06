@@ -9,10 +9,11 @@ Legenda: **[deciso]** concordato, da sviluppare · **[da decidere]** idea discus
 
 ## 0. Da completare
 
-- [ ] **PRIORITÀ: linguaggio inclusivo in tutto il progetto** (deciso il 6/11/2026). Vale per app, area admin, classifica, informativa, messaggi di errore e nomi dei guest. Si applica a **ogni versione in produzione**: le roadmap possono usare «giocatore», ma tutto ciò che vedono le persone no.
+- [x] **PRIORITÀ: linguaggio inclusivo in tutto il progetto** (deciso il 6/11/2026). Vale per app, area admin, classifica, informativa, messaggi di errore e nomi dei guest. Regola permanente: si applica a **ogni versione in produzione**, anche futura: le roadmap possono usare «giocatore», ma tutto ciò che vedono le persone no.
   - Le persone che giocano si chiamano sempre **esplorator\*** (singolare e plurale), con l'asterisco come in Artenaut\*. Gli aggettivi e i participi riferiti a loro usano lo stesso asterisco (es. «Esplorator\* rimoss\*»).
   - Dove si può, meglio ancora una **forma neutra** che non richiede l'asterisco: «chi gioca», «chi amministra», «il tuo turno», «persone», «staff».
-  - Da correggere nell'app attuale: «Giocatori», «Aggiungi giocatore», «Rimuovi giocatore», «Nome del giocatore N», «Ognuno si muove», «avventurieri», «Nuovi giocatori», «Stessi giocatori», «Tutti i progressi», «amministratore» nell'area admin, e i messaggi di errore che parlano di «giocatori».
+  - App attuale adeguata il 6/11/2026: «Esplorator\*» nella schermata iniziale, «Aggiungi esplorator\*», «Nuovo gruppo» e «Stesso gruppo» in Ricomincia, «Area admin», messaggi di errore e conferme in forma neutra.
+  - **Esclusi:** i testi delle stanze scritti da Francesco, che usano la terminologia ufficiale di Magic (avversario, controllore, proprietario, giocatore). Si decide caso per caso se adeguarli.
   - I nomi dei guest non usano aggettivi di genere: vedi `roadmap-classifica.md`, punto 10.
   - L'informativa è già stata adeguata (6/11/2026).
 
