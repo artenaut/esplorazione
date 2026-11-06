@@ -11,6 +11,7 @@ Online su https://artenaut.github.io/esplorazione/
 ## Roadmap
 
 - **[Piano di sviluppo, a fasi](docs/piano.md)**
+- [Ripartenza dalla fase 3](docs/ripartenza-fase-3.md)
 - [App (lato client)](docs/roadmap-app.md)
 - [Server e sessioni condivise](docs/roadmap-server.md)
 - [Classifica](docs/roadmap-classifica.md)
