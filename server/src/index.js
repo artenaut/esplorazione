@@ -39,12 +39,6 @@ export default {
         return json({ ok: true, versione: VERSIONE }, 200, cors);
       }
 
-      // DIAGNOSI TEMPORANEA del Limitatore con chiave fissa (da rimuovere subito dopo la verifica)
-      if (url.pathname === "/api/diagnosi-limite") {
-        const ok = await env.LIMITATORE.get(env.LIMITATORE.idFromName("diagnosi-fissa")).conta(30, FINESTRA_LIMITI);
-        return json({ diagnosi: 2, ammesso: ok });
-      }
-
       // Area admin, protetta da Cloudflare Access (e verificata anche qui).
       if (url.pathname === "/admin" || url.pathname.startsWith("/admin/")) {
         return gestisciAdmin(request, env, url);

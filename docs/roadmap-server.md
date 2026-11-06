@@ -125,7 +125,7 @@ Entrambi chiedono prima una conferma. Poi chiedono come proseguire:
 
   Il danno possibile è piccolo, perché si entra solo in una partita da tavolo, ma il limite costa poco.
 
-  ✅ Fatto il 6/11/2026 (passo 3.10): limitatore di Cloudflare per indirizzo IP (chiave: impronta dell'indirizzo, contatore temporaneo di un minuto, nulla salvato). 30 tentativi di ingresso al minuto (controllo del codice e WebSocket) e 10 creazioni di partite al minuto. Il limite è largo perché al club i telefoni condividono lo stesso Wi-Fi.
+  ✅ Fatto il 6/11/2026 (passo 3.10): Durable Object «Limitatore», uno per impronta dell'indirizzo IP, che conta in memoria i tentativi dell'ultimo minuto senza salvare nulla (il limitatore integrato di Cloudflare, provato prima, in produzione non bloccava). 30 tentativi di ingresso al minuto (controllo del codice e WebSocket) e 10 creazioni di partite al minuto. Il limite è largo perché al club i telefoni condividono lo stesso Wi-Fi.
 
 ### Finché il server non c'è
 - Con l'app attuale e le esplorazioni incorporate, la password nella pagina resta sufficiente come «anti-pasticcio».
