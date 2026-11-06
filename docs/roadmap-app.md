@@ -83,4 +83,5 @@ Si può fare già nella versione attuale con un solo dispositivo. I contatori vi
 - Le esplorazioni definitive sono incorporate nell'app. Il caricamento da file nell'area admin è per prove.
 - Interfaccia ottimizzata per il telefono e schermo tenuto acceso durante la partita.
 - I commit non devono contenere l'email personale.
+- Pulsante «Regole» in alto, nella schermata iniziale e durante la partita. Le regole sono un campo `rules` di ogni esplorazione (testo con `## ` per i titoli, `- ` per gli elenchi, `**grassetto**`), più un `rulesUrl` facoltativo verso un regolamento completo. Per Lowrenzia c'è una bozza che descrive solo le meccaniche dell'app. (6/11/2026)
 - Il testo di una stanza si vede **solo al momento dell'ingresso**. Non si vede tra le proposte, nemmeno se la stanza è già stata visitata nella sessione. Nel percorso e nella cronologia, di tutti i giocatori, resta solo il titolo. Le stanze del percorso non sono più cliccabili per rileggerle. Il testo rimane visibile finché si resta sul giocatore che ha appena mosso; cambiando scheda o ricaricando la pagina sparisce. Va mantenuto in ogni versione futura. (Deciso e applicato il 6/11/2026.)

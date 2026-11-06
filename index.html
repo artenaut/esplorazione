@@ -159,7 +159,7 @@ button,a,label,summary{touch-action:manipulation;-webkit-tap-highlight-color:tra
   .track{gap:4px}
   .slot{padding:6px 5px;min-height:64px;gap:2px}
   .slot .lv{font-size:.62rem;letter-spacing:.06em}
-  .slot .rt{font-size:.74rem;line-height:1.2;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+  .slot .rt{font-size:.74rem;line-height:1.2;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:break-word}
   .room{padding:16px;gap:8px}
   .room h3{font-size:1.45rem}
   .cards{grid-template-columns:1fr;gap:8px}
@@ -174,6 +174,26 @@ button,a,label,summary{touch-action:manipulation;-webkit-tap-highlight-color:tra
   .enter-bar .btn.big{padding:11px 16px;font-size:1rem;flex:none}
 }
 
+
+/* regole */
+.rules-box{max-width:620px;max-height:min(80vh,720px);overflow:hidden;padding:0;gap:0}
+.rules-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line)}
+.rules-head h2{min-width:0}
+.rules-body{overflow-y:auto;padding:4px 20px 20px;overscroll-behavior:contain}
+.rules-body h3{font-size:1.15rem;color:var(--torch);margin:18px 0 6px}
+.rules-body p{margin:8px 0;max-width:65ch}
+.rules-body ul{margin:6px 0;padding-left:1.2em;display:flex;flex-direction:column;gap:5px}
+.rules-body ul ul{margin-top:5px}
+.rules-body strong{color:var(--parch)}
+.rules-body .rules-link{margin-top:14px}
+@media (max-width:640px){
+  .top .actions.three{grid-template-columns:1fr 1fr 1fr}
+  .top .actions .long,.slot .slot-long{display:none}
+  .slot.next .rt{font-size:.68rem;overflow-wrap:normal}
+  #rules.modal{padding:0;align-items:flex-end}
+  .rules-box{max-height:88vh;border-radius:14px 14px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}
+}
+
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 <style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
@@ -181,6 +201,7 @@ button,a,label,summary{touch-action:manipulation;-webkit-tap-highlight-color:tra
 <body>
 
 <div class="wrap" id="app"></div>
+<div class="modal" id="rules" hidden><div class="box rules-box" role="dialog" aria-modal="true" aria-labelledby="r-title"><div class="rules-head"><h2 id="r-title">Regole</h2><button class="btn ghost" id="r-close">Chiudi</button></div><div class="rules-body" id="r-body"></div></div></div>
 <div class="modal" id="modal" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="m-title"><h2 id="m-title"></h2><p id="m-body"></p><div class="mact" id="m-act"></div></div></div>
 
 <script>
@@ -196,6 +217,7 @@ const LOWRENZIA = {
  "id": "lowrenzia",
  "name": "Primo pianeta – Lowrenzia",
  "description": "5 livelli · vie della Forza e della Sapienza",
+ "rules": "## Come si esplora\n- Ogni giocatore esplora per conto suo. Muove un giocatore alla volta, in qualsiasi ordine, e lo stesso giocatore può muovere più volte di fila.\n- Per muovere, tocca la tua scheda in alto, scegli una delle stanze proposte e premi «Entra nella stanza».\n\n## Il percorso\n- **Ingresso:** scegli tra Via della Forza e Via della Sapienza.\n- **Livelli 2, 3 e 4:** ti vengono proposte 3 stanze, in base alla via dell'ultima stanza scelta.\n  - Dopo una stanza della Forza: 2 della Forza e 1 neutrale.\n  - Dopo una stanza della Sapienza: 2 della Sapienza e 1 neutrale.\n  - Dopo una stanza neutrale: 1 della Forza, 1 della Sapienza e 1 neutrale.\n- **Finale (livello 5):** ti viene proposta una sola stanza, della stessa via dell'ultima stanza scelta.\n- Dopo il finale, la mossa successiva ti riporta all'ingresso e inizia un nuovo giro.\n\n## Le stanze\n- Prima di entrare vedi solo il titolo e la via di una stanza.\n- L'effetto si legge **solo nel momento in cui entri**: poi, nel percorso, resta solo il titolo. Se l'hai già incontrata, tocca a te ricordartela.\n\n## Errori\n- «Annulla ultima mossa» riporta indietro l'ultima mossa fatta, dopo una conferma.\n- «Ricomincia» chiude la partita: puoi tenere gli stessi giocatori o sceglierne di nuovi.",
  "levels": [
   {
    "name": "Ingresso",
@@ -785,6 +807,41 @@ function closeModal(){ modal.hidden=true; }
 modal.addEventListener('click', e=>{ if(e.target===modal) closeModal(); });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && !modal.hidden) closeModal(); });
 
+
+/* ---------- regole dell'esplorazione ---------- */
+function rulesHtml(src){
+  const lines=String(src||'').split('\n'); let out='', stack=[];
+  const inline=t=>esc(t).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  const closeTo=d=>{ while(stack.length>d){ out+='</li></ul>'; stack.pop(); } };
+  for(const raw of lines){
+    const m=raw.match(/^(\s*)- (.*)$/);
+    if(m){
+      const d=Math.min(Math.floor(m[1].length/2),3)+1;
+      if(stack.length<d){ while(stack.length<d){ out+='<ul><li>'; stack.push(1); } }
+      else { closeTo(d); out+='</li><li>'; }
+      out+=inline(m[2]); continue;
+    }
+    closeTo(0);
+    const h=raw.match(/^## (.*)$/);
+    if(h) out+=`<h3>${inline(h[1])}</h3>`;
+    else if(raw.trim()) out+=`<p>${inline(raw.trim())}</p>`;
+  }
+  closeTo(0); return out;
+}
+const rulesEl=document.getElementById('rules');
+function openRules(m){
+  if(!m) return;
+  document.getElementById('r-title').textContent='Regole · '+m.name;
+  const body=document.getElementById('r-body');
+  body.innerHTML = m.rules ? rulesHtml(m.rules) : '<p class="hint">Questa esplorazione non ha ancora le regole.</p>';
+  if(m.rulesUrl) body.insertAdjacentHTML('beforeend',`<p class="rules-link"><a class="link" href="${esc(m.rulesUrl)}" target="_blank" rel="noopener">Regolamento completo</a></p>`);
+  body.scrollTop=0; rulesEl.hidden=false; document.getElementById('r-close').focus();
+}
+function closeRules(){ rulesEl.hidden=true; }
+document.getElementById('r-close').onclick=closeRules;
+rulesEl.addEventListener('click', e=>{ if(e.target===rulesEl) closeRules(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && !rulesEl.hidden) closeRules(); });
+
 /* ---------- import moduli ---------- */
 const isPath = p => typeof p==='string' && Object.prototype.hasOwnProperty.call(PATHS,p);
 function validateModule(m){
@@ -792,6 +849,8 @@ function validateModule(m){
   if(typeof m.id!=='string' || !/^[a-z0-9-]{1,40}$/.test(m.id)) return 'L’"id" dell’esplorazione deve contenere solo lettere minuscole, numeri e trattini.';
   if(typeof m.name!=='string' || !m.name.trim()) return 'L’esplorazione deve avere un "name".';
   if(m.description!=null && typeof m.description!=='string') return 'La "description" deve essere un testo.';
+  if(m.rules!=null && typeof m.rules!=='string') return 'Le "rules" devono essere un testo.';
+  if(m.rulesUrl!=null && (typeof m.rulesUrl!=='string' || !/^https:\/\/\S+$/.test(m.rulesUrl))) return 'Il "rulesUrl" deve essere un indirizzo che inizia con https://.';
   if(!Array.isArray(m.levels) || m.levels.length<2) return 'Servono almeno 2 livelli in "levels".';
   const ids=new Set();
   for(const [i,lv] of m.levels.entries()){
@@ -839,7 +898,7 @@ function renderSetup(){
   if(!mod()) S.moduleId=builtins[0].id;
   const nm = S.names;
   app.innerHTML = `
-  <header class="top">${brand('Artenaut* Magic Exploration Companion','Registro dell’esplorazione')}</header>
+  <header class="top">${brand('Artenaut* Magic Exploration Companion','Registro dell’esplorazione')}<div class="actions"><button class="btn" id="rules-btn">Regole</button></div></header>
   <section class="panel">
     <div><h2>Giocatori</h2><p class="hint">Da 2 a 4 avventurieri. Ognuno si muove da solo durante l’esplorazione.</p></div>
     <div class="names">${nm.map((n,i)=>`
@@ -930,7 +989,11 @@ function renderAdmin(){
 }
 "all" mostra tutte le stanze del livello; "random" estrae le stanze
 secondo "offer", in base alla via della stanza scelta prima.
-Ogni "id" di stanza deve essere unico in tutta l’esplorazione.</pre></details>
+Ogni "id" di stanza deve essere unico in tutta l’esplorazione.
+
+Facoltativi: "rules", il testo delle regole (righe con "## " per i
+titoli, "- " per gli elenchi, **testo** per il grassetto), e "rulesUrl",
+un link https a un regolamento completo.</pre></details>
   </section>
   <form class="panel" id="pwform">
     <div><h2>Cambia password</h2><p class="hint">La password vale per questo browser.</p></div>
@@ -970,6 +1033,7 @@ function bindSetup(){
   app.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{ S.names.splice(+b.dataset.rm,1); save(); render(); });
   const add=document.getElementById('add'); if(add) add.onclick=()=>{ S.names.push(''); save(); render(); document.getElementById('name-'+(S.names.length-1)).focus(); };
   app.querySelectorAll('input[name=mod]').forEach(r=>r.onchange=()=>{ S.moduleId=r.value; save(); });
+  document.getElementById('rules-btn').onclick=()=>openRules(mod());
   document.getElementById('start').onclick=()=>{
     const names=S.names.map(n=>n.trim()); const errEl=document.getElementById('start-err');
     let msg='';
@@ -999,7 +1063,7 @@ function renderGame(){
     if(id){ const r=roomInfo(id).room;
       return `<div class="slot done p-${r.path} ${id===viewId?'viewing':''}"><span class="lv">Liv. ${li+1}</span><span class="rt">${esc(r.title)}</span></div>`; }
     const isNext = li===p.nextLevel && !finished;
-    return `<div class="slot ${isNext?'next':'empty'}"><span class="lv">Liv. ${li+1}</span><span class="rt">${isNext?'Prossima mossa':esc(lv.name||'—')}</span></div>`;
+    return `<div class="slot ${isNext?'next':'empty'}"><span class="lv">Liv. ${li+1}</span><span class="rt">${isNext?'Prossima<span class="slot-long"> mossa</span>':esc(lv.name||'—')}</span></div>`;
   }).join('');
 
   const roomHtml = view ? `
@@ -1032,7 +1096,7 @@ function renderGame(){
   app.innerHTML = `
   <header class="top">
     ${brand(m.name,'Registro dell’esplorazione')}
-    <div class="actions"><button class="btn" id="undo" ${S.history.length?'':'disabled'}>Annulla ultima mossa</button><button class="btn danger" id="reset">Ricomincia</button></div>
+    <div class="actions three"><button class="btn" id="rules-btn">Regole</button><button class="btn" id="undo" ${S.history.length?'':'disabled'}>Annulla<span class="long"> ultima mossa</span></button><button class="btn danger" id="reset">Ricomincia</button></div>
   </header>
   <nav class="tabs" role="tablist" aria-label="Giocatori">${tabs}</nav>
   <section class="panel">
@@ -1048,6 +1112,7 @@ function renderGame(){
   document.getElementById('enter').onclick=enterRoom;
   document.getElementById('undo').onclick=askUndo;
   document.getElementById('reset').onclick=askReset;
+  document.getElementById('rules-btn').onclick=()=>openRules(mod());
 }
 
 render();
