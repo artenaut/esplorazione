@@ -24,7 +24,7 @@ Lavori brevi, quasi tutti a carico di Francesco. Vanno fatti **prima di distribu
 |---|---|---|---|
 | 0.1 | Creare l'organizzazione GitHub del club e trasferire il repository | Francesco, poi Claude aggiorna i link | — |
 | 0.2 | Decidere se usare un **dominio del club** (es. `esplorazione.artenaut.it`) e collegarlo a GitHub Pages | Francesco | 0.1 |
-| 0.3 | Ospitare i caratteri nel sito, senza Google Fonts | Claude | — |
+| 0.3 | ✅ Ospitare i caratteri nel sito, senza Google Fonts (fatto il 6/11/2026) | Claude | — |
 | 0.4 | Inserire le **regole del gioco** di Lowrenzia (testo o link) | Francesco fornisce, Claude inserisce | — |
 
 **Risultato:** l'app attuale ha un indirizzo definitivo, regole complete e nessuna dipendenza da Google.

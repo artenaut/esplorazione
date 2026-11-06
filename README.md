@@ -15,3 +15,7 @@ Online su https://meatsculptor.github.io/esplorazione/
 - [Server e sessioni condivise](docs/roadmap-server.md)
 - [Classifica](docs/roadmap-classifica.md)
 - [Informativa privacy](docs/informativa-privacy.md)
+
+## Crediti
+
+Caratteri IM Fell English SC e Alegreya Sans, distribuiti con licenza SIL Open Font License: vedi la cartella `fonts/`.
