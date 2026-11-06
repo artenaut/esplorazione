@@ -67,7 +67,7 @@ Il blocco più grosso. Si sviluppa e si prova a pezzi.
 
 | # | Attività | Riferimento |
 |---|---|---|
-| 3.1 | **Worker + Durable Object** per partita, con WebSocket Hibernation API. *Codice in `server/` con 8 prove automatiche (6/11/2026); manca il collegamento di Workers Builds.* | `roadmap-server.md` §1 |
+| 3.1 | ✅ **Worker + Durable Object** per partita, con WebSocket Hibernation API. Fatto il 6/11/2026: codice in `server/`, 8 prove automatiche, pubblicato da Workers Builds e verificato in produzione con due dispositivi. | `roadmap-server.md` §1 |
 | 3.2 | **Esplorazioni sul server:** i testi delle stanze escono dall'app e stanno solo lì. L'area admin le carica tramite Access. | `roadmap-server.md` §3 |
 | 3.3 | **Creazione della partita:** codice corto, QR code, codice master. | `roadmap-server.md` §2 |
 | 3.4 | **Posti e dispositivi:** gettone del posto, rientro automatico, liberare un posto, posti senza dispositivo. | `roadmap-server.md` §2 |

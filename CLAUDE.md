@@ -9,7 +9,7 @@ Committente e unico amministratore: **Francesco**, per il club **Artenaut\***. S
 |---|---|
 | App pubblicata | https://artenaut.github.io/esplorazione/ (GitHub Pages, branch `main`, cartella principale) |
 | Repository | `artenaut/esplorazione` (organizzazione GitHub del club) |
-| Server (fase 3, ancora da creare) | `esplorazione.artenaut.workers.dev` · account Cloudflare del club · Zero Trust team `artenaut` |
+| Server (fase 3) | https://esplorazione.artenaut.workers.dev · codice in `server/` · pubblicato da Workers Builds a ogni push su `main` · account Cloudflare del club · Zero Trust team `artenaut` |
 | Anteprima in claude.ai | https://claude.ai/artifact/WPk2xdyAkrgY2yM4sbjtg3 (va ripubblicata con lo stesso URL dopo ogni modifica dell'app) |
 | **Piano di lavoro a fasi** | `docs/piano.md` ← **partire sempre da qui** |
 | Decisioni dettagliate | `docs/roadmap-app.md`, `docs/roadmap-server.md`, `docs/roadmap-classifica.md` |
