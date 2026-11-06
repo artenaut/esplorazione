@@ -1,10 +1,12 @@
 // Worker «esplorazione»: punto d'ingresso del server.
 // Instrada le richieste: API pubblica, WebSocket delle partite (verso il Durable Object «Partita»)
-// e, dal passo 3.2, l'area /admin protetta da Cloudflare Access.
+// e l'area /admin protetta da Cloudflare Access.
 
 export { Partita } from "./partita.js";
+import { elencoPubblico } from "./esplorazioni.js";
+import { gestisciAdmin } from "./admin.js";
 
-export const VERSIONE = "3.1";
+export const VERSIONE = "3.2";
 
 // Codice corto della partita, es. LWR-482 (il formato definitivo arriva con il passo 3.3).
 const CODICE = /^[A-Z]{3}-\d{3}$/;
@@ -30,6 +32,17 @@ export default {
 
       if (url.pathname === "/api/stato" && request.method === "GET") {
         return json({ ok: true, versione: VERSIONE }, 200, cors);
+      }
+
+      // Area admin, protetta da Cloudflare Access (e verificata anche qui).
+      if (url.pathname === "/admin" || url.pathname.startsWith("/admin/")) {
+        return gestisciAdmin(request, env, url);
+      }
+
+      // Elenco pubblico dei pianeti, senza le stanze.
+      if (url.pathname === "/api/esplorazioni" && request.method === "GET") {
+        const elenco = await elencoPubblico(env.DB);
+        return json(elenco, 200, { ...(cors ?? {}), "Cache-Control": "public, max-age=60" });
       }
 
       // WebSocket di una partita: /api/partite/:codice/ws

@@ -16,9 +16,17 @@
   },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Partita"] }],
 
-  // Origini da cui l'app può chiamare il server.
+  // Dati permanenti (esplorazioni; più avanti nickname, partite concluse, stagioni).
+  // Senza database_id: wrangler crea il database alla prima pubblicazione e lo collega da solo.
+  "d1_databases": [{ "binding": "DB", "database_name": "esplorazione" }],
+
   "vars": {
-    "ORIGINI_CONSENTITE": "https://artenaut.github.io"
+    // Origini da cui l'app può chiamare il server.
+    "ORIGINI_CONSENTITE": "https://artenaut.github.io",
+    // Cloudflare Access per l'area /admin: dominio del team e «Application Audience (AUD) Tag»
+    // dell'applicazione Access. Finché l'AUD è vuoto, l'area admin risponde «non configurata».
+    "ACCESS_TEAM": "artenaut.cloudflareaccess.com",
+    "ACCESS_AUD": ""
   },
 
   // Registri nel pannello Cloudflare: solo i messaggi scritti dal codice (errori),

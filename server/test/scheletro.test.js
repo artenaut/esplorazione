@@ -2,6 +2,7 @@
 // con l'ibernazione e i dati in SQLite sopravvivono allo scaricamento dell'oggetto.
 import { env, exports } from "cloudflare:workers";
 import { evictDurableObject, runInDurableObject } from "cloudflare:test";
+import { VERSIONE } from "../src/index.js";
 import { describe, it, expect } from "vitest";
 
 const BASE = "https://esplorazione.artenaut.workers.dev";
@@ -32,7 +33,7 @@ describe("Worker", () => {
 
   it("/api/stato risponde con CORS solo per l'app", async () => {
     const ok = await chiama("/api/stato", { headers: { Origin: "https://artenaut.github.io" } });
-    expect(await ok.json()).toEqual({ ok: true, versione: "3.1" });
+    expect(await ok.json()).toEqual({ ok: true, versione: VERSIONE });
     expect(ok.headers.get("Access-Control-Allow-Origin")).toBe("https://artenaut.github.io");
 
     const altro = await chiama("/api/stato", { headers: { Origin: "https://esempio.it" } });
