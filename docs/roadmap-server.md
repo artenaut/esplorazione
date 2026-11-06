@@ -24,24 +24,50 @@ I limiti dei piani sono quelli rilevati a novembre 2026: vanno ricontrollati al 
 - **Obbligatorio usare la WebSocket Hibernation API.** Senza, una partita di 3 ore consuma circa 1.350 GB-s (limite gratuito 13.000 GB-s al giorno). Con l'API, il consumo è praticamente zero.
 - Se un limite viene superato, le operazioni falliscono fino alla mezzanotte UTC: niente costi a sorpresa.
 
-## 2. Sessioni su più dispositivi [deciso come obiettivo]
+## 2. Sessioni su più dispositivi [deciso il 6/11/2026]
 
 - Chi organizza crea la partita, sceglie l'esplorazione e ottiene un **codice corto e un QR code**.
-- Ogni giocatore entra dal proprio telefono e sceglie il proprio nome.
-- Un tablet al centro del tavolo può fare da **tabellone** con il percorso di tutti.
+- Ogni giocatore entra dal proprio telefono e sceglie il proprio posto.
 - Le mosse compaiono subito su tutti i dispositivi.
 - **Riconnessione:** chi perde la connessione o manda il telefono in standby rientra con il codice e ritrova tutto com'era.
-- I turni non hanno un ordine fisso e lo stesso giocatore può muovere più volte di fila. Serve però evitare che due mosse si sovrappongano nello stesso istante: il Durable Object le esegue una alla volta.
+
+### Ruoli
+- **Master:** il dispositivo di chi crea la sessione. **Di default fa anche da tabellone:** vede il percorso di tutti i giocatori, come l'app attuale. Può:
+  - muovere per qualsiasi giocatore;
+  - annullare;
+  - ricominciare e chiudere la sessione;
+  - aggiungere o togliere giocatori;
+  - liberare un posto.
+
+  Alla creazione riceve un **codice master**: se il suo dispositivo si spegne, un altro dispositivo può prenderne il ruolo.
+- **Giocatore:** un dispositivo legato a un solo posto. Muove solo il proprio personaggio e annulla solo la propria mossa, con le regole sotto.
+- **Tabellone separato: opzionale, non previsto di default.** È un dispositivo aggiuntivo in sola lettura, per esempio un tablet al centro del tavolo, che si collega solo se qualcuno lo vuole.
+
+### Posti e dispositivi
+- Entrando con il codice, il dispositivo sceglie un posto libero. Il posto resta suo, e il dispositivo se lo ricorda: riaprendo l'app rientra da solo.
+- Un posto occupato non può essere preso da un altro dispositivo. Per cambiare telefono, il master **libera** il posto.
+- Un giocatore senza telefono è un posto "senza dispositivo": muove il master per lui.
+- Quando il master muove per qualcun altro, l'app lo dice chiaramente: «Stai muovendo per Giulia».
+
+### Turni e mosse contemporanee
+- Nessun ordine fisso né blocco dei turni. Lo stesso giocatore può muovere più volte di fila, e giocatori diversi possono muovere nello stesso istante. Il Durable Object esegue le mosse una alla volta.
+- **Conflitto sullo stesso personaggio** (giocatore e master insieme): ogni mossa porta la versione dello stato da cui parte. Se lo stato è cambiato nel frattempo, la mossa viene rifiutata con il messaggio «Giulia ha già mosso, ecco la situazione aggiornata».
+
+### Annulla mossa
+- Si può annullare **solo l'ultima mossa della sessione**, perché annullarne una più vecchia renderebbe incoerenti i contatori della regola «meno mostrate».
+- Può annullarla chi l'ha fatta, oppure il master.
+- Se nel frattempo ha mosso qualcun altro, il pulsante è disattivato e spiega il motivo.
+- L'annullamento ripristina anche i contatori.
+
+### Visibilità: si sceglie la soluzione più economica
+Al tavolo i giocatori leggono comunque ad alta voce le stanze proposte, quindi la privacy è indifferente. Il criterio è quello di scrivere meno codice e fare meno chiamate:
+- **Stato della partita uguale per tutti:** dopo ogni mossa il server invia lo stesso aggiornamento a tutti i dispositivi collegati, senza filtri per dispositivo né richieste separate. Tutti vedono le proposte, le stanze in cui si entra e la cronologia.
+- Restano private solo le stanze **non ancora proposte**: il loro testo sta sul server e viene inviato solo quando qualcuno entra nella stanza. Questo non costa chiamate in più, perché il testo viaggia nello stesso aggiornamento della mossa.
+- Le selezioni prima di confermare restano solo sul dispositivo e non vengono inviate al server.
 
 ### Logica lato server
-- **Estrazioni sul server,** con la regola «meno mostrate» (vedi `roadmap-app.md`, punto 1). I contatori sono nello stato della partita e vengono aggiornati in modo atomico.
-- **Stanze nascoste davvero:** i testi stanno solo sul server e il contenuto di una stanza viene inviato solo quando un giocatore ci entra. Così si risolve anche il problema dei testi leggibili nel codice sorgente.
-- Annulla mossa e ricomincia funzionano come nell'app, contatori compresi.
-
-### Da decidere
-- **Chi può muovere chi:** solo il proprio personaggio, oppure anche il tabellone per conto di tutti?
-- **Chi può annullare:** solo il giocatore interessato, oppure un «master» della partita?
-- **Visibilità:** gli altri vedono l'effetto della stanza in cui sei entrato, o solo il titolo? Le stanze che ti vengono proposte sono visibili solo a te?
+- **Estrazioni sul server,** con la regola «meno mostrate» (vedi `roadmap-app.md`, punto 1). I contatori sono nello stato della partita.
+- **Ricomincia** azzera i contatori.
 
 ## 3. Classifica del club [da decidere]
 
