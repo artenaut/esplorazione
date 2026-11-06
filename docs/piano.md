@@ -37,7 +37,7 @@ Tutto quello che migliora il gioco senza server. È la versione stabile da usare
 
 | # | Attività | Riferimento |
 |---|---|---|
-| 1.1 | **Estrazione «meno mostrate»:** conteggio nella sessione, spareggio per giocatore, poi caso. Contatori ripristinati da Annulla e azzerati da Ricomincia. | `roadmap-app.md` §1 |
+| 1.1 | ✅ **Estrazione «meno mostrate»** (fatta il 6/11/2026): conteggio nella sessione, spareggio per giocatore, poi caso. Contatori ripristinati da Annulla e azzerati da Ricomincia. | `roadmap-app.md` §1 |
 | 1.2 | **Formato dell'esplorazione v2:** vie definite nel file, mappa dei livelli anche non simmetrica, livello successivo in base alla scelta, ripiego se un pool non basta, regola di estrazione come proprietà dell'esplorazione. | `roadmap-app.md` §2 |
 | 1.3 | **Convertire Lowrenzia** al formato v2, senza cambiare come si gioca. | `roadmap-app.md` §2 |
 | 1.4 | **Validazione al caricamento** nell'area admin: ogni percorso arriva al finale, pool sufficienti, id unici. | `roadmap-app.md` §2 |

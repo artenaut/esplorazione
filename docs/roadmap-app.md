@@ -31,7 +31,9 @@ Legenda: **[deciso]** concordato, da sviluppare · **[da decidere]** idea discus
   - **Attenzione:** l'indirizzo del sito cambia (es. da `meatsculptor.github.io/esplorazione` a `artenaut.github.io/esplorazione`) e GitHub **non reindirizza** il vecchio indirizzo di Pages. Per il browser è un sito nuovo, quindi si perdono partita in corso, esplorazioni caricate a mano e password admin cambiata (torna `dungeon`).
   - Dominio del club: **no per ora** (deciso il 6/11/2026). Resta possibile in futuro: un **dominio del club** (es. `esplorazione.artenaut.it`) collegato a Pages renderebbe l'indirizzo stabile per sempre, anche cambiando repository o hosting.
 
-## 1. Estrazione «meno mostrate» [deciso] · priorità alta
+## 1. Estrazione «meno mostrate» ✅ fatta il 6/11/2026
+
+Implementata nell'app attuale (funzioni `pickRooms` e `genOffer`). Contatori in `S.shown` (sessione) e `seen` di ogni esplorator\*. Verificata con prove automatiche: in 3 giri sulla via della Forza escono tutte e 6 le stanze della Forza del livello 2; Annulla ripristina i contatori; Ricomincia li azzera; lo spareggio esclude le stanze già viste da chi muove.
 
 Si può fare già nella versione attuale con un solo dispositivo. I contatori vivono nella partita salvata nel browser.
 

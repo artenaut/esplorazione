@@ -224,6 +224,7 @@ const LOWRENZIA = {
  "id": "lowrenzia",
  "name": "Primo pianeta – Lowrenzia",
  "description": "5 livelli · vie della Forza e della Sapienza",
+ "estrazione": "meno-mostrate",
  "rules": "## Leader dell'esplorazione\n- Per procedere nell'esplorazione del pianeta bisogna avere il ruolo di **Leader dell'esplorazione**.\n- All'inizio della partita il ruolo non è assegnato. Chi infligge per primo danno da combattimento a un* avversari* diventa Leader dell'esplorazione.\n- Da quel momento, chiunque infligga danno da combattimento a chi è Leader dell'esplorazione ne prende il ruolo.\n- In una partita c'è un solo Leader dell'esplorazione alla volta. Se più persone reclamano il ruolo nello stesso momento, chi attualmente è Leader dell'esplorazione quando viene assegnato il danno sceglie a chi andrà il ruolo.\n\n## Avanzare nel pianeta\n- Ogni volta che ottieni il ruolo di Leader dell'esplorazione, puoi avanzare di 1 passo nel pianeta.\n- Durante la partita tutte le creature comandante ottengono «{T}: procedi nell'esplorazione del pianeta». Puoi attivare questa abilità anche se la creatura ha debolezza da evocazione, ma solo se in questo turno hai inflitto danno da combattimento a un* avversari*.\n- Durante la partita tutti i planeswalker comandante ottengono «0: procedi nell'esplorazione del pianeta». Puoi attivare questa abilità solo se in questo turno hai inflitto danno da combattimento a un* avversari*.",
  "rulesImage": "img/esploratore.png",
  "levels": [
@@ -737,22 +738,40 @@ const badge = p => `<span class="badge p-${esc(p)}">${esc(PATHS[p]?.short||p)}</
 function levelLabel(li){ const m=mod(); const lv=m.levels[li]; const base=`Livello ${li+1}`; return lv.name && lv.name!==base ? `${base} · ${lv.name}` : base; }
 
 /* ---------- regole ---------- */
-function genOffer(li, prevPath){
+/* Estrazione delle stanze proposte.
+   "meno-mostrate": prima le stanze mostrate meno volte nella sessione (a chiunque),
+   a parità quelle che questa persona non ha ancora visto, poi a caso.
+   "casuale": estrazione semplice. Le stanze contano come mostrate appena compaiono tra le proposte. */
+function pickRooms(pool, n, player){
+  const m = mod();
+  if((m.estrazione||'casuale')!=='meno-mostrate') return sample(pool, n);
+  const shown = S.shown || {}, seen = (player && player.seen) || {};
+  return pool
+    .map(r=>({ r, k1: shown[r.id]||0, k2: seen[r.id]?1:0, k3: Math.random() }))
+    .sort((a,b)=> a.k1-b.k1 || a.k2-b.k2 || a.k3-b.k3)
+    .slice(0, n).map(x=>x.r);
+}
+function genOffer(li, prevPath, player){
   const lv = mod().levels[li];
   if(lv.kind==='all') return lv.rooms.map(r=>r.id);
   const rule = (lv.offer && lv.offer[prevPath]) || {forza:1,sapienza:1,neutrale:1};
   let out=[];
-  for(const [p,n] of Object.entries(rule)) out = out.concat(sample(lv.rooms.filter(r=>r.path===p), n).map(r=>r.id));
+  for(const [p,n] of Object.entries(rule)) out = out.concat(pickRooms(lv.rooms.filter(r=>r.path===p), n, player).map(r=>r.id));
+  // conta come «mostrate» solo le stanze estratte (non quelle fisse dell'ingresso)
+  S.shown = S.shown || {};
+  if(player) player.seen = player.seen || {};
+  for(const id of out){ S.shown[id]=(S.shown[id]||0)+1; if(player) player.seen[id]=1; }
   return shuffle(out);
 }
-function newPlayer(name){ return { name, run:1, trail:[], nextLevel:0, offer:genOffer(0,null), moves:0 }; }
+function newPlayer(name){ return { name, run:1, trail:[], nextLevel:0, offer:genOffer(0,null,null), moves:0, seen:{} }; }
 
 function startGame(names){
+  S.shown = {}; // nuova sessione: contatori azzerati
   S.players = names.map(newPlayer); S.active=0; S.log=[]; S.history=[]; S.phase='game';
   UI = { selected:null, view:null, justMoved:false, err:'' };
   save(); render();
 }
-function snapshot(){ S.history.push(JSON.stringify({players:S.players, active:S.active, log:S.log})); if(S.history.length>80) S.history.shift(); }
+function snapshot(){ S.history.push(JSON.stringify({players:S.players, active:S.active, log:S.log, shown:S.shown||{}})); if(S.history.length>80) S.history.shift(); }
 
 function enterRoom(){
   const p = S.players[S.active], id = UI.selected;
@@ -764,7 +783,7 @@ function enterRoom(){
   const info = roomInfo(id);
   const next = (li+1) % mod().levels.length;
   p.nextLevel = next;
-  p.offer = genOffer(next, info.room.path);
+  p.offer = genOffer(next, info.room.path, p);
   S.log.unshift({ player:p.name, room:info.room.title, path:info.room.path, level:li+1, run:p.run });
   UI.selected=null; UI.view=id; UI.justMoved=true;
   save(); render();
@@ -788,7 +807,7 @@ function askUndo(){
   ask({ title:'Annullare l’ultima mossa?',
     body: last ? `${last.player} tornerà indietro da «${last.room}».` : 'Lo stato tornerà a prima dell’ultima mossa.',
     actions:[ {label:'Non annullare', cls:'ghost'}, {label:'Annulla mossa', cls:'primary', fn:()=>{
-      const prev = JSON.parse(S.history.pop()); S.players=prev.players; S.active=prev.active; S.log=prev.log;
+      const prev = JSON.parse(S.history.pop()); S.players=prev.players; S.active=prev.active; S.log=prev.log; S.shown=prev.shown||{};
       UI.selected=null; UI.view=null; UI.justMoved=false; save(); render();
     }} ]});
 }
@@ -858,6 +877,7 @@ function validateModule(m){
   if(typeof m.name!=='string' || !m.name.trim()) return 'L’esplorazione deve avere un "name".';
   if(m.description!=null && typeof m.description!=='string') return 'La "description" deve essere un testo.';
   if(m.rules!=null && typeof m.rules!=='string') return 'Le "rules" devono essere un testo.';
+  if(m.estrazione!=null && !['casuale','meno-mostrate'].includes(m.estrazione)) return 'L’"estrazione" deve essere "casuale" oppure "meno-mostrate".';
   if(m.rulesImage!=null && (typeof m.rulesImage!=='string' || !/^(img\/[a-z0-9._-]+\.(png|webp|jpg)|https:\/\/\S+)$/.test(m.rulesImage))) return 'La "rulesImage" deve essere un file in img/ o un indirizzo https://.';
   if(m.rulesUrl!=null && (typeof m.rulesUrl!=='string' || !/^https:\/\/\S+$/.test(m.rulesUrl))) return 'Il "rulesUrl" deve essere un indirizzo che inizia con https://.';
   if(!Array.isArray(m.levels) || m.levels.length<2) return 'Servono almeno 2 livelli in "levels".';
@@ -999,6 +1019,9 @@ function renderAdmin(){
 "all" mostra tutte le stanze del livello; "random" estrae le stanze
 secondo "offer", in base alla via della stanza scelta prima.
 Ogni "id" di stanza deve essere unico in tutta l’esplorazione.
+
+Facoltativo: "estrazione", "meno-mostrate" (prima le stanze viste meno
+volte nella partita) oppure "casuale" (predefinito).
 
 Facoltativi: "rules", il testo delle regole (righe con "## " per i
 titoli, "- " per gli elenchi, **testo** per il grassetto), e "rulesUrl",
