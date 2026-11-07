@@ -119,6 +119,8 @@ Il blocco più grosso. Si sviluppa e si prova a pezzi.
 - **Statistiche per l'autore** dalle partite reali (`roadmap-server.md` §5).
 - **App installabile (PWA)** con l'icona di Artenaut\* (`roadmap-app.md` §5).
 - **Nuovi pianeti,** scritti nel formato v2 e bilanciati con il simulatore.
+- **Guida per il master della partita** (aggiunta il 7/11/2026): una pagina breve, leggibile anche dal telefono, per chi crea e conduce una partita. Contenuti: creare la partita e far entrare gli altri (QR o codice), scegliere nickname o guest per chi non ha il telefono, muovere per qualcun\*, annullare l'ultima mossa, liberare un posto se qualcun\* cambia telefono, aggiungere o togliere esplorator\*, «Chiudi partita» contro «Annulla partita», stesso gruppo, cosa fare con «Troppi tentativi» (aspettare un minuto, rete mobile invece del Wi-Fi), riprendere il ruolo di master con il codice master.
+- **Guida per un futuro nuovo admin** (aggiunta il 7/11/2026): come ottenere l'accesso (email in Access **e** nel segreto `ADMIN_EMAILS`), cosa si fa nell'area admin (pianeti, simulatore, nickname, stagioni, correzioni, QR), dove si guardano i consumi su Cloudflare, come si ripristina una versione precedente del server (Deployments) e del sito (annullare il commit), cosa fare se il server non risponde, quali account servono (GitHub, Cloudflare, Gmail del club) con l'autenticazione a due fattori. Per ora l'unico admin è Francesco, che porta le serate: la guida serve quando entrerà qualcun altr\*.
 
 ---
 
