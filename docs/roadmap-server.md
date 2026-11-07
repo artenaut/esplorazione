@@ -164,6 +164,8 @@ Non cambiato, per scelta: codice della partita a 3 cifre.
 - `GET /api/classifica` e l'elenco dei nickname leggono D1 a ogni richiesta (possibile consumo delle letture gratuite). Rimedio futuro: cache in memoria di un minuto.
 - Manca `X-Content-Type-Options: nosniff` sulle risposte dell'API pubblica.
 - Raccomandato a Francesco: autenticazione a due fattori su GitHub (obbligatoria per l'organizzazione), Cloudflare e Gmail del club.
+- Al club i telefoni condividono il Wi-Fi, quindi un solo indirizzo: con 4 o più tavoli che iniziano nello stesso minuto si può superare il limite di 30 ingressi al minuto. Lasciato così (7/11/2026): se succede, si aspetta un minuto, si muove dal telefono del master oppure chi gioca usa la rete mobile invece del Wi-Fi.
+- Stima dei consumi (7/11/2026): una serata con 4 tavoli usa meno del 5% dei limiti gratuiti giornalieri (al massimo circa il 40% del tempo attivo dei Durable Object, nel caso peggiore).
 
 ## 4. Classifica del club [deciso il 6/11/2026]
 
