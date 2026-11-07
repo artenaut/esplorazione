@@ -128,6 +128,24 @@ Da fare **prima di ogni altra modifica** all'app o al server. Fino ad allora non
 | V.6 | **Controllo di compatibilità** tra app e server: un telefono con l'app vecchia aperta riceve «È uscita una nuova versione: ricarica la pagina». | Sito e server si pubblicano a minuti di distanza. |
 | V.7 | **Ritorno a una versione precedente** documentato (Cloudflare → Deployments; sito: annullare i commit fino all'etichetta), anche nella guida per l'admin. | — |
 
+## Backup dei dati · ⚠️ priorità alta (aggiunto il 7/11/2026)
+
+Dopo «Versioni e rilasci», prima delle nuove funzioni. Obiettivo: evitare perdite involontarie (errori dall'area admin, bug, modifiche al database) e, per quanto possibile, malevole (accesso all'area admin, all'account Cloudflare o al repository). **Attenzione:** i testi dei pianeti ora esistono solo sul server, quindi una perdita del database li cancellerebbe.
+
+Già presente: **Time Travel di D1**, automatico, 7 giorni nel piano gratuito (ripristino che sovrascrive il database). Non protegge se l'account Cloudflare è compromesso.
+
+| # | Cosa | Note |
+|---|---|---|
+| B.1 | **Copia automatica periodica** del database (per esempio ogni notte) in uno spazio di archiviazione dello stesso account Cloudflare, conservando le ultime 4–5 settimane. | Contro bug ed errori oltre i 7 giorni di Time Travel. |
+| B.2 | **Copia fuori da Cloudflare:** pulsante «Scarica backup» nell'area admin, da usare con regolarità e **sempre prima di chiudere una stagione**; il file si conserva per esempio nel Drive del club. | Unica protezione se l'account Cloudflare viene compromesso. |
+| B.3 | **File dei pianeti** inclusi nel backup. | — |
+| B.4 | **Registro delle azioni dell'admin** (cosa è stato eliminato o modificato, quando). | Per accorgersi di azioni malevole e sapere fino a quando tornare indietro. |
+| B.5 | **Prova di ripristino** periodica, descritta nella guida per l'admin. | — |
+| B.6 | **Privacy dei backup:** mai nel repository (è pubblico); durata limitata, così che un nickname cancellato su richiesta sparisca anche dai backup entro qualche settimana; poche copie scaricate a mano e ordinate; una frase nell'informativa su esistenza e durata dei backup, da far verificare con il 4.5. | — |
+| B.7 | **Sicurezza degli account** come prima difesa contro le perdite malevole: autenticazione a due fattori su GitHub (obbligatoria per l'organizzazione), Cloudflare e Gmail del club; pochi permessi di scrittura sul repository. | Da fare: Francesco. |
+
+Dettagli tecnici (dove salvare, frequenza, durata) da decidere con Francesco prima di svilupparli.
+
 ---
 
 ## Fase 6 · Extra (facoltativi)
