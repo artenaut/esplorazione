@@ -114,6 +114,22 @@ Il blocco più grosso. Si sviluppa e si prova a pezzi.
 
 ---
 
+## Versioni e rilasci · ⚠️ priorità alta (aggiunto il 7/11/2026)
+
+Da fare **prima di ogni altra modifica** all'app o al server. Fino ad allora non si cambia nulla.
+
+| # | Cosa | Note |
+|---|---|---|
+| V.1 | **Prima versione: 0.1.0.** È lo stato provato al tavolo il 6/11/2026: un prototipo con diverse sistemazioni ancora da fare (scelta di Francesco: non 1.0.0). | Numerazione `MAGGIORE.MINORE.CORREZIONE`: correzione = sistemazione senza cambiare il funzionamento; minore = nuova funzione; maggiore = cambiamento non compatibile (protocollo app ↔ server, formato dei pianeti). Un solo numero per app e server. |
+| V.2 | **Note di rilascio della 0.1.0,** dettagliate e per chi gioca e organizza: tutte le funzionalità inserite (partite a sessioni, QR e codice, posti e rientro, master e tabellone, mosse e annulla, chiudi o annulla partita, stesso gruppo, nickname e guest, informativa, classifica e stagioni, area admin, simulatore). | Testo da concordare con Francesco prima di scriverlo. |
+| V.3 | **Changelog tecnico** (`CHANGELOG.md`), più dettagliato: architettura (Worker, Durable Object, D1, Access), protocollo, limiti e sicurezza, prove automatiche, decisioni e rischi accettati. | Da concordare con Francesco. |
+| V.4 | **Etichetta `v0.1.0` su GitHub** con la pagina «Release» (note di rilascio). | Punto fermo a cui tornare. |
+| V.5 | **Versione visibile** nell'app (pagina iniziale) e nell'area admin; `/api/stato` restituisce la stessa versione. | Oggi il server dice «5.1» (numero delle fasi): va sostituito. |
+| V.6 | **Controllo di compatibilità** tra app e server: un telefono con l'app vecchia aperta riceve «È uscita una nuova versione: ricarica la pagina». | Sito e server si pubblicano a minuti di distanza. |
+| V.7 | **Ritorno a una versione precedente** documentato (Cloudflare → Deployments; sito: annullare i commit fino all'etichetta), anche nella guida per l'admin. | — |
+
+---
+
 ## Fase 6 · Extra (facoltativi)
 
 - **Statistiche per l'autore** dalle partite reali (`roadmap-server.md` §5).
