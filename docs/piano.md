@@ -130,7 +130,7 @@ Da fare **prima di ogni altra modifica** all'app o al server. Fino ad allora non
 
 ## Backup dei dati · ⚠️ priorità alta (aggiunto il 7/11/2026)
 
-Dopo «Versioni e rilasci», prima delle nuove funzioni. Obiettivo: evitare perdite involontarie (errori dall'area admin, bug, modifiche al database) e, per quanto possibile, malevole (accesso all'area admin, all'account Cloudflare o al repository). **Attenzione:** i testi dei pianeti ora esistono solo sul server, quindi una perdita del database li cancellerebbe.
+**Ordine: si fa dopo «Versioni e rilasci»** (che ha la precedenza), prima delle nuove funzioni. Obiettivo: evitare perdite involontarie (errori dall'area admin, bug, modifiche al database) e, per quanto possibile, malevole (accesso all'area admin, all'account Cloudflare o al repository). **Attenzione:** i testi dei pianeti ora esistono solo sul server, quindi una perdita del database li cancellerebbe.
 
 Già presente: **Time Travel di D1**, automatico, 7 giorni nel piano gratuito (ripristino che sovrascrive il database). Non protegge se l'account Cloudflare è compromesso.
 
@@ -143,6 +143,8 @@ Già presente: **Time Travel di D1**, automatico, 7 giorni nel piano gratuito (r
 | B.5 | **Prova di ripristino** periodica, descritta nella guida per l'admin. | — |
 | B.6 | **Privacy dei backup:** mai nel repository (è pubblico); durata limitata, così che un nickname cancellato su richiesta sparisca anche dai backup entro qualche settimana; poche copie scaricate a mano e ordinate; una frase nell'informativa su esistenza e durata dei backup, da far verificare con il 4.5. | — |
 | B.7 | **Sicurezza degli account** come prima difesa contro le perdite malevole: autenticazione a due fattori su GitHub (obbligatoria per l'organizzazione), Cloudflare e Gmail del club; pochi permessi di scrittura sul repository. | Da fare: Francesco. |
+
+| B.8 | **Azzeramento dei dati personali con l'uscita del backup** (deciso da Francesco il 7/11/2026): si cancellano tutti i nickname e le prove del consenso; dalla classifica restano solo dati senza nomi, come statistiche di utilizzo. Con il nuovo inizio tutti accettano di nuovo l'informativa aggiornata (con i backup), creando di nuovo il nickname. | Forma delle statistiche da decidere: consigliati **solo totali aggregati per pianeta e per stagione** (partite, stanze per via, esplorazioni portate a termine) invece di righe per persona con un nome coperto, perché in un club piccolo una riga per persona resta riconoscibile e quindi è ancora un dato personale. Avvisare chi gioca prima dell'azzeramento. Le copie di Time Travel con i vecchi dati scadono da sole dopo 7 giorni. |
 
 Dettagli tecnici (dove salvare, frequenza, durata) da decidere con Francesco prima di svilupparli.
 
