@@ -42,7 +42,7 @@ Tutto quello che migliora il gioco senza server. È la versione stabile da usare
 | 1.3 | ✅ **Convertire Lowrenzia** al formato v2, senza cambiare come si gioca. | `roadmap-app.md` §2 |
 | 1.4 | ✅ **Validazione al caricamento** nell'area admin: ogni percorso arriva al finale, pool sufficienti, id unici. | `roadmap-app.md` §2 |
 | 1.5 | ✅ **Simulatore** «Simula 1.000 partite» nell'area admin. | `roadmap-app.md` §3 |
-| 1.6 | Prova al tavolo e correzioni. **Unita alla 3.11** (deciso il 6/11/2026): non c'è tempo per una prova separata, si prova tutto insieme nella sessione di test dedicata. | — |
+| 1.6 | ✅ Prova al tavolo e correzioni: fatta insieme alla 3.11 il 6/11/2026, nessun problema. | — |
 
 **Risultato:** si possono scrivere e bilanciare nuovi pianeti con logiche diverse, e le stanze ruotano bene.
 
@@ -79,7 +79,7 @@ Il blocco più grosso. Si sviluppa e si prova a pezzi.
 | 3.9 | ✅ **Scadenza automatica** (6/11/2026) con gli allarmi del Durable Object: 6 ore senza attività, 24 ore al massimo; contano solo le azioni vere. | `protocollo-partita.md` §5 |
 | 3.10 | ✅ **Sicurezza** (6/11/2026): il server valida ogni mossa e ogni ruolo (passi 3.4–3.8); limiti per indirizzo con un Durable Object «Limitatore» (il limitatore integrato di Cloudflare non bloccava in produzione): 30 tentativi di ingresso e 10 creazioni al minuto, conteggi solo in memoria, nulla salvato; verificato in produzione; controllo del codice `GET /api/partite/:codice`; informativa aggiornata (da far verificare con il 4.5). | `roadmap-server.md` §3 |
 | 3.10b | ✅ **Nuova interfaccia a sessioni** (6/11/2026), pubblicata subito al posto dell'app su un solo dispositivo (scelta di Francesco): crea partita con codice, QR e codice master; ingresso dal QR o con il codice; scelta del posto e rientro automatico; tabellone; «Stai muovendo per…»; annulla con spiegazione quando non si può; gestione dei posti; chiudi o annulla partita con stesso gruppo; riconnessione automatica. Lowrenzia e la vecchia area admin sono usciti da `index.html`; il **simulatore** è nell'area admin del server. | `protocollo-partita.md` |
-| 3.11 | Prova al tavolo con più telefoni e correzioni, **insieme alla prova della fase 1 (1.6)**, nella sessione di test dedicata. | — |
+| 3.11 | ✅ **Prova al tavolo** (6/11/2026, insieme alla 1.6): più tavoli in contemporanea, ciascuno con più dispositivi; ingresso sia dal QR sia con il codice; classifica generata correttamente. Nessun problema segnalato. | — |
 
 **Risultato:** ognuno gioca dal proprio telefono, le stanze restano davvero nascoste. In questa fase «Chiudi partita» chiude e basta: i dati per la classifica arrivano nella fase 5.
 
