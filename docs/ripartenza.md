@@ -47,7 +47,7 @@ Da leggere insieme a `CLAUDE.md` (regole permanenti) e `docs/piano.md` (il piano
 ## 3. Prossimi passi, in ordine
 
 ### 1. Versioni e rilasci (`piano.md`, punti V.1–V.8)
-- **Aggiornamento del 13/11/2026:** revisione di sicurezza dei rilasci fatta e decisioni prese (`piano.md`, «Decisioni del 13/11/2026» e V.8; `roadmap-server.md` §3, «Revisione dei rilasci»). Data della 0.1.0: **13/11/2026**. Prossimo passo: concordare il testo delle note e del changelog, poi V.8 prima dell'etichetta.
+- **Aggiornamento del 13/11/2026:** revisione di sicurezza dei rilasci fatta e decisioni prese (`piano.md`, «Decisioni del 13/11/2026» e V.8; `roadmap-server.md` §3, «Revisione dei rilasci»). Data della 0.1.0: **13/11/2026**. Fatti V.1–V.4, V.8c e V.8d: release `v0.1.0` pubblicata e immutabile, ruleset su `v*` e su `main`. **Prossimo passo: la 0.2.0** (V.5, V.6, V.8a, V.8b, V.8e, V.8f), poi V.7 (ritorno indietro documentato).
 - **Prima versione 0.1.0** (scelta di Francesco: è un prototipo, non 1.0.0). Numerazione `MAGGIORE.MINORE.CORREZIONE`, un solo numero per app e server.
 - **Note di rilascio dettagliate,** per chi gioca e chi organizza, con tutte le funzionalità inserite, più un **`CHANGELOG.md` tecnico** più dettagliato. **Il testo di entrambi va concordato con Francesco prima di scriverlo:** proporre una struttura e aspettare la sua conferma.
 - Poi: etichetta `v0.1.0` su GitHub con la pagina Release, versione visibile nell'app e nell'area admin (al posto di «5.1» in `server/src/costanti.js`), controllo di compatibilità tra app e server, ritorno a una versione precedente documentato.

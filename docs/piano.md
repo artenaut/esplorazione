@@ -127,9 +127,11 @@ Da fare **prima di ogni altra modifica** all'app o al server. Fino ad allora non
 | V.5 | **Versione visibile** nell'app (pagina iniziale) e nell'area admin; `/api/stato` restituisce la stessa versione. | Oggi il server dice «5.1» (numero delle fasi): va sostituito. |
 | V.6 | **Controllo di compatibilità** tra app e server: un telefono con l'app vecchia aperta riceve «È uscita una nuova versione: ricarica la pagina». | Sito e server si pubblicano a minuti di distanza. |
 | V.7 | **Ritorno a una versione precedente** documentato, anche nella guida per l'admin. **Corretto il 13/11/2026:** il ritorno vero si fa con `git revert` su `main` fino all'etichetta (mai force push), così sito e server tornano indietro insieme; Cloudflare → Deployments solo in emergenza e subito seguito dal revert, perché il push successivo su `main` lo cancella. Avvertenze: i dati non tornano indietro; si riaprono le falle corrette dopo quella versione; Cloudflare non permette il ritorno indietro oltre una migrazione dei Durable Object. | — |
-| V.8 | **Protezioni dei rilasci** (revisione di sicurezza del 13/11/2026, decisioni di Francesco). Da fare **prima dell'etichetta `v0.1.0`**: vedi sotto. | `roadmap-server.md` §3, «Revisione dei rilasci» |
+| V.8 | **Protezioni dei rilasci** (revisione di sicurezza del 13/11/2026, decisioni di Francesco). Le protezioni di GitHub (V.8c, V.8d) andavano fatte prima dell'etichetta `v0.1.0`; le parti di codice (V.8a, V.8b, V.8e, V.8f) vanno nella **0.2.0**: vedi sotto. | `roadmap-server.md` §3, «Revisione dei rilasci» |
 
 ### Decisioni del 13/11/2026 su versioni e rilasci
+
+- **Versione 0.2.0** (deciso il 13/11/2026): le modifiche al codice rimaste, cioè V.5, V.6, V.8a, V.8b, V.8e e V.8f, formano la 0.2.0 (salto «minore»: versione visibile e controllo di compatibilità sono funzioni nuove). La 0.1.0 resta il codice provato al tavolo il 6/11/2026.
 
 - **Data della 0.1.0: 13/11/2026.** Il codice è identico a quello provato al tavolo il 6/11/2026 (nessuna modifica al codice dopo il 6/11 alle 20:48), quindi l'etichetta va sull'ultimo commit.
 - **Note di rilascio:** elenco delle funzionalità diviso per pubblico (chi gioca, chi conduce la partita, chi amministra), più limiti noti del prototipo e due righe sulla privacy. **Non sono una guida:** le istruzioni stanno nella guida per il master (fase 6). Al club nessuno legge GitHub: il testo, anche in versione corta, va pure nel gruppo del club.
