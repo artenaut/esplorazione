@@ -10,6 +10,11 @@
   "preview_urls": false,
   "send_metrics": false,
 
+  // Prima di ogni costruzione (deploy e dev) si copiano i moduli che l'area admin usa nel browser (V.8e),
+  // importati come testo da src/moduli.js.
+  "build": { "command": "node scripts/copia-moduli.mjs" },
+  "rules": [{ "type": "Text", "globs": ["**/*.txt"], "fallthrough": true }],
+
   // Una partita = un Durable Object «Partita» con SQLite (piano gratuito).
   // Limitatore: conta in memoria i tentativi recenti di un indirizzo (passo 3.10), nulla salvato.
   "durable_objects": {

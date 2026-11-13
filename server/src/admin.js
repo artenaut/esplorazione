@@ -2,6 +2,7 @@
 
 import { verificaAccess } from "./accesso.js";
 import { VERSIONE } from "./costanti.js";
+import { MODULI } from "./moduli.js";
 import { elencoAdmin, leggi, salva, rimuovi } from "./esplorazioni.js";
 import { elencoAdminNickname, rinominaNickname, rimuoviNickname } from "./esplorator.js";
 import { elencoStagioni, rinominaStagione, chiudiStagione, partiteStagione, modificaRisultato, eliminaRisultato, eliminaPartita } from "./classifica.js";
@@ -25,6 +26,12 @@ export async function gestisciAdmin(request, env, url) {
 
   const p = url.pathname.replace(/\/+$/, "") || "/admin";
   if (p === "/admin" && request.method === "GET") return pagina(chi);
+
+  // Moduli per il browser dell'area admin (V.8e): motore e simulatore inclusi nel server, QR code.
+  const mod = p.match(/^\/admin\/moduli\/([a-z]+\.m?js)$/);
+  if (mod && request.method === "GET" && Object.hasOwn(MODULI, mod[1])) {
+    return new Response(MODULI[mod[1]], { headers: { ...SICUREZZA, "Content-Type": "text/javascript; charset=utf-8" } });
+  }
 
   if (!p.startsWith("/admin/api/")) return json({ errore: "Indirizzo non trovato." }, 404);
 
@@ -238,7 +245,6 @@ ${chi.secondoControllo ? "" : `<p class="msg err" style="border:1px dashed curre
 </div>
 <script>
 const $ = s => document.querySelector(s);
-const APP_SITO = 'https://artenaut.github.io/esplorazione/';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const H = { 'X-Richiesta': 'admin' };
 const data = s => new Date(s).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' });
@@ -345,7 +351,7 @@ document.addEventListener('click', async e => {
 });
 // QR della classifica (libreria pubblicata con l'app)
 let svgQr = '';
-import(APP_SITO+'vendor/qrcode.mjs').then(({ default: qrcode }) => {
+import('/admin/moduli/qrcode.mjs').then(({ default: qrcode }) => {
   const q = qrcode(0, 'M'); q.addData('https://artenaut.github.io/esplorazione/classifica.html'); q.make();
   svgQr = q.createSvgTag({ cellSize: 8, margin: 4, scalable: true, alt: 'QR code della classifica' });
   $('#qr-cl').innerHTML = svgQr;
@@ -398,14 +404,13 @@ $('#file').onchange = async e => {
   else esito(j.errore || ('Caricamento non riuscito ('+r.status+').'));
   carica();
 };
-// Il simulatore usa lo stesso motore del server, pubblicato con l'app (motore.js, simulatore.js).
-const APP = 'https://artenaut.github.io/esplorazione/';
+// Il simulatore usa lo stesso motore del server: i moduli li serve il Worker stesso (V.8e).
 $('#sim-run').onclick = async () => {
   const out = $('#sim-out'), btn = $('#sim-run'), id = $('#sim-mod').value;
   if(!id) return;
   btn.disabled = true; out.innerHTML = '<p class="hint">Simulazione in corso…</p>';
   try{
-    const [M, V, r] = await Promise.all([import(APP+'motore.js'), import(APP+'simulatore.js'), fetch('/admin/api/esplorazioni/'+encodeURIComponent(id), { headers: H })]);
+    const [M, V, r] = await Promise.all([import('/admin/moduli/motore.js'), import('/admin/moduli/simulatore.js'), fetch('/admin/api/esplorazioni/'+encodeURIComponent(id), { headers: H })]);
     if(!r.ok) throw new Error('lettura '+r.status);
     const m = M.compile(await r.json());
     const mosse = Math.max(1, Math.min(60, parseInt($('#sim-moves').value, 10) || 10));
@@ -423,7 +428,7 @@ caricaStagioni();
       "Content-Type": "text/html; charset=utf-8",
       ...SICUREZZA,
       "Content-Security-Policy":
-        "default-src 'none'; script-src 'unsafe-inline' https://artenaut.github.io; style-src 'unsafe-inline'; font-src https://artenaut.github.io; connect-src 'self'; img-src 'self' blob:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+        "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; font-src https://artenaut.github.io; connect-src 'self'; img-src 'self' blob:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
     },
   });
 }

@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
+    "pretest": "node scripts/copia-moduli.mjs",
     "deploy": "wrangler deploy",
     "test": "vitest run"
   },

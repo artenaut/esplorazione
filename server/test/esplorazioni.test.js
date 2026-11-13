@@ -47,6 +47,20 @@ beforeAll(async () => {
 afterAll(() => spia.mockRestore());
 
 describe("Area /admin", () => {
+  it("i moduli per il simulatore arrivano dal server, solo a chi amministra (V.8e)", async () => {
+    expect((await chiama("/admin/moduli/motore.js")).status).toBe(403);
+    const motore = await comeAdmin("/admin/moduli/motore.js");
+    expect(motore.status).toBe(200);
+    expect(motore.headers.get("Content-Type")).toContain("text/javascript");
+    expect(await motore.text()).toContain("export function validateModule");
+    expect((await comeAdmin("/admin/moduli/simulatore.js")).status).toBe(200);
+    expect((await comeAdmin("/admin/moduli/qrcode.mjs")).status).toBe(200);
+    expect((await comeAdmin("/admin/moduli/altro.js")).status).toBe(404);
+    const csp = (await comeAdmin("/admin")).headers.get("Content-Security-Policy");
+    expect(csp).toContain("script-src 'self' 'unsafe-inline'");
+    expect(csp).not.toMatch(/script-src[^;]*github/);
+  });
+
   it("senza AUD configurato risponde «non configurata»", async () => {
     const res = await gestisciAdmin(new Request(BASE + "/admin"), { ACCESS_TEAM: TEAM, ACCESS_AUD: "" }, new URL(BASE + "/admin"));
     expect(res.status).toBe(503);
