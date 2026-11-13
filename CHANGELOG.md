@@ -13,6 +13,30 @@ Decisioni e rischi accettati non si ripetono qui: si trovano nelle roadmap in `d
 
 Niente, per ora.
 
+## [0.2.0] – 2026-11-13
+
+Protezioni dei rilasci (`docs/piano.md`, V.5–V.8). Nessun cambiamento al gioco, al formato dei pianeti o ai dati personali.
+
+### Aggiunto
+- `versione.js` nella cartella principale: un solo numero per app e server (V.8f). Lo leggono l'app, il Worker (`server/src/costanti.js`), `GET /api/stato` e la pagina `/` del server. Sostituisce «5.1».
+- Versione visibile in fondo alla pagina iniziale dell'app e nell'intestazione dell'area admin; non durante la partita (V.5).
+- Controllo di compatibilità (V.6): il server manda `versione` nel messaggio `benvenuto` e in `/api/stato`. Se è diversa da quella dell'app, avviso con il pulsante «Ricarica», senza ricarica automatica.
+- Numero di schema dei dati (V.8a): `SCHEMA` in `server/src/costanti.js`, tabella `meta` in D1 (chiave `schema`) e campo `schema` nello stato di ogni nuova partita. Un codice più vecchio dei dati passa in sola lettura: niente nuove partite (`503`), nuovi nickname, salvataggi in classifica o modifiche dall'area admin (errore `sola-lettura`). Lettura di classifica ed elenco dei pianeti, mosse e «Annulla partita» restano. Una partita creata da una versione più nuova risponde `partita-piu-nuova`.
+- Area admin: `motore.js`, `simulatore.js` e `vendor/qrcode.mjs` serviti dal Worker sotto `/admin/moduli/`, dietro Access; copiati a ogni costruzione da `server/scripts/copia-moduli.mjs` (`build` in `wrangler.jsonc`, `pretest` in `package.json`) (V.8e).
+- Pianeta di collaudo inventato (`test/pianeta-collaudo.json`) e `test/semina-collaudo.py` per le prove dell'app: nessun pianeta vero serve più per le prove.
+- Prove: `server/test/versione.test.js`, `server/test/schema.test.js`, moduli e CSP dell'admin in `esplorazioni.test.js`; prove dell'app per versione visibile, avviso di nuova versione e sola lettura. Totale: 82 prove del server, 17 dell'app.
+
+### Cambiato
+- CSP dell'area admin: `script-src 'self' 'unsafe-inline'`, senza GitHub Pages.
+- Documenti: procedura di ritorno a una versione precedente (V.7), regola sulle migrazioni dei Durable Object (V.8b) e regole dello schema dei dati in `docs/roadmap-server.md` §3; `docs/protocollo-partita.md` aggiornato.
+
+### Corretto
+- `server/src/index.js`: l'area admin e la creazione della partita venivano restituite senza `await`, quindi un loro errore sfuggiva al gestore degli errori del Worker.
+- Prova dei limiti in `server/test/sicurezza.test.js`: usava codici di partita fissi che a volte coincidevano con quelli casuali creati dalle altre prove (fallimenti intermittenti, nessun effetto in produzione).
+
+### Note per chi amministra
+- La protezione della sola lettura vale dalla 0.2.0 in poi: la 0.1.0 non conosce il numero di schema.
+
 ## [0.1.0] – 2026-11-13
 
 Prima versione: è lo stato provato al tavolo il 6/11/2026 (`docs/piano.md`, fasi 0–5). Il codice è invariato da allora.

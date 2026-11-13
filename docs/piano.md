@@ -124,13 +124,14 @@ Da fare **prima di ogni altra modifica** all'app o al server. Fino ad allora non
 | V.2 | ✅ **Note di rilascio della 0.1.0** (approvate il 13/11/2026, in `docs/rilasci/0.1.0.md`, con la versione corta per il gruppo del club), dettagliate e per chi gioca e organizza: tutte le funzionalità inserite (partite a sessioni, QR e codice, posti e rientro, master e tabellone, mosse e annulla, chiudi o annulla partita, stesso gruppo, nickname e guest, informativa, classifica e stagioni, area admin, simulatore). | Testo da concordare con Francesco prima di scriverlo. |
 | V.3 | ✅ **Changelog tecnico** (`CHANGELOG.md`, approvato il 13/11/2026), più dettagliato: architettura (Worker, Durable Object, D1, Access), protocollo, limiti e sicurezza, prove automatiche, decisioni e rischi accettati. | Da concordare con Francesco. |
 | V.4 | ✅ **Etichetta `v0.1.0` su GitHub** (13/11/2026, commit `0d31fce`, release immutabile) con la pagina «Release» (note di rilascio). | Punto fermo a cui tornare. |
-| V.5 | **Versione visibile** nell'app (pagina iniziale) e nell'area admin; `/api/stato` restituisce la stessa versione. | Oggi il server dice «5.1» (numero delle fasi): va sostituito. |
-| V.6 | **Controllo di compatibilità** tra app e server: un telefono con l'app vecchia aperta riceve «È uscita una nuova versione: ricarica la pagina». | Sito e server si pubblicano a minuti di distanza. |
-| V.7 | **Ritorno a una versione precedente** documentato, anche nella guida per l'admin. **Corretto il 13/11/2026:** il ritorno vero si fa con `git revert` su `main` fino all'etichetta (mai force push), così sito e server tornano indietro insieme; Cloudflare → Deployments solo in emergenza e subito seguito dal revert, perché il push successivo su `main` lo cancella. Avvertenze: i dati non tornano indietro; si riaprono le falle corrette dopo quella versione; Cloudflare non permette il ritorno indietro oltre una migrazione dei Durable Object. | — |
+| V.5 | ✅ (0.2.0, 13/11/2026) **Versione visibile** nell'app (pagina iniziale) e nell'area admin; `/api/stato` restituisce la stessa versione. | Oggi il server dice «5.1» (numero delle fasi): va sostituito. |
+| V.6 | ✅ (0.2.0, 13/11/2026) **Controllo di compatibilità** tra app e server: un telefono con l'app vecchia aperta riceve «È uscita una nuova versione: ricarica la pagina». | Sito e server si pubblicano a minuti di distanza. |
+| V.7 | ✅ (0.2.0, 13/11/2026, `roadmap-server.md` §3) **Ritorno a una versione precedente** documentato, anche nella guida per l'admin. **Corretto il 13/11/2026:** il ritorno vero si fa con `git revert` su `main` fino all'etichetta (mai force push), così sito e server tornano indietro insieme; Cloudflare → Deployments solo in emergenza e subito seguito dal revert, perché il push successivo su `main` lo cancella. Avvertenze: i dati non tornano indietro; si riaprono le falle corrette dopo quella versione; Cloudflare non permette il ritorno indietro oltre una migrazione dei Durable Object. | — |
 | V.8 | **Protezioni dei rilasci** (revisione di sicurezza del 13/11/2026, decisioni di Francesco). Le protezioni di GitHub (V.8c, V.8d) andavano fatte prima dell'etichetta `v0.1.0`; le parti di codice (V.8a, V.8b, V.8e, V.8f) vanno nella **0.2.0**: vedi sotto. | `roadmap-server.md` §3, «Revisione dei rilasci» |
 
 ### Decisioni del 13/11/2026 su versioni e rilasci
 
+- **Avvisi al gruppo del club** (deciso il 13/11/2026): si notifica solo quello che cambia per chi gioca. Le versioni senza novità visibili non si annunciano; chi vuole i dettagli legge il changelog. Per questo le note della 0.2.0 non hanno la versione corta.
 - **Versione 0.2.0** (deciso il 13/11/2026): le modifiche al codice rimaste, cioè V.5, V.6, V.8a, V.8b, V.8e e V.8f, formano la 0.2.0 (salto «minore»: versione visibile e controllo di compatibilità sono funzioni nuove). La 0.1.0 resta il codice provato al tavolo il 6/11/2026.
 
 - **Data della 0.1.0: 13/11/2026.** Il codice è identico a quello provato al tavolo il 6/11/2026 (nessuna modifica al codice dopo il 6/11 alle 20:48), quindi l'etichetta va sull'ultimo commit.
@@ -142,12 +143,12 @@ Da fare **prima di ogni altra modifica** all'app o al server. Fino ad allora non
 
 | # | Cosa | Chi |
 |---|---|---|
-| V.8a | **Numero di schema nei dati** (D1 e stato della partita nei Durable Object): un codice più vecchio dello schema che trova passa in **sola lettura** invece di scrivere dati che non conosce. Modifiche ai dati sempre solo additive. | Claude |
-| V.8b | **Migrazioni dei Durable Object pubblicate da sole,** mai insieme ad altre modifiche (bloccano il ritorno indietro da Deployments). | Claude |
+| V.8a | ✅ (0.2.0) **Numero di schema nei dati** (D1 e stato della partita nei Durable Object): un codice più vecchio dello schema che trova passa in **sola lettura** invece di scrivere dati che non conosce. Modifiche ai dati sempre solo additive. | Claude |
+| V.8b | ✅ (0.2.0, regola in `roadmap-server.md` §3 e `CLAUDE.md`) **Migrazioni dei Durable Object pubblicate da sole,** mai insieme ad altre modifiche (bloccano il ritorno indietro da Deployments). | Claude |
 | V.8c | ✅ (13/11/2026) **Ruleset sulle etichette `v*`** (vietati spostamento e cancellazione) e **ruleset su `main`** (vietati force push e cancellazione del branch). | Francesco (Claude prepara i passaggi) |
 | V.8d | ✅ (13/11/2026) **Release immutabili** attivate nel repository o nell'organizzazione. Attenzione: un'etichetta usata da una release immutabile non si può più riusare, nemmeno dopo averla cancellata. Quindi la release si crea **come bozza**, si ricontrolla e solo dopo si pubblica. | Francesco (Claude prepara i passaggi) |
-| V.8e | **Motore e simulatore serviti dal Worker** (la copia inclusa nella sua pubblicazione) invece che da GitHub Pages; CSP dell'area admin ristretta a `'self'`. Il simulatore usa così sempre lo stesso motore del server. | Claude |
-| V.8f | **Un solo file della versione** nella cartella principale, letto da app e server (e da `/api/stato`), così i due numeri non si separano. | Claude |
+| V.8e | ✅ (0.2.0) **Motore e simulatore serviti dal Worker** (la copia inclusa nella sua pubblicazione) invece che da GitHub Pages; CSP dell'area admin ristretta a `'self'`. Il simulatore usa così sempre lo stesso motore del server. | Claude |
+| V.8f | ✅ (0.2.0) **Un solo file della versione** nella cartella principale, letto da app e server (e da `/api/stato`), così i due numeri non si separano. | Claude |
 
 **Considerati e lasciati così (13/11/2026), finché vale la premessa d'uso qui sotto:**
 - Ogni push su `main` ripubblica il Worker e fa cadere i WebSocket delle partite in corso, anche per i soli documenti. Niente percorsi da osservare in Workers Builds e nessuna modifica al limitatore.
@@ -168,9 +169,9 @@ Si sviluppa nel branch `versione-0.2.0` e si porta su `main` tutto insieme, alla
 | 4 | V.8a · numero di schema (tabella `meta` in D1 e campo nello stato della partita) e sola lettura, vedi sotto || ✅ 13/11/2026 (corretti anche due `await` mancanti in `index.js`: un errore dell'area admin o della creazione sfuggiva al controllo) |
 | 5 | V.8e · `motore.js` e `simulatore.js` serviti dal Worker (copia automatica prima della pubblicazione), CSP dell'admin `'self'` || ✅ 13/11/2026 |
 | 6 | V.8b e V.7 nei documenti; `protocollo-partita.md` aggiornato || ✅ 13/11/2026 |
-| 7 | Prove complete (Vitest e Playwright con più telefoni) e screenshot dal telefono per Francesco | |
-| 8 | Note di rilascio e changelog della 0.2.0, da approvare | |
-| 9 | Pubblicazione su `main` (mai durante una partita), controllo in produzione, Release `v0.2.0` creata da Francesco | |
+| 7 | Prove complete (Vitest e Playwright con più telefoni) e screenshot dal telefono per Francesco || ✅ 13/11/2026, screenshot approvati |
+| 8 | Note di rilascio e changelog della 0.2.0, da approvare || ✅ 13/11/2026, testi approvati |
+| 9 | Pubblicazione su `main` (mai durante una partita), controllo in produzione, Release `v0.2.0` creata da Francesco || ✅ 13/11/2026 |
 
 **Nota (13/11/2026):** la prova del limite IPv6 in `server/test/sicurezza.test.js` falliva ogni tanto. Causa: usava codici fissi `LWR-2xx` che a volte coincidevano con quelli casuali delle partite create dalle altre prove (non il limitatore, come ipotizzato all'inizio). Corretta usando il prefisso `ZZZ`, che il server non genera mai. Non riguardava la produzione.
 
