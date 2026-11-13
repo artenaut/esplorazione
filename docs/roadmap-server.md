@@ -143,6 +143,24 @@ Già a posto: nessuna dipendenza a runtime nel Worker, `package-lock.json` nel r
 
 **Premessa d'uso:** uso interno del club, nessuna pubblicazione durante le partite. Se cambia, vanno ripresi i punti 2 e 3 (dettagli in `piano.md`, «Considerati e lasciati così»).
 
+### Rilasci, schema dei dati e ritorno indietro (V.7, V.8a, V.8b · 13/11/2026)
+
+**Versione:** un solo numero per app e server, in `versione.js` (cartella principale). Il server lo dice in `/api/stato` e nel messaggio `benvenuto`; l'app lo mostra in fondo alla pagina iniziale e avvisa con «Ricarica» se è diverso dal suo.
+
+**Schema dei dati (V.8a).** `SCHEMA` in `server/src/costanti.js` è il numero di schema che il codice conosce; D1 conserva il suo nella tabella `meta` (chiave `schema`) e ogni partita nel campo `schema` del proprio stato.
+- Una versione che **cambia la struttura dei dati** (D1 o stato delle partite) aumenta `SCHEMA` di 1, fa solo modifiche **additive** (tabelle o colonne nuove, mai cancellare o rinominare) e scrive la migrazione in `preparaSchema` (`server/src/esplorazioni.js`), prima dell'aggiornamento del numero.
+- Se il codice trova dati più nuovi di lui (dopo un ritorno indietro) passa in **sola lettura**: regole in `piano.md`, «Sola lettura».
+- **Limite:** la protezione c'è solo dalla 0.2.0 in poi. La 0.1.0 non conosce il numero di schema: tornare alla 0.1.0 dopo un cambio di schema non è protetto.
+
+**Migrazioni dei Durable Object (V.8b).** Una modifica alle classi dei Durable Object (`migrations` in `server/wrangler.jsonc`: classi nuove, rinominate o tolte) **si pubblica da sola**, in una versione che contiene solo quella modifica. Dopo una migrazione Cloudflare non permette più il ritorno indietro da Deployments alle versioni precedenti.
+
+**Ritorno a una versione precedente (V.7).** Mai durante una partita.
+1. **Procedura normale (sito e server insieme):** su `main`, annullare con `git revert` i commit successivi all'etichetta della versione a cui tornare (per esempio `git revert --no-commit v0.1.0..HEAD`, poi un commit «Ritorno alla 0.1.0») e fare push. GitHub Pages e Workers Builds ripubblicano entrambi. Il push forzato è bloccato dalla ruleset su `main`, ed è giusto così: la cronologia non si riscrive.
+2. **Solo in emergenza (server):** Cloudflare → Workers → `esplorazione` → Deployments → scegliere la versione → Rollback. Vale solo per il server e **il primo push su `main` lo cancella**: subito dopo va fatta la procedura 1.
+3. **Dopo:** controllare `/api/stato` e la versione in fondo alla pagina iniziale.
+4. **Cosa non torna indietro:** i dati (D1 e partite in corso) e i segreti. Tornando indietro si riaprono anche le falle corrette dopo quella versione: controllare `CHANGELOG.md`.
+5. La correzione di un problema esce sempre con un **numero nuovo**: le etichette delle release sono immutabili e non si spostano.
+
 ## 3bis. Architettura del server [deciso il 6/11/2026]
 
 - **Durable Object `Partita`,** uno per sessione, con WebSocket Hibernation API e SQLite. Contiene lo stato della partita, i contatori «meno mostrate», i posti, i gettoni e l'ultima mossa annullabile. La scadenza usa gli allarmi del Durable Object.

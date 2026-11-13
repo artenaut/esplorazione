@@ -36,3 +36,4 @@ Ogni push su `main` costruisce e pubblica il Worker.
 | `POST /api/partite` | Crea una partita. |
 | `GET /api/partite/:codice/ws` | WebSocket della partita (codice tipo `LWR-482`). Protocollo: `../docs/protocollo-partita.md`. |
 | `/admin` | Area admin, dietro Cloudflare Access. |
+| `/admin/moduli/…` | `motore.js`, `simulatore.js` e `qrcode.mjs` per il browser dell'area admin, copiati nel Worker a ogni costruzione da `scripts/copia-moduli.mjs` (dietro Access). |

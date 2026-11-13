@@ -161,16 +161,18 @@ Si sviluppa nel branch `versione-0.2.0` e si porta su `main` tutto insieme, alla
 
 | # | Passo | Stato |
 |---|---|---|
-| 0 | Preparazione: prove di partenza, **pianeta di collaudo** inventato in `test/` per le prove automatiche (deciso il 13/11/2026: niente più Lowrenzia per le prove; il bilanciamento si fa sempre sul pianeta vero), server locale | |
-| 1 | V.8f · `versione.js` nella cartella principale, letto da app, server e `/api/stato` | |
-| 2 | V.5 · versione visibile: riga discreta in fondo alla pagina iniziale e nell'intestazione dell'area admin; **non durante la partita** (deciso il 13/11/2026) | |
-| 3 | V.6 · il server comunica la sua versione; se diversa, avviso con pulsante «Ricarica», mai ricarica automatica | |
-| 4 | V.8a · numero di schema (tabella `meta` in D1 e campo nello stato della partita) e sola lettura, vedi sotto | |
-| 5 | V.8e · `motore.js` e `simulatore.js` serviti dal Worker (copia automatica prima della pubblicazione), CSP dell'admin `'self'` | |
-| 6 | V.8b e V.7 nei documenti; `protocollo-partita.md` aggiornato | |
+| 0 | Preparazione: prove di partenza, **pianeta di collaudo** inventato in `test/` per le prove automatiche (deciso il 13/11/2026: niente più Lowrenzia per le prove; il bilanciamento si fa sempre sul pianeta vero), server locale || ✅ 13/11/2026 |
+| 1 | V.8f · `versione.js` nella cartella principale, letto da app, server e `/api/stato` || ✅ 13/11/2026 |
+| 2 | V.5 · versione visibile: riga discreta in fondo alla pagina iniziale e nell'intestazione dell'area admin; **non durante la partita** (deciso il 13/11/2026) || ✅ 13/11/2026 |
+| 3 | V.6 · il server comunica la sua versione; se diversa, avviso con pulsante «Ricarica», mai ricarica automatica || ✅ 13/11/2026 |
+| 4 | V.8a · numero di schema (tabella `meta` in D1 e campo nello stato della partita) e sola lettura, vedi sotto || ✅ 13/11/2026 (corretti anche due `await` mancanti in `index.js`: un errore dell'area admin o della creazione sfuggiva al controllo) |
+| 5 | V.8e · `motore.js` e `simulatore.js` serviti dal Worker (copia automatica prima della pubblicazione), CSP dell'admin `'self'` || ✅ 13/11/2026 |
+| 6 | V.8b e V.7 nei documenti; `protocollo-partita.md` aggiornato || ✅ 13/11/2026 |
 | 7 | Prove complete (Vitest e Playwright con più telefoni) e screenshot dal telefono per Francesco | |
 | 8 | Note di rilascio e changelog della 0.2.0, da approvare | |
 | 9 | Pubblicazione su `main` (mai durante una partita), controllo in produzione, Release `v0.2.0` creata da Francesco | |
+
+**Nota (13/11/2026):** la prova del limite IPv6 in `server/test/sicurezza.test.js` è **instabile** (1 volta su 4 al primo avvio): il Limitatore tiene i conteggi solo in memoria e l'ambiente di prova a volte lo riavvia. Esisteva già nella 0.1.0; non riguarda la produzione. Da sistemare a parte.
 
 Pause per il via libera di Francesco: dopo il 7, dopo l'8, prima del 9.
 

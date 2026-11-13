@@ -25,7 +25,7 @@ Stato: passi **3.3–3.10** e **fase 4** (identità dei posti: nickname del club
 - **Codice corto:** tre lettere dal pianeta (la prima lettera del nome tecnico, poi le consonanti: `lowrenzia` → `LWR`) e tre cifre. Il **QR** si genera nell'app dal `link`.
 - **Codice master:** si mostra una volta a chi crea la partita e il dispositivo lo conserva. Con lo stesso codice un altro dispositivo può prendere il ruolo di master.
 - La partita contiene una **copia del pianeta**: se l'admin lo modifica, le partite già create non cambiano.
-- Errori: `400` dati non validi, `403` origine non consentita, `404` esplorazione inesistente. Il campo `errore` contiene un messaggio pronto da mostrare.
+- Errori: `400` dati non validi, `403` origine non consentita, `404` esplorazione inesistente, `503` server in sola lettura (dalla 0.2.0). Il campo `errore` contiene un messaggio pronto da mostrare.
 
 ## 2. Collegarsi
 
@@ -57,7 +57,9 @@ WebSocket su `wss://esplorazione.artenaut.workers.dev/api/partite/LWR-482/ws` (i
 | `{ "tipo": "entra", "ruolo": "tabellone" }` | **tabellone**: sola lettura |
 | `{ "tipo": "entra" }` | **ospite**: ha il codice e deve scegliere un posto |
 
-Risposta: `{ "tipo": "benvenuto", "ruolo": "esplorator", "posto": 1, "stato": { … } }`.
+Risposta: `{ "tipo": "benvenuto", "ruolo": "esplorator", "posto": 1, "versione": "0.2.0", "stato": { … } }`.
+
+`versione` è la versione del server (dalla 0.2.0): se è diversa da quella dell'app, l'app mostra l'avviso «È uscita una nuova versione dell'app: ricarica la pagina» con il pulsante «Ricarica». Non ricarica mai da sola. La stessa versione è in `GET /api/stato`.
 
 ### Scegliere un posto (ospite)
 
@@ -202,4 +204,6 @@ Dopo ogni modifica il server manda a tutti i dispositivi lo stesso messaggio `{ 
 | `versione-superata` | Qualcun altro ha già mosso quel personaggio: il messaggio porta lo `stato` aggiornato. |
 | `stanza-non-proposta` | La stanza non è tra le proposte (porta lo `stato`). |
 | `niente-da-annullare` | Non c'è una mossa annullabile. |
+| `sola-lettura` | Il server è stato riportato a una versione precedente: niente nuovi nickname, salvataggi in classifica o nuove partite (dalla 0.2.0). Mosse e «Annulla partita» funzionano. |
+| `partita-piu-nuova` | La partita è stata creata da una versione più recente del server: crearne una nuova (dalla 0.2.0). |
 | `messaggio-non-valido`, `tipo-sconosciuto`, `errore-server` | Errori tecnici. |
