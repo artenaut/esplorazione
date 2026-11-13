@@ -11,6 +11,7 @@ Committente e unico amministratore: **Francesco**, per il club **Artenaut\***. S
 | Repository | `artenaut/esplorazione` (organizzazione GitHub del club) |
 | Server (fase 3) | https://esplorazione.artenaut.workers.dev · codice in `server/` · pubblicato da Workers Builds a ogni push su `main` · account Cloudflare del club · Zero Trust team `artenaut` |
 | **Piano di lavoro a fasi** | `docs/piano.md` ← **partire sempre da qui** |
+| Documento di ripartenza | `docs/ripartenza.md` (stato attuale e prossimi passi) |
 | Decisioni dettagliate | `docs/roadmap-app.md`, `docs/roadmap-server.md`, `docs/roadmap-classifica.md` |
 | Formato dei pianeti | `docs/formato-esplorazione.md` (formato 2) |
 | Protocollo app ↔ server | `docs/protocollo-partita.md` (creazione, WebSocket, ruoli, stato, errori) |

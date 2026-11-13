@@ -1,3 +1,5 @@
+> **Superato:** documento storico. Per riprendere il progetto usare `docs/ripartenza.md`.
+
 # Ripartenza · Fase 3 (sessioni su più dispositivi)
 
 Documento di passaggio scritto il 6/11/2026 alla fine della sessione che ha completato le fasi 0, 1 e 2.
