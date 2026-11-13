@@ -1,0 +1,359 @@
+{
+ "formato": 2,
+ "id": "collaudo",
+ "nome": "Pianeta di collaudo",
+ "descrizione": "Pianeta inventato per le prove automatiche: non si gioca",
+ "estrazione": "meno-mostrate",
+ "regoleImmagine": "img/esploratore.png",
+ "regole": "## Regole di collaudo\n- Pianeta usato solo dalle prove automatiche.\n- Stanze e testi sono inventati.",
+ "vie": [
+  {
+   "id": "forza",
+   "nome": "Via della Forza",
+   "breve": "Forza",
+   "colore": "#c95a40"
+  },
+  {
+   "id": "sapienza",
+   "nome": "Via della Sapienza",
+   "breve": "Sapienza",
+   "colore": "#5b8fd0"
+  },
+  {
+   "id": "neutrale",
+   "nome": "Neutrale",
+   "breve": "Neutrale",
+   "colore": "#94a07f"
+  }
+ ],
+ "ingresso": {
+  "nome": "Ingresso",
+  "stanze": [
+   {
+    "id": "L1-F",
+    "titolo": "Porta della prova",
+    "via": "forza",
+    "testo": "Sorveglia 1 (TESTO-NASCOSTO-INGRESSO)"
+   },
+   {
+    "id": "L1-S",
+    "titolo": "Archivio della prova",
+    "via": "sapienza",
+    "testo": "Profetizza 1 (TESTO-NASCOSTO-INGRESSO)"
+   }
+  ],
+  "successivo": "L2"
+ },
+ "livelli": {
+  "L2": {
+   "stanze": [
+    {
+     "id": "L2-F1",
+     "titolo": "Collaudo L2 Forza 1",
+     "via": "forza",
+     "testo": "Effetto di prova L2-F1 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L2-F2",
+     "titolo": "Collaudo L2 Forza 2",
+     "via": "forza",
+     "testo": "Effetto di prova L2-F2 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L2-F3",
+     "titolo": "Collaudo L2 Forza 3",
+     "via": "forza",
+     "testo": "Effetto di prova L2-F3 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L2-F4",
+     "titolo": "Collaudo L2 Forza 4",
+     "via": "forza",
+     "testo": "Effetto di prova L2-F4 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L2-S1",
+     "titolo": "Collaudo L2 Sapienza 1",
+     "via": "sapienza",
+     "testo": "Effetto di prova L2-S1 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L2-S2",
+     "titolo": "Collaudo L2 Sapienza 2",
+     "via": "sapienza",
+     "testo": "Effetto di prova L2-S2 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L2-S3",
+     "titolo": "Collaudo L2 Sapienza 3",
+     "via": "sapienza",
+     "testo": "Effetto di prova L2-S3 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L2-S4",
+     "titolo": "Collaudo L2 Sapienza 4",
+     "via": "sapienza",
+     "testo": "Effetto di prova L2-S4 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L2-N1",
+     "titolo": "Collaudo L2 Neutrale 1",
+     "via": "neutrale",
+     "testo": "Effetto di prova L2-N1 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L2-N2",
+     "titolo": "Collaudo L2 Neutrale 2",
+     "via": "neutrale",
+     "testo": "Effetto di prova L2-N2 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L2-N3",
+     "titolo": "Collaudo L2 Neutrale 3",
+     "via": "neutrale",
+     "testo": "Effetto di prova L2-N3 (TESTO-NASCOSTO)"
+    }
+   ],
+   "proposte": {
+    "forza": {
+     "forza": 2,
+     "neutrale": 1
+    },
+    "sapienza": {
+     "sapienza": 2,
+     "neutrale": 1
+    },
+    "neutrale": {
+     "forza": 1,
+     "sapienza": 1,
+     "neutrale": 1
+    }
+   },
+   "successivo": "L3"
+  },
+  "L3": {
+   "stanze": [
+    {
+     "id": "L3-F1",
+     "titolo": "Collaudo L3 Forza 1",
+     "via": "forza",
+     "testo": "Effetto di prova L3-F1 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L3-F2",
+     "titolo": "Collaudo L3 Forza 2",
+     "via": "forza",
+     "testo": "Effetto di prova L3-F2 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L3-F3",
+     "titolo": "Collaudo L3 Forza 3",
+     "via": "forza",
+     "testo": "Effetto di prova L3-F3 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L3-F4",
+     "titolo": "Collaudo L3 Forza 4",
+     "via": "forza",
+     "testo": "Effetto di prova L3-F4 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L3-S1",
+     "titolo": "Collaudo L3 Sapienza 1",
+     "via": "sapienza",
+     "testo": "Effetto di prova L3-S1 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L3-S2",
+     "titolo": "Collaudo L3 Sapienza 2",
+     "via": "sapienza",
+     "testo": "Effetto di prova L3-S2 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L3-S3",
+     "titolo": "Collaudo L3 Sapienza 3",
+     "via": "sapienza",
+     "testo": "Effetto di prova L3-S3 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L3-S4",
+     "titolo": "Collaudo L3 Sapienza 4",
+     "via": "sapienza",
+     "testo": "Effetto di prova L3-S4 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L3-N1",
+     "titolo": "Collaudo L3 Neutrale 1",
+     "via": "neutrale",
+     "testo": "Effetto di prova L3-N1 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L3-N2",
+     "titolo": "Collaudo L3 Neutrale 2",
+     "via": "neutrale",
+     "testo": "Effetto di prova L3-N2 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L3-N3",
+     "titolo": "Collaudo L3 Neutrale 3",
+     "via": "neutrale",
+     "testo": "Effetto di prova L3-N3 (TESTO-NASCOSTO)"
+    }
+   ],
+   "proposte": {
+    "forza": {
+     "forza": 2,
+     "neutrale": 1
+    },
+    "sapienza": {
+     "sapienza": 2,
+     "neutrale": 1
+    },
+    "neutrale": {
+     "forza": 1,
+     "sapienza": 1,
+     "neutrale": 1
+    }
+   },
+   "successivo": "L4"
+  },
+  "L4": {
+   "stanze": [
+    {
+     "id": "L4-F1",
+     "titolo": "Collaudo L4 Forza 1",
+     "via": "forza",
+     "testo": "Effetto di prova L4-F1 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L4-F2",
+     "titolo": "Collaudo L4 Forza 2",
+     "via": "forza",
+     "testo": "Effetto di prova L4-F2 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L4-F3",
+     "titolo": "Collaudo L4 Forza 3",
+     "via": "forza",
+     "testo": "Effetto di prova L4-F3 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L4-F4",
+     "titolo": "Collaudo L4 Forza 4",
+     "via": "forza",
+     "testo": "Effetto di prova L4-F4 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L4-S1",
+     "titolo": "Collaudo L4 Sapienza 1",
+     "via": "sapienza",
+     "testo": "Effetto di prova L4-S1 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L4-S2",
+     "titolo": "Collaudo L4 Sapienza 2",
+     "via": "sapienza",
+     "testo": "Effetto di prova L4-S2 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L4-S3",
+     "titolo": "Collaudo L4 Sapienza 3",
+     "via": "sapienza",
+     "testo": "Effetto di prova L4-S3 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L4-S4",
+     "titolo": "Collaudo L4 Sapienza 4",
+     "via": "sapienza",
+     "testo": "Effetto di prova L4-S4 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L4-N1",
+     "titolo": "Collaudo L4 Neutrale 1",
+     "via": "neutrale",
+     "testo": "Effetto di prova L4-N1 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L4-N2",
+     "titolo": "Collaudo L4 Neutrale 2",
+     "via": "neutrale",
+     "testo": "Effetto di prova L4-N2 (TESTO-NASCOSTO)"
+    },
+    {
+     "id": "L4-N3",
+     "titolo": "Collaudo L4 Neutrale 3",
+     "via": "neutrale",
+     "testo": "Effetto di prova L4-N3 (TESTO-NASCOSTO)"
+    }
+   ],
+   "proposte": {
+    "forza": {
+     "forza": 2,
+     "neutrale": 1
+    },
+    "sapienza": {
+     "sapienza": 2,
+     "neutrale": 1
+    },
+    "neutrale": {
+     "forza": 1,
+     "sapienza": 1,
+     "neutrale": 1
+    }
+   },
+   "successivo": "finale"
+  }
+ },
+ "finale": {
+  "nome": "Finale",
+  "stanze": [
+   {
+    "id": "L5-F1",
+    "titolo": "Collaudo L5 Forza 1",
+    "via": "forza",
+    "testo": "Effetto di prova L5-F1 (TESTO-NASCOSTO)"
+   },
+   {
+    "id": "L5-F2",
+    "titolo": "Collaudo L5 Forza 2",
+    "via": "forza",
+    "testo": "Effetto di prova L5-F2 (TESTO-NASCOSTO)"
+   },
+   {
+    "id": "L5-S1",
+    "titolo": "Collaudo L5 Sapienza 1",
+    "via": "sapienza",
+    "testo": "Effetto di prova L5-S1 (TESTO-NASCOSTO)"
+   },
+   {
+    "id": "L5-S2",
+    "titolo": "Collaudo L5 Sapienza 2",
+    "via": "sapienza",
+    "testo": "Effetto di prova L5-S2 (TESTO-NASCOSTO)"
+   },
+   {
+    "id": "L5-N1",
+    "titolo": "Collaudo L5 Neutrale 1",
+    "via": "neutrale",
+    "testo": "Effetto di prova L5-N1 (TESTO-NASCOSTO)"
+   },
+   {
+    "id": "L5-N2",
+    "titolo": "Collaudo L5 Neutrale 2",
+    "via": "neutrale",
+    "testo": "Effetto di prova L5-N2 (TESTO-NASCOSTO)"
+   }
+  ],
+  "proposte": {
+   "forza": {
+    "forza": 1
+   },
+   "sapienza": {
+    "sapienza": 1
+   },
+   "neutrale": {
+    "neutrale": 1
+   }
+  }
+ }
+}

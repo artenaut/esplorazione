@@ -1,6 +1,6 @@
 """Prove automatiche dell'app a sessioni (index.html) con Playwright e più «telefoni».
 
-Serve un server locale con almeno l'esplorazione «lowrenzia» (vedi server/README.md, «Prove dell'app»):
+Serve un server locale con il «Pianeta di collaudo» (test/semina-collaudo.py, vedi server/README.md):
     cd server && npx wrangler dev --port 8787 --persist-to <cartella>
 Poi:
     python3 test/prova-app.py [--server http://127.0.0.1:8787]
@@ -84,7 +84,7 @@ def main():
             expect(pg.locator("input[name=mod]")).to_have_count(1)
             pg.click("[data-numero='3']")
             pg.click("#crea")
-            expect(pg.locator(".codice-grande")).to_have_text(re.compile(r"^LWR-\d{3}$"))
+            expect(pg.locator(".codice-grande")).to_have_text(re.compile(r"^CLL-\d{3}$"))
             codice = pg.locator(".codice-grande").inner_text()
             stato["codice"] = codice
             assert pg.locator(".qr svg").count() == 1
@@ -151,21 +151,21 @@ def main():
             pg = stato["alba"][1]
             m = stato["master"][1]
             assert pg.locator(".card .content").count() == 0
-            pg.locator("[data-pick]", has_text="Al Diavolo le mappe").click()
+            pg.locator("[data-pick]", has_text="Porta della prova").click()
             pg.click("#enter")
-            expect(pg.locator(".room.reveal .content")).to_contain_text("Goblin Fu-Furioso")
-            expect(m.locator(".room.reveal .content")).to_contain_text("Goblin Fu-Furioso")
+            expect(pg.locator(".room.reveal .content")).to_contain_text("TESTO-NASCOSTO-INGRESSO")
+            expect(m.locator(".room.reveal .content")).to_contain_text("TESTO-NASCOSTO-INGRESSO")
             expect(pg.locator(".tab[aria-selected=true]")).to_contain_text("Passo 1")
             assert not re.search(r"Passo \d+\s*(di|/|su)\s*\d+", pg.inner_text("body"))
             # cambiando scheda e tornando, il testo non c'è più
             pg.locator("[data-tab='1']").click()
             pg.locator("[data-tab='0']").click()
             assert pg.locator(".room.reveal").count() == 0
-            assert "Goblin" not in pg.inner_text("body")
+            assert "TESTO-NASCOSTO" not in pg.inner_text("body")
             # nel registro solo il titolo
             m.click("details.log summary")
-            expect(m.locator(".log")).to_contain_text("Al Diavolo le mappe")
-            assert "Goblin" not in m.locator(".log").inner_text()
+            expect(m.locator(".log")).to_contain_text("Porta della prova")
+            assert "TESTO-NASCOSTO" not in m.locator(".log").inner_text()
 
         @prova("Chi gioca non muove per altri; il master sì e il registro lo segna")
         def _():
@@ -258,7 +258,7 @@ def main():
             expect(pg.locator("tbody tr", has_text=NICK)).to_be_visible()
             assert stato["bruno"] not in pg.inner_text("body"), "il guest non deve comparire"
             expect(pg.locator("#stagione option").first).to_contain_text("(in corso)")
-            pg.select_option("#vista", "lowrenzia")
+            pg.select_option("#vista", "collaudo")
             expect(pg.locator("thead")).to_contain_text("Forza")
             expect(pg.locator("thead")).to_contain_text("Sapienza")
             pg.click("th >> text=Esplorator*")
