@@ -470,7 +470,7 @@ function aggiornaStato(stato){
 function erroreServer(m){
   UI.inviando = false;
   switch(m.codice){
-    case 'partita-inesistente':
+    case 'partita-inesistente': case 'partita-piu-nuova':
       dimentica(); UI.errore = m.messaggio; UI.schermata = 'home'; break;
     case 'gettone-non-valido':
       // il posto è stato liberato mentre il telefono era spento: si sceglie di nuovo

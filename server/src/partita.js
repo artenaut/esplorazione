@@ -12,13 +12,13 @@
 
 import { DurableObject } from "cloudflare:workers";
 import { compile, drawOffer, nextOfNode } from "../../motore.js";
-import { casuale, hash } from "./util.js";
+import { casuale, hash, SolaLettura } from "./util.js";
 import { nuovaPartita } from "./crea.js";
-import { leggi } from "./esplorazioni.js";
+import { leggi, permettiScrittura } from "./esplorazioni.js";
 import { leggiNickname, creaNickname, nomeGuest } from "./esplorator.js";
 import { salvaPartita } from "./classifica.js";
 import { elencoPubblicoNickname } from "./esplorator.js";
-import { VERSIONE } from "./costanti.js";
+import { VERSIONE, SCHEMA, MSG_PARTITA_PIU_NUOVA } from "./costanti.js";
 
 export const MIN_GIOCATORI = 2, MAX_GIOCATORI = 4, MAX_REGISTRO = 500;
 // Nuovi nickname creabili in una partita (contro chi ne crea in serie).
@@ -61,6 +61,7 @@ export class Partita extends DurableObject {
       creata: ora,
       ultimaAttivita: ora,
       versione: 1,
+      schema: SCHEMA, // numero di schema dei dati (V.8a)
       esplorazione,
       masterHash: await hash(codiceMaster),
       shown,
@@ -128,6 +129,8 @@ export class Partita extends DurableObject {
 
     const stato = await this.carica();
     if (!stato) return errore(ws, "partita-inesistente", "La partita non esiste più.");
+    // partita scritta da una versione più nuova del codice (V.8a): non si tocca
+    if ((stato.schema ?? 1) > SCHEMA) return errore(ws, "partita-piu-nuova", MSG_PARTITA_PIU_NUOVA);
     const io = ws.deserializeAttachment() ?? {};
 
     if (dati.tipo === "entra") return this.entra(ws, stato, dati).catch((e) => {
@@ -151,6 +154,7 @@ export class Partita extends DurableObject {
         default: return errore(ws, "tipo-sconosciuto", "Tipo di messaggio sconosciuto.");
       }
     } catch (e) {
+      if (e instanceof SolaLettura) { this.stato = null; return errore(ws, "sola-lettura", e.message); }
       console.error("Errore nella partita:", e?.stack ?? e);
       this.stato = null; // si ricarica dallo storage: lo stato salvato resta coerente
       return errore(ws, "errore-server", "Qualcosa è andato storto sul server. Riprova.");
@@ -388,6 +392,8 @@ export class Partita extends DurableObject {
     if (typeof salva !== "boolean" || !["fine", "stesso-gruppo"].includes(poi)) {
       return errore(ws, "messaggio-non-valido", "Indica se salvare la partita e come proseguire.");
     }
+    // in sola lettura (V.8a) non si salva in classifica e non si crea la nuova partita; «Annulla partita» e «fine» sì
+    if (salva || poi === "stesso-gruppo") await permettiScrittura(this.env.DB);
     const modo = salva ? "chiusa" : "annullata";
     const riepilogo = salva ? riepilogoPartita(stato) : null;
     if (salva) {

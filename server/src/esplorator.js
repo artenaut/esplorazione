@@ -2,7 +2,7 @@
 // Di ogni nickname si conservano solo: il nickname, quando è stato creato, la data del consenso,
 // la versione dell'informativa accettata e la conferma di avere almeno 14 anni (roadmap-classifica.md §9).
 
-import { preparaSchema } from "./esplorazioni.js";
+import { preparaSchema, permettiScrittura } from "./esplorazioni.js";
 import { INFORMATIVA_VERSIONE } from "./costanti.js";
 import { dimenticaNickname } from "./classifica.js";
 
@@ -36,7 +36,7 @@ export async function leggiNickname(db, id) {
 export async function creaNickname(db, testo) {
   const c = controllaNickname(testo);
   if (c.errore) return c;
-  await preparaSchema(db);
+  await permettiScrittura(db);
   const ora = new Date().toISOString();
   try {
     return await db
@@ -65,7 +65,7 @@ export async function elencoAdminNickname(db) {
 export async function rinominaNickname(db, id, testo) {
   const c = controllaNickname(testo);
   if (c.errore) return c;
-  await preparaSchema(db);
+  await permettiScrittura(db);
   try {
     const r = await db.prepare("UPDATE esplorator SET nickname = ? WHERE id = ? RETURNING id, nickname").bind(c.nickname, id).first();
     return r ?? { errore: "Nickname non trovato.", nonTrovato: true };
@@ -78,7 +78,7 @@ export async function rinominaNickname(db, id, testo) {
 // Cancellazione su richiesta: sparisce anche dalla classifica della stagione in corso;
 // nelle stagioni archiviate i suoi risultati restano come «Esplorator* rimoss*».
 export async function rimuoviNickname(db, id) {
-  await preparaSchema(db);
+  await permettiScrittura(db);
   if (!(await leggiNickname(db, id))) return false;
   await dimenticaNickname(db, id);
   const r = await db.prepare("DELETE FROM esplorator WHERE id = ?").bind(id).run();

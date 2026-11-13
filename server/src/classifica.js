@@ -1,7 +1,7 @@
 // Classifica del club (fase 5): stagioni, partite concluse, risultati, calcolo.
 // Regole: docs/roadmap-classifica.md §1–8. Si salvano solo i nickname; i guest non lasciano traccia.
 
-import { preparaSchema } from "./esplorazioni.js";
+import { preparaSchema, permettiScrittura, inSolaLettura } from "./esplorazioni.js";
 
 export const RIMOSS = "Esplorator* rimoss*";
 
@@ -42,6 +42,7 @@ export async function stagioneInCorso(db) {
   await preparaClassifica(db);
   const s = await db.prepare("SELECT * FROM stagioni WHERE chiusa IS NULL ORDER BY id DESC LIMIT 1").first();
   if (s) return s;
+  if (await inSolaLettura(db)) return null; // in sola lettura non si apre una nuova stagione
   const n = (await db.prepare("SELECT COUNT(*) AS n FROM stagioni").first()).n + 1;
   return db.prepare("INSERT INTO stagioni (nome, aperta) VALUES (?, ?) RETURNING *").bind(`Stagione ${n}`, new Date().toISOString()).first();
 }
@@ -57,6 +58,7 @@ export async function elencoStagioni(db) {
 // riepilogo: quello calcolato dalla partita (riepilogoPartita). esplorazione: il file del pianeta della partita.
 // Salva solo i posti con un nickname ancora esistente. Restituisce { partita, risultati } o null se non c'è nulla da salvare.
 export async function salvaPartita(db, riepilogo, esplorazione) {
+  await permettiScrittura(db);
   const s = await stagioneInCorso(db);
   const posti = riepilogo.posti.filter((p) => p.tipo === "nickname" && Number.isInteger(p.nickname));
   if (!posti.length) return null;
@@ -136,6 +138,7 @@ export async function classifica(db, stagioneId = null) {
 // ---------- area admin (5.3, 5.5) ----------
 
 export async function rinominaStagione(db, id, nome) {
+  await permettiScrittura(db);
   const n = typeof nome === "string" ? nome.trim().replace(/\s+/g, " ") : "";
   if (n.length < 1 || n.length > 40) return { errore: "Il nome della stagione deve avere da 1 a 40 caratteri." };
   await preparaClassifica(db);
@@ -144,6 +147,7 @@ export async function rinominaStagione(db, id, nome) {
 
 // Chiude la stagione in corso e ne apre subito una nuova, che parte da zero per tutti.
 export async function chiudiStagione(db) {
+  await permettiScrittura(db);
   const s = await stagioneInCorso(db);
   await db.prepare("UPDATE stagioni SET chiusa = ? WHERE id = ?").bind(new Date().toISOString(), s.id).run();
   const nuova = await stagioneInCorso(db);
@@ -169,6 +173,7 @@ export async function partiteStagione(db, stagioneId) {
 const intero = (x) => Number.isInteger(x) && x >= 0 && x <= 100000;
 
 export async function modificaRisultato(db, id, { cicli, stanze, perVia }) {
+  await permettiScrittura(db);
   if (!intero(cicli) || !intero(stanze)) return { errore: "Cicli e stanze devono essere numeri interi da 0 in su." };
   if (!perVia || typeof perVia !== "object" || Array.isArray(perVia) || !Object.values(perVia).every(intero) || Object.keys(perVia).length > 8) {
     return { errore: "Le stanze per via non sono valide." };
@@ -180,6 +185,7 @@ export async function modificaRisultato(db, id, { cicli, stanze, perVia }) {
 }
 
 export async function eliminaRisultato(db, id) {
+  await permettiScrittura(db);
   await preparaClassifica(db);
   const r = await db.prepare("DELETE FROM risultati WHERE id = ? RETURNING partita").bind(id).first();
   if (!r) return false;
@@ -189,6 +195,7 @@ export async function eliminaRisultato(db, id) {
 }
 
 export async function eliminaPartita(db, id) {
+  await permettiScrittura(db);
   await preparaClassifica(db);
   await db.prepare("DELETE FROM risultati WHERE partita = ?").bind(id).run();
   const r = await db.prepare("DELETE FROM partite WHERE id = ?").bind(id).run();
@@ -198,6 +205,7 @@ export async function eliminaPartita(db, id) {
 // Quando un nickname viene cancellato: i suoi risultati spariscono dalla stagione in corso.
 // Nelle stagioni archiviate restano, con il nome «Esplorator* rimoss*» (le posizioni degli altri non cambiano).
 export async function dimenticaNickname(db, id) {
+  await permettiScrittura(db);
   const s = await stagioneInCorso(db);
   await db.prepare("DELETE FROM risultati WHERE esplorator = ? AND partita IN (SELECT id FROM partite WHERE stagione = ?)").bind(id, s.id).run();
   await db.prepare("DELETE FROM partite WHERE stagione = ? AND NOT EXISTS (SELECT 1 FROM risultati WHERE partita = partite.id)").bind(s.id).run();

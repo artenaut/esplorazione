@@ -2,10 +2,13 @@
 // Il file completo, con i testi delle stanze, sta solo qui: l'elenco pubblico non li contiene mai.
 
 import { validateModule } from "../../motore.js";
+import { SCHEMA, MSG_SOLA_LETTURA } from "./costanti.js";
+import { SolaLettura } from "./util.js";
 
 // Lo schema si crea da solo alla prima richiesta di ogni istanza del Worker
 // (il database viene creato da wrangler alla prima pubblicazione, senza migrazioni a mano).
 let schemaPronto = null;
+let solaLettura = false;
 export function preparaSchema(db) {
   schemaPronto ??= db
     .batch([
@@ -26,13 +29,34 @@ export function preparaSchema(db) {
         informativa TEXT NOT NULL,         -- versione dell'informativa accettata
         eta14       INTEGER NOT NULL       -- 1: ha confermato di avere almeno 14 anni
       )`),
+      // numero di schema dei dati (V.8a)
+      db.prepare("CREATE TABLE IF NOT EXISTS meta (chiave TEXT PRIMARY KEY, valore TEXT NOT NULL)"),
     ])
+    .then(async () => {
+      await db.prepare("INSERT OR IGNORE INTO meta (chiave, valore) VALUES ('schema', ?)").bind(String(SCHEMA)).run();
+      const n = Number((await db.prepare("SELECT valore FROM meta WHERE chiave = 'schema'").first()).valore);
+      solaLettura = n > SCHEMA;
+      // Una versione che cambia lo schema fa qui le sue modifiche (solo aggiungendo) e poi aggiorna il numero.
+      if (n < SCHEMA) await db.prepare("UPDATE meta SET valore = ? WHERE chiave = 'schema'").bind(String(SCHEMA)).run();
+    })
     .catch((e) => {
       schemaPronto = null;
       throw e;
     });
   return schemaPronto;
 }
+
+// Da chiamare prima di ogni scrittura in D1: se il codice è più vecchio dei dati, rifiuta (V.8a).
+export async function permettiScrittura(db) {
+  await preparaSchema(db);
+  if (solaLettura) throw new SolaLettura(MSG_SOLA_LETTURA);
+}
+export async function inSolaLettura(db) {
+  await preparaSchema(db);
+  return solaLettura;
+}
+// Solo per le prove automatiche: rilegge il numero di schema alla prossima richiesta.
+export function dimenticaSchemaPerProve() { schemaPronto = null; solaLettura = false; }
 
 // Vista pubblica: quello che serve per scegliere il pianeta e leggerne le regole.
 // Niente stanze, quindi niente titoli né testi.
@@ -81,7 +105,7 @@ export async function leggi(db, id) {
 export async function salva(db, m) {
   const errore = validateModule(m);
   if (errore) return { errore };
-  await preparaSchema(db);
+  await permettiScrittura(db);
   const ora = new Date().toISOString();
   const r = await db
     .prepare(
@@ -95,7 +119,7 @@ export async function salva(db, m) {
 }
 
 export async function rimuovi(db, id) {
-  await preparaSchema(db);
+  await permettiScrittura(db);
   const r = await db.prepare("DELETE FROM esplorazioni WHERE id = ?").bind(id).run();
   return r.meta.changes > 0;
 }

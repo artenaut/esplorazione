@@ -53,7 +53,7 @@ def main():
             ctx = browser.new_context(**opts)
             pg = ctx.new_page()
             pg.on("pageerror", lambda e: errori.append(str(e)))
-            pg.on("console", lambda m: m.type == "error" and "WebSocket" not in m.text and "status of 404" not in m.text and errori.append(m.text))
+            pg.on("console", lambda m: m.type == "error" and "WebSocket" not in m.text and "status of 404" not in m.text and "status of 503" not in m.text and errori.append(m.text))
             return ctx, pg
 
         def nessuno_scorrimento(pg):
@@ -94,6 +94,19 @@ def main():
             pg.click("#nuova-versione button")
             expect(pg.locator(".versione")).to_be_visible()
             expect(pg.locator("#nuova-versione")).to_have_count(0)
+            nessuno_scorrimento(pg)
+            ctx.close()
+
+        @prova("Sola lettura: creare una partita mostra il messaggio del server")
+        def _():
+            ctx, pg = telefono()
+            msg = "Il server è stato riportato a una versione precedente: le modifiche sono sospese."
+            pg.route("**/api/partite", lambda r: r.fulfill(status=503, content_type="application/json", headers={"Access-Control-Allow-Origin": "*"}, body='{"errore":"' + msg + '"}') if r.request.method == "POST" else r.continue_())
+            pg.goto(APP + Q)
+            pg.click("text=Crea una partita")
+            pg.click("#crea")
+            expect(pg.locator(".banner.err")).to_contain_text(msg)
+            pg.screenshot(path=os.path.join(CARTELLA_FOTO, "sola-lettura.png"))
             nessuno_scorrimento(pg)
             ctx.close()
 

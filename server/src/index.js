@@ -7,9 +7,9 @@ export { Limitatore } from "./limitatore.js";
 import { MIN_GIOCATORI, MAX_GIOCATORI } from "./partita.js";
 import { classifica } from "./classifica.js";
 import { nuovaPartita } from "./crea.js";
-import { improntaRete } from "./util.js";
+import { improntaRete, SolaLettura } from "./util.js";
 import { VERSIONE, LIMITI, FINESTRA_LIMITI } from "./costanti.js";
-import { elencoPubblico, leggi } from "./esplorazioni.js";
+import { elencoPubblico, leggi, permettiScrittura } from "./esplorazioni.js";
 import { gestisciAdmin } from "./admin.js";
 
 
@@ -43,7 +43,7 @@ export default {
 
       // Area admin, protetta da Cloudflare Access (e verificata anche qui).
       if (url.pathname === "/admin" || url.pathname.startsWith("/admin/")) {
-        return gestisciAdmin(request, env, url);
+        return await gestisciAdmin(request, env, url);
       }
 
       // Elenco pubblico dei pianeti, senza le stanze.
@@ -65,7 +65,7 @@ export default {
       if (url.pathname === "/api/partite" && request.method === "POST") {
         if (origine && !cors) return json({ errore: "Origine non consentita." }, 403);
         if (await troppiTentativi(env, request, "CREAZIONI")) return troppi(cors);
-        return creaPartita(request, env, cors);
+        return await creaPartita(request, env, cors);
       }
 
       // Controllo del codice prima di collegarsi: { codice, esplorazione: { id, nome } } oppure 404.
@@ -104,6 +104,7 @@ export default {
 
       return json({ errore: "Indirizzo non trovato." }, 404, cors);
     } catch (e) {
+      if (e instanceof SolaLettura) return json({ errore: e.message }, 503, cors);
       console.error("Errore non gestito:", e?.stack ?? e);
       return json({ errore: "Errore del server. Riprova tra poco." }, 500, cors);
     }
@@ -125,6 +126,7 @@ async function creaPartita(request, env, cors) {
   const esplorazione = /^[a-z0-9-]{1,40}$/.test(id) ? await leggi(env.DB, id) : null;
   if (!esplorazione) return json({ errore: "Questa esplorazione non esiste." }, 404, cors);
 
+  await permettiScrittura(env.DB); // sola lettura (V.8a): niente nuove partite
   const partita = await nuovaPartita(env, esplorazione, Array(n).fill(null));
   if (!partita) return json({ errore: "Non è stato possibile trovare un codice libero. Riprova." }, 503, cors);
   return json(partita, 201, cors);

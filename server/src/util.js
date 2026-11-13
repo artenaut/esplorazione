@@ -26,3 +26,6 @@ export function prefissoIPv6(ip) {
   const gruppi = ip.includes("::") ? [...a, ...Array(8 - a.length - b.length).fill("0"), ...b] : a;
   return gruppi.slice(0, 4).map((g) => (parseInt(g, 16) || 0).toString(16)).join(":");
 }
+
+// Errore di scrittura rifiutata perché il codice è più vecchio dello schema dei dati (V.8a).
+export class SolaLettura extends Error {}
