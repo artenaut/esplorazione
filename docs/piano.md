@@ -155,6 +155,32 @@ Da fare **prima di ogni altra modifica** all'app o al server. Fino ad allora non
 
 **Premessa d'uso (Francesco, 13/11/2026):** l'app è per **uso interno del club** e **non si pubblica mai durante le partite**. Una partita rimasta aperta dopo la serata (fino a 6 ore senza attività, 24 al massimo) è da considerare **nulla**: se una pubblicazione la interrompe non si perde nulla, quindi prima di pubblicare non serve controllare che non ci siano partite aperte. Finché questa premessa vale, i due punti sopra non sono un problema concreto. **Se la destinazione cambia** (altri club, uso pubblico, partite a qualsiasi ora), vanno ripresi: percorsi da osservare in Workers Builds; limitatore che conta solo gli ingressi falliti; numero di protocollo separato dalla versione, avviso solo con un pulsante (mai ricarica automatica), tenendo conto della cache di 10 minuti di GitHub Pages.
 
+### Piano della 0.2.0 (approvato da Francesco il 13/11/2026)
+
+Si sviluppa nel branch `versione-0.2.0` e si porta su `main` tutto insieme, alla fine.
+
+| # | Passo | Stato |
+|---|---|---|
+| 0 | Preparazione: prove di partenza, **pianeta di collaudo** inventato in `test/` per le prove automatiche (deciso il 13/11/2026: niente più Lowrenzia per le prove; il bilanciamento si fa sempre sul pianeta vero), server locale | |
+| 1 | V.8f · `versione.js` nella cartella principale, letto da app, server e `/api/stato` | |
+| 2 | V.5 · versione visibile: riga discreta in fondo alla pagina iniziale e nell'intestazione dell'area admin; **non durante la partita** (deciso il 13/11/2026) | |
+| 3 | V.6 · il server comunica la sua versione; se diversa, avviso con pulsante «Ricarica», mai ricarica automatica | |
+| 4 | V.8a · numero di schema (tabella `meta` in D1 e campo nello stato della partita) e sola lettura, vedi sotto | |
+| 5 | V.8e · `motore.js` e `simulatore.js` serviti dal Worker (copia automatica prima della pubblicazione), CSP dell'admin `'self'` | |
+| 6 | V.8b e V.7 nei documenti; `protocollo-partita.md` aggiornato | |
+| 7 | Prove complete (Vitest e Playwright con più telefoni) e screenshot dal telefono per Francesco | |
+| 8 | Note di rilascio e changelog della 0.2.0, da approvare | |
+| 9 | Pubblicazione su `main` (mai durante una partita), controllo in produzione, Release `v0.2.0` creata da Francesco | |
+
+Pause per il via libera di Francesco: dopo il 7, dopo l'8, prima del 9.
+
+**Sola lettura (deciso il 13/11/2026).** Se il codice è più vecchio dello schema dei dati (dopo un ritorno indietro):
+- **funziona ancora:** classifica ed elenco dei pianeti in lettura;
+- **si blocca:** creare partite, creare nickname, salvare in classifica, ogni modifica dall'area admin, con il messaggio «Il server è stato riportato a una versione precedente: le modifiche sono sospese»;
+- **le partite create da una versione più nuova** rispondono «Questa partita è stata creata con una versione più recente: creane una nuova».
+
+In pratica, dopo un ritorno indietro non si gioca finché non si sistema: è voluto, protegge i dati.
+
 ## Backup dei dati · ⚠️ priorità alta (aggiunto il 7/11/2026)
 
 **Ordine: si fa dopo «Versioni e rilasci»** (che ha la precedenza), prima delle nuove funzioni. Obiettivo: evitare perdite involontarie (errori dall'area admin, bug, modifiche al database) e, per quanto possibile, malevole (accesso all'area admin, all'account Cloudflare o al repository). **Attenzione:** i testi dei pianeti ora esistono solo sul server, quindi una perdita del database li cancellerebbe.
