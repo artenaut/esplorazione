@@ -77,6 +77,7 @@ def main():
             expect(pg.locator(".banner.err")).to_contain_text("tre lettere e tre numeri")
             expect(pg.locator(".versione")).to_have_text(f"Versione {VERSIONE}")
             assert pg.locator("#nuova-versione").count() == 0, "stessa versione: nessun avviso"
+            pg.screenshot(path=os.path.join(CARTELLA_FOTO, "pagina-iniziale.png"), full_page=True)
             nessuno_scorrimento(pg)
             ctx.close()
 
@@ -191,6 +192,8 @@ def main():
             expect(pg.locator(".room.reveal .content")).to_contain_text("TESTO-NASCOSTO-INGRESSO")
             expect(m.locator(".room.reveal .content")).to_contain_text("TESTO-NASCOSTO-INGRESSO")
             expect(pg.locator(".tab[aria-selected=true]")).to_contain_text("Passo 1")
+            assert "Versione" not in pg.inner_text("body"), "la versione non si vede durante la partita"
+            pg.screenshot(path=os.path.join(CARTELLA_FOTO, "partita.png"))
             assert not re.search(r"Passo \d+\s*(di|/|su)\s*\d+", pg.inner_text("body"))
             # cambiando scheda e tornando, il testo non c'è più
             pg.locator("[data-tab='1']").click()

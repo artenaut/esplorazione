@@ -172,7 +172,7 @@ Si sviluppa nel branch `versione-0.2.0` e si porta su `main` tutto insieme, alla
 | 8 | Note di rilascio e changelog della 0.2.0, da approvare | |
 | 9 | Pubblicazione su `main` (mai durante una partita), controllo in produzione, Release `v0.2.0` creata da Francesco | |
 
-**Nota (13/11/2026):** la prova del limite IPv6 in `server/test/sicurezza.test.js` è **instabile** (1 volta su 4 al primo avvio): il Limitatore tiene i conteggi solo in memoria e l'ambiente di prova a volte lo riavvia. Esisteva già nella 0.1.0; non riguarda la produzione. Da sistemare a parte.
+**Nota (13/11/2026):** la prova del limite IPv6 in `server/test/sicurezza.test.js` falliva ogni tanto. Causa: usava codici fissi `LWR-2xx` che a volte coincidevano con quelli casuali delle partite create dalle altre prove (non il limitatore, come ipotizzato all'inizio). Corretta usando il prefisso `ZZZ`, che il server non genera mai. Non riguardava la produzione.
 
 Pause per il via libera di Francesco: dopo il 7, dopo l'8, prima del 9.
 

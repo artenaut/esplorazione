@@ -27,11 +27,11 @@ describe("Limiti ai tentativi (3.10)", () => {
     expect(stati.slice(0, 30).every((s) => s === 404)).toBe(true);
     expect(stati.slice(30).every((s) => s === 429)).toBe(true);
     // anche il WebSocket è bloccato per quell'indirizzo
-    const ws = await chiama("/api/partite/LWR-100/ws", { headers: { ...ip, Upgrade: "websocket", Origin: APP } });
+    const ws = await chiama("/api/partite/ZZZ-100/ws", { headers: { ...ip, Upgrade: "websocket", Origin: APP } });
     expect(ws.status).toBe(429);
     expect((await ws.json()).errore).toContain("Aspetta un minuto");
     // un altro indirizzo non è toccato
-    expect((await chiama("/api/partite/LWR-100", { headers: { "CF-Connecting-IP": "203.0.113.8" } })).status).toBe(404);
+    expect((await chiama("/api/partite/ZZZ-100", { headers: { "CF-Connecting-IP": "203.0.113.8" } })).status).toBe(404);
   });
 
   it("dopo 10 partite create in un minuto dallo stesso indirizzo risponde 429", async () => {
@@ -73,7 +73,8 @@ describe("Revisione di sicurezza", () => {
     expect(prefissoIPv6("::1")).toBe("0:0:0:0");
     const stati = [];
     for (let i = 0; i < 32; i++) {
-      stati.push((await chiama(`/api/partite/LWR-${200 + i}`, { headers: { "CF-Connecting-IP": `2001:db8:1:2::${(i + 1).toString(16)}` } })).status);
+      // prefisso ZZZ: il server non lo genera mai (i pianeti di prova danno LWR), così nessun codice esiste davvero
+      stati.push((await chiama(`/api/partite/ZZZ-${200 + i}`, { headers: { "CF-Connecting-IP": `2001:db8:1:2::${(i + 1).toString(16)}` } })).status);
     }
     expect(stati).toEqual([...Array(30).fill(404), 429, 429]);
   });
