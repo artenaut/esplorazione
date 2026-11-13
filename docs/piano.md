@@ -126,7 +126,32 @@ Da fare **prima di ogni altra modifica** all'app o al server. Fino ad allora non
 | V.4 | **Etichetta `v0.1.0` su GitHub** con la pagina «Release» (note di rilascio). | Punto fermo a cui tornare. |
 | V.5 | **Versione visibile** nell'app (pagina iniziale) e nell'area admin; `/api/stato` restituisce la stessa versione. | Oggi il server dice «5.1» (numero delle fasi): va sostituito. |
 | V.6 | **Controllo di compatibilità** tra app e server: un telefono con l'app vecchia aperta riceve «È uscita una nuova versione: ricarica la pagina». | Sito e server si pubblicano a minuti di distanza. |
-| V.7 | **Ritorno a una versione precedente** documentato (Cloudflare → Deployments; sito: annullare i commit fino all'etichetta), anche nella guida per l'admin. | — |
+| V.7 | **Ritorno a una versione precedente** documentato, anche nella guida per l'admin. **Corretto il 13/11/2026:** il ritorno vero si fa con `git revert` su `main` fino all'etichetta (mai force push), così sito e server tornano indietro insieme; Cloudflare → Deployments solo in emergenza e subito seguito dal revert, perché il push successivo su `main` lo cancella. Avvertenze: i dati non tornano indietro; si riaprono le falle corrette dopo quella versione; Cloudflare non permette il ritorno indietro oltre una migrazione dei Durable Object. | — |
+| V.8 | **Protezioni dei rilasci** (revisione di sicurezza del 13/11/2026, decisioni di Francesco). Da fare **prima dell'etichetta `v0.1.0`**: vedi sotto. | `roadmap-server.md` §3, «Revisione dei rilasci» |
+
+### Decisioni del 13/11/2026 su versioni e rilasci
+
+- **Data della 0.1.0: 13/11/2026.** Il codice è identico a quello provato al tavolo il 6/11/2026 (nessuna modifica al codice dopo il 6/11 alle 20:48), quindi l'etichetta va sull'ultimo commit.
+- **Note di rilascio:** elenco delle funzionalità diviso per pubblico (chi gioca, chi conduce la partita, chi amministra), più limiti noti del prototipo e due righe sulla privacy. **Non sono una guida:** le istruzioni stanno nella guida per il master (fase 6). Al club nessuno legge GitHub: il testo, anche in versione corta, va pure nel gruppo del club.
+- **`CHANGELOG.md`:** formato «Keep a Changelog» in italiano, diviso per area. Decisioni e rischi accettati **con rimandi** alle roadmap, senza ricopiarli (due fonti divergerebbero).
+- **Cosa non scrivere nelle note, nel changelog e nella Release** (il repository è pubblico): niente nickname, email, contenuto di `ADMIN_EMAILS`, testi dei pianeti; nessun file allegato alla Release (né pianeti né backup); nessuna istruzione pronta per sfruttare i rischi accettati (si rimanda a `roadmap-server.md`). La sicurezza non deve comunque dipendere dal tenere nascosta l'architettura.
+
+**V.8 · cosa contiene** (✅ approvato da Francesco il 13/11/2026)
+
+| # | Cosa | Chi |
+|---|---|---|
+| V.8a | **Numero di schema nei dati** (D1 e stato della partita nei Durable Object): un codice più vecchio dello schema che trova passa in **sola lettura** invece di scrivere dati che non conosce. Modifiche ai dati sempre solo additive. | Claude |
+| V.8b | **Migrazioni dei Durable Object pubblicate da sole,** mai insieme ad altre modifiche (bloccano il ritorno indietro da Deployments). | Claude |
+| V.8c | **Ruleset sulle etichette `v*`** (vietati spostamento e cancellazione) e **ruleset su `main`** (vietati force push e cancellazione del branch). | Francesco (Claude prepara i passaggi) |
+| V.8d | **Release immutabili** attivate nel repository o nell'organizzazione. Attenzione: un'etichetta usata da una release immutabile non si può più riusare, nemmeno dopo averla cancellata. Quindi la release si crea **come bozza**, si ricontrolla e solo dopo si pubblica. | Francesco (Claude prepara i passaggi) |
+| V.8e | **Motore e simulatore serviti dal Worker** (la copia inclusa nella sua pubblicazione) invece che da GitHub Pages; CSP dell'area admin ristretta a `'self'`. Il simulatore usa così sempre lo stesso motore del server. | Claude |
+| V.8f | **Un solo file della versione** nella cartella principale, letto da app e server (e da `/api/stato`), così i due numeri non si separano. | Claude |
+
+**Considerati e lasciati così (13/11/2026), finché vale la premessa d'uso qui sotto:**
+- Ogni push su `main` ripubblica il Worker e fa cadere i WebSocket delle partite in corso, anche per i soli documenti. Niente percorsi da osservare in Workers Builds e nessuna modifica al limitatore.
+- Controllo di compatibilità (V.6): non serve separare il numero di versione da un numero di protocollo.
+
+**Premessa d'uso (Francesco, 13/11/2026):** l'app è per **uso interno del club** e **non si pubblica mai durante le partite**. Finché questa premessa vale, i due punti sopra non sono un problema concreto. **Se la destinazione cambia** (altri club, uso pubblico, partite a qualsiasi ora), vanno ripresi: percorsi da osservare in Workers Builds; limitatore che conta solo gli ingressi falliti; numero di protocollo separato dalla versione, avviso solo con un pulsante (mai ricarica automatica), tenendo conto della cache di 10 minuti di GitHub Pages.
 
 ## Backup dei dati · ⚠️ priorità alta (aggiunto il 7/11/2026)
 

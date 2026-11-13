@@ -130,6 +130,19 @@ Entrambi chiedono prima una conferma. Poi chiedono come proseguire:
 ### Finché il server non c'è
 - Con l'app attuale e le esplorazioni incorporate, la password nella pagina resta sufficiente come «anti-pasticcio».
 
+### Revisione dei rilasci (13/11/2026)
+Analisi di sicurezza dei cambiamenti «Versioni e rilasci» (`piano.md`, V.1–V.8), prima di qualsiasi modifica. Nessuna falla critica. Decisioni di Francesco:
+1. **Ritorno indietro** (approvato): `git revert` su `main` e non Deployments, che il push successivo cancella; numero di schema con sola lettura per il codice più vecchio; migrazioni dei Durable Object pubblicate da sole. Il ritorno indietro riporta il codice, **non i dati**, e riapre le falle corrette dopo quella versione.
+2. **Pubblicare fa cadere le partite in corso** (ogni push su `main` riavvia i Durable Object; un rientro di massa dal Wi-Fi del club può superare i 30 ingressi al minuto): **lasciato così**, perché non si pubblica mai durante le partite.
+3. **Controllo di compatibilità** (cache di 10 minuti di GitHub Pages, ricariche ripetute): **lasciato così**, per lo stesso motivo. La versione mandata dal telefono resta solo un'informazione, mai un permesso.
+4. **Etichette e Release modificabili** (approvato): ruleset su `v*` e su `main`, release immutabili create prima come bozza.
+5. **Note, changelog e Release** (approvato): niente dati personali, testi dei pianeti o allegati; i rischi accettati si richiamano senza ripeterli.
+6. **Motore caricato da GitHub Pages nell'area admin** (approvato): si serve dal Worker, CSP ristretta a `'self'`. Il guadagno è soprattutto la coerenza delle versioni: chi può pubblicare su `main` controlla già anche il Worker.
+
+Già a posto: nessuna dipendenza a runtime nel Worker, `package-lock.json` nel repository (una versione etichettata si ricostruisce identica), nessun segreto nel repository.
+
+**Premessa d'uso:** uso interno del club, nessuna pubblicazione durante le partite. Se cambia, vanno ripresi i punti 2 e 3 (dettagli in `piano.md`, «Considerati e lasciati così»).
+
 ## 3bis. Architettura del server [deciso il 6/11/2026]
 
 - **Durable Object `Partita`,** uno per sessione, con WebSocket Hibernation API e SQLite. Contiene lo stato della partita, i contatori «meno mostrate», i posti, i gettoni e l'ultima mossa annullabile. La scadenza usa gli allarmi del Durable Object.
