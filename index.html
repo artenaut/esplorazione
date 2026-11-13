@@ -77,6 +77,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center}
 .link{color:var(--muted);text-decoration:underline;text-underline-offset:3px}
 .link:hover{color:var(--parch)}
 .foot{display:flex;justify-content:center;padding-top:8px;font-size:.9rem}
+.versione{margin:-6px 0 0;text-align:center;color:var(--muted);font-size:.78rem;opacity:.8}
 .field{width:100%;background:var(--stone);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--parch);font:inherit}
 .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem;margin-top:8px}
 .narrow{max-width:420px}
@@ -294,6 +295,7 @@ details.master-code code{display:block;word-break:break-all;user-select:all;back
 
 <script type="module">
 import qrcode from './vendor/qrcode.mjs';
+import { VERSIONE } from './versione.js';
 
 /* Registro dell'esplorazione · app a sessioni (fase 3).
    Tutta la partita vive sul server: l'app mostra lo stato che riceve e manda le azioni.
@@ -419,6 +421,7 @@ function ricevi(m){
   switch(m.tipo){
     case 'benvenuto':
       ruolo = m.ruolo; mioPosto = m.posto; UI.connesso = true;
+      controllaVersione(m.versione);
       aggiornaStato(m.stato);
       if(ruolo==='ospite'){ UI.schermata = 'posto'; }
       else {
@@ -573,10 +576,12 @@ rulesEl.addEventListener('click', e=>{ if(e.target===rulesEl) closeRules(); });
 
 /* ---------- avvisi ---------- */
 const avvisoHtml = () => [
+  UI.nuovaVersione ? `<p class="banner" role="status" id="nuova-versione">È uscita una nuova versione dell’app: ricarica la pagina. <button class="btn primary small" data-ricarica>Ricarica</button></p>` : '',
   UI.errore ? `<p class="banner err" role="alert">${esc(UI.errore)} <button class="btn ghost small" data-chiudi-avviso="errore">Ok</button></p>` : '',
   UI.avviso ? `<p class="banner" role="status">${esc(UI.avviso)} <button class="btn ghost small" data-chiudi-avviso="avviso">Ok</button></p>` : '',
 ].join('');
 function legaAvvisi(){
+  app.querySelectorAll('[data-ricarica]').forEach(b=>b.onclick=()=>location.reload());
   app.querySelectorAll('[data-chiudi-avviso]').forEach(b=>b.onclick=()=>{ UI[b.dataset.chiudiAvviso]=''; render(); });
 }
 
@@ -604,7 +609,8 @@ function renderHome(){
     <div><h2>Classifica del club</h2><p class="hint">Chi gioca con un nickname del club entra nella classifica della stagione in corso.</p></div>
     <div><a class="btn" href="classifica.html">Guarda la classifica</a></div>
   </section>
-  <footer class="foot"><a href="informativa.html" class="link" target="_blank" rel="noopener">Privacy</a> · <a href="${ADMIN}" class="link" rel="noopener">Area admin</a></footer>`;
+  <footer class="foot"><a href="informativa.html" class="link" target="_blank" rel="noopener">Privacy</a> · <a href="${ADMIN}" class="link" rel="noopener">Area admin</a></footer>
+  <p class="versione">Versione ${esc(VERSIONE)}</p>`;
   document.getElementById('nuova').onclick = ()=>{ UI.errore=''; UI.avviso=''; UI.schermata='crea'; render(); caricaEsplorazioni(); };
   document.getElementById('entra-form').onsubmit = e=>{ e.preventDefault(); entraConCodice(document.getElementById('codice').value); };
 }
@@ -625,6 +631,15 @@ async function entraConCodice(testo){
   salvaSessione({ codice, ruolo:'ospite' });
   collega();
 }
+
+/* ---------- versione (V.6) ----------
+   Il server dice la sua versione all'ingresso nella partita e in /api/stato. Se è diversa da quella
+   dell'app, compare un avviso con il pulsante «Ricarica»: mai ricarica automatica (decisione del 13/11/2026). */
+function controllaVersione(v){
+  if(typeof v!=='string' || v===VERSIONE || UI.nuovaVersione) return;
+  UI.nuovaVersione = true; render();
+}
+fetch(`${SERVER}/api/stato`).then(r=>r.ok ? r.json() : null).then(j=>controllaVersione(j?.versione)).catch(()=>{});
 
 async function caricaEsplorazioni(){
   if(UI.esplorazioni) return;

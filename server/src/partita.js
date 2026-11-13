@@ -18,6 +18,7 @@ import { leggi } from "./esplorazioni.js";
 import { leggiNickname, creaNickname, nomeGuest } from "./esplorator.js";
 import { salvaPartita } from "./classifica.js";
 import { elencoPubblicoNickname } from "./esplorator.js";
+import { VERSIONE } from "./costanti.js";
 
 export const MIN_GIOCATORI = 2, MAX_GIOCATORI = 4, MAX_REGISTRO = 500;
 // Nuovi nickname creabili in una partita (contro chi ne crea in serie).
@@ -187,7 +188,7 @@ export class Partita extends DurableObject {
       ruolo = "tabellone";
     }
     imposta(ws, { ruolo, posto });
-    invia(ws, { tipo: "benvenuto", ruolo, posto, stato: this.vista(stato) });
+    invia(ws, { tipo: "benvenuto", ruolo, posto, versione: VERSIONE, stato: this.vista(stato) });
   }
 
   // Un ospite occupa un posto libero e riceve il gettone che lo lega a quel posto.

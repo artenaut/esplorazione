@@ -12,6 +12,9 @@ import argparse, functools, http.server, os, random, re, sys, threading
 from playwright.sync_api import sync_playwright, expect
 
 RADICE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+VERSIONE = re.search(r'VERSIONE = "([^"]+)"', open(os.path.join(RADICE, "versione.js"), encoding="utf-8").read()).group(1)
+CARTELLA_FOTO = os.environ.get("FOTO", "/tmp/foto-prove")
+os.makedirs(CARTELLA_FOTO, exist_ok=True)
 esiti = []
 
 
@@ -72,6 +75,25 @@ def main():
             pg.fill("#codice", "12")
             pg.click("#entra-form button[type=submit]")
             expect(pg.locator(".banner.err")).to_contain_text("tre lettere e tre numeri")
+            expect(pg.locator(".versione")).to_have_text(f"Versione {VERSIONE}")
+            assert pg.locator("#nuova-versione").count() == 0, "stessa versione: nessun avviso"
+            nessuno_scorrimento(pg)
+            ctx.close()
+
+        @prova("Versione diversa sul server: avviso con «Ricarica», nessuna ricarica automatica")
+        def _():
+            ctx, pg = telefono()
+            pg.route("**/api/stato", lambda r: r.fulfill(status=200, content_type="application/json", headers={"Access-Control-Allow-Origin": "*"}, body='{"ok":true,"versione":"9.9.9"}'))
+            pg.goto(APP + Q)
+            expect(pg.locator("#nuova-versione")).to_contain_text("nuova versione")
+            expect(pg.locator("#nuova-versione button")).to_have_text("Ricarica")
+            pg.wait_for_timeout(1500)
+            expect(pg.locator("#nuova-versione")).to_be_visible()
+            pg.screenshot(path=os.path.join(CARTELLA_FOTO, "nuova-versione.png"))
+            pg.unroute("**/api/stato")
+            pg.click("#nuova-versione button")
+            expect(pg.locator(".versione")).to_be_visible()
+            expect(pg.locator("#nuova-versione")).to_have_count(0)
             nessuno_scorrimento(pg)
             ctx.close()
 

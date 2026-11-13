@@ -1,6 +1,7 @@
 // Area /admin: pagina e API per gestire le esplorazioni. Tutto passa da verificaAccess.
 
 import { verificaAccess } from "./accesso.js";
+import { VERSIONE } from "./costanti.js";
 import { elencoAdmin, leggi, salva, rimuovi } from "./esplorazioni.js";
 import { elencoAdminNickname, rinominaNickname, rimuoviNickname } from "./esplorator.js";
 import { elencoStagioni, rinominaStagione, chiudiStagione, partiteStagione, modificaRisultato, eliminaRisultato, eliminaPartita } from "./classifica.js";
@@ -189,7 +190,7 @@ details.simlv summary{cursor:pointer}
 .num-in{width:5.2em;padding:4px 6px;text-align:right}
 #qr-cl svg{width:100%;height:auto;display:block}
 </style></head><body><div class="wrap">
-<header><div><span class="eyebrow">Area admin</span><h1>Esplorazioni sul server</h1></div>
+<header><div><span class="eyebrow">Area admin · versione ${VERSIONE}</span><h1>Esplorazioni sul server</h1></div>
 <p class="hint">Accesso come ${esc(chi.email) || "chi amministra"} · <a class="hint" href="/cdn-cgi/access/logout">Esci</a></p></header>
 ${chi.secondoControllo ? "" : `<p class="msg err" style="border:1px dashed currentColor;border-radius:10px;padding:10px 12px">Secondo controllo dell'accesso non attivo: aggiungi il segreto ADMIN_EMAILS nelle impostazioni del Worker su Cloudflare.</p>`}
 
